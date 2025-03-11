@@ -1,15 +1,37 @@
 <?php
 
+use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\ClientController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', function () {
-    return Inertia::render('Welcome');
-})->name('home');
+    return Inertia::render('auth/Login');
+})->name('login');
 
-Route::get('caisse', function () {
-    return Inertia::render('Caisse');
-})->middleware(['auth', 'verified'])->name('caisse');
+
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('caisse', function () {
+        return Inertia::render('Caisse');
+    })->name('caisse');
+
+    Route::get('numbre', function () {
+        return Inertia::render('Numbre');
+    })->name('numbre.index');
+
+    Route::get('vente', function () {
+        return Inertia::render('Vente');
+    })->name('vente.index');
+
+    Route::get('invoice', function () {
+        return Inertia::render('Invoice');
+    })->name('invoice.index');
+
+    Route::get('client', [ClientController::class, 'index'])->name('client.index');
+
+    Route::get('article', [CategoryController::class, 'index'])->name('article.index');
+});
+
 
 require __DIR__ . '/settings.php';
 require __DIR__ . '/auth.php';

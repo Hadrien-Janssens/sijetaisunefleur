@@ -17,32 +17,32 @@ const mainNavItems: NavItem[] = [
     },
     {
         title: 'Chiffres',
-        href: '/',
+        href: '/numbre',
         icon: LineChart,
         color: 'text-red-500',
     },
     {
         title: 'Ventes',
-        href: '/',
+        href: '/vente',
         icon: Receipt,
         color: 'text-green-500',
     },
     {
         title: 'Factures',
-        href: '/',
+        href: '/invoice',
         icon: ClipboardList,
         color: 'text-orange-500',
     },
 
     {
         title: 'Clients',
-        href: '/',
+        href: '/client',
         icon: Users,
         color: 'text-blue-500',
     },
     {
         title: 'Articles',
-        href: '/',
+        href: '/article',
         icon: Package,
         color: 'text-amber-700',
     },
