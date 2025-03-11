@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb';
 import { Link } from '@inertiajs/vue3';
+import { capitalizeFirstLetter } from '../lib/utils';
 
 interface BreadcrumbItem {
     title: string;
@@ -18,7 +19,7 @@ defineProps<{
             <template v-for="(item, index) in breadcrumbs" :key="index">
                 <BreadcrumbItem>
                     <template v-if="index === breadcrumbs.length - 1">
-                        <BreadcrumbPage>{{ item.title }}</BreadcrumbPage>
+                        <BreadcrumbPage>{{ capitalizeFirstLetter(item.title) }}</BreadcrumbPage>
                     </template>
                     <template v-else>
                         <BreadcrumbLink as-child>
