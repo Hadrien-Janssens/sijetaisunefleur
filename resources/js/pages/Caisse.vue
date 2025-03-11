@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/vue3';
@@ -43,8 +46,32 @@ const breadcrumbs: BreadcrumbItem[] = [
             </div>
             <!-- RightSide -->
             <div class="flex basis-2/3 flex-col border-l">
-                <div class="flex h-20 items-center border-b">
-                    <h2>toolbar</h2>
+                <div class="flex h-20 w-full items-center border-b">
+                    <div class="flex w-full items-center justify-between p-3">
+                        <div class="flex items-center space-x-2">
+                            <Switch id="invoice" />
+                            <Label for="invoice">Facture</Label>
+                        </div>
+
+                        <Select defaultValue="deco">
+                            <SelectTrigger class="w-[180px]">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectGroup>
+                                    <SelectItem value="deco"> Décoration </SelectItem>
+                                    <SelectItem value="flower"> Fleur </SelectItem>
+                                </SelectGroup>
+                            </SelectContent>
+                        </Select>
+
+                        <div class="flex items-center space-x-2">
+                            <Switch id="r1" />
+                            <Label for="r1">6%</Label>
+                            <Switch id="r2" />
+                            <Label for="r2">21%</Label>
+                        </div>
+                    </div>
                 </div>
                 <div class="flex grow flex-col justify-end">
                     <div class="grid grid-cols-3 border-b border-t">
