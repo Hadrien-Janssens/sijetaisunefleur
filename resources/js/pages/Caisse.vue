@@ -5,8 +5,9 @@ import { Switch } from '@/components/ui/switch';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/vue3';
-import { Trash } from 'lucide-vue-next';
+import { Ticket, Trash } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
+import SearchClientModal from './SearchClientModal.vue';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -15,17 +16,26 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
+defineProps<{
+    clients: Array<{
+        id: number;
+        name: string;
+        email: string;
+        phone?: string;
+    }>;
+}>();
+
 const ticket = ref([
     {
         id: 1,
-        name: 'Décoration',
+        name: 1,
         price: 9,
         quantity: 2,
         tva: 21,
     },
     {
         id: 2,
-        name: 'Fleurs',
+        name: 2,
         price: 3,
         quantity: 5,
         tva: 6,
@@ -34,7 +44,7 @@ const ticket = ref([
 
 const priceRow = ref<null | number>(null);
 const quantityRow = ref(1);
-const nameRow = ref('Fleurs');
+const nameRow = ref(2);
 const setMultiplicatator = ref(false);
 const decimal = ref(false);
 const centimal = ref(false);
@@ -102,7 +112,7 @@ const deleteRow = (id: number) => {
 };
 
 const tva = computed(() => {
-    if (nameRow.value == 'Fleurs') {
+    if (nameRow.value == 2) {
         return 6;
     } else {
         return 21;
@@ -125,6 +135,8 @@ const sendTicket = () => {
 
     router.post(route('ticket.store'), form);
 };
+
+const isModalOpen = ref(false);
 </script>
 
 <template>
@@ -135,19 +147,21 @@ const sendTicket = () => {
             <!-- LEFTSIDE -->
             <div class="flex basis-1/3 flex-col">
                 <div class="flex h-20 items-center border-b p-3">
-                    <h2>Ticket en cours</h2>
+                    <h2 class="flex gap-2"><Ticket class="text-teal-600" /> Ticket en cours</h2>
                 </div>
-                <div class="grow p-3">
-                    <div v-for="article in ticket" :key="article.id" class="flex h-20 items-center justify-between border-b">
-                        <Trash class="w-5 text-red-400" @click="deleteRow(article.id)" />
-                        <p>
-                            <span class="mr-3"
-                                >{{ article.name }} <span class="text-xs italic">({{ article.tva }}%)</span> :</span
-                            >
-                            {{ article.price }}€ X {{ article.quantity }} =
-                            <span class="font-bold">{{ article.price * article.quantity }} €</span>
-                        </p>
-                    </div>
+                <div class="grow overflow-y-auto p-3">
+                    <TransitionGroup tag="ul" name="v">
+                        <li v-for="article in ticket" :key="article.id" class="flex h-20 items-center justify-between border-b">
+                            <Trash class="w-5 text-red-400" @click="deleteRow(article.id)" />
+                            <p>
+                                <span class="mr-3"
+                                    >{{ article.name }} <span class="text-xs italic">({{ article.tva }}%)</span> :</span
+                                >
+                                {{ article.price }}€ X {{ article.quantity }} =
+                                <span class="font-bold">{{ article.price * article.quantity }} €</span>
+                            </p>
+                        </li>
+                    </TransitionGroup>
                 </div>
                 <footer class="flex h-20 items-center justify-between border-t">
                     <p class="basis-1/2 text-center">Total : {{ total }}€</p>
@@ -163,19 +177,20 @@ const sendTicket = () => {
             <div class="flex basis-2/3 flex-col border-l">
                 <div class="flex h-20 w-full items-center border-b">
                     <div class="flex w-full items-center justify-between p-3">
-                        <div class="flex items-center space-x-2">
+                        <SearchClientModal :show="isModalOpen" :clients="clients" @close="isModalOpen = false" />
+                        <div class="flex items-center space-x-2" @click="isModalOpen = true">
                             <Switch id="invoice" />
                             <Label for="invoice">Facture</Label>
                         </div>
 
-                        <Select defaultValue="flower" v-model="nameRow">
+                        <Select :defaultValue="2" v-model="nameRow">
                             <SelectTrigger class="w-[180px]">
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectGroup>
-                                    <SelectItem value="Décoration"> Décoration </SelectItem>
-                                    <SelectItem value="Fleurs"> Fleurs </SelectItem>
+                                    <SelectItem :value="1"> Décoration </SelectItem>
+                                    <SelectItem :value="2"> Fleurs </SelectItem>
                                 </SelectGroup>
                             </SelectContent>
                         </Select>
@@ -189,7 +204,7 @@ const sendTicket = () => {
                     </div>
                 </div>
                 <div class="flex grow flex-col justify-end">
-                    <div class="h-full w-full space-y-5 bg-slate-50 p-10 text-end text-6xl">
+                    <div class="h-full w-full space-y-3 bg-slate-50 p-10 text-end text-4xl">
                         <p v-if="priceRow">
                             {{ priceRow }}€ <span v-if="setMultiplicatator">X</span> <span v-if="quantityRow != 1">{{ quantityRow }}</span>
                         </p>
@@ -197,7 +212,7 @@ const sendTicket = () => {
                         <p v-if="setMultiplicatator">= {{ priceRow * quantityRow }}€</p>
                         <p v-if="isInPaiyment">à rendre : {{ diff }}€</p>
                     </div>
-                    <div class="grid grid-cols-3 border-b border-t">
+                    <div class="grid grid-cols-3 border-b border-t text-2xl font-extrabold text-teal-600">
                         <div class="flex h-20 items-center justify-center border-b bg-sidebar duration-300 hover:bg-slate-100" @click="calculator(9)">
                             9
                         </div>
@@ -264,3 +279,21 @@ const sendTicket = () => {
         </div>
     </AppLayout>
 </template>
+
+<style>
+.v-move,
+.v-enter-active,
+.v-leave-active {
+    transition: all 0.3s ease-out;
+    opacity: 1;
+}
+.v-leave-active {
+    position: absolute;
+}
+
+.v-enter-from,
+.v-leave-to {
+    transform: translateX(50px);
+    opacity: 0;
+}
+</style>

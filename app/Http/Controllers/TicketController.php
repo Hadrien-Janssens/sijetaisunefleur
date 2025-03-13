@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Client;
 use App\Models\Ticket;
 use App\Models\Ticket_row;
 use Illuminate\Http\Request;
@@ -13,10 +14,10 @@ class TicketController extends Controller
      */
     public function index()
     {
-        $tickets = Ticket::with('ticketRows')->orderBy('created_at', 'desc')->paginate(10);
 
         return inertia('Vente', [
-            'tickets' => $tickets
+            'tickets' => Ticket::with(['ticketRows', 'client'])->orderBy('created_at', 'desc')->paginate(10),
+            'clients' => Client::all(),
         ]);
     }
 
@@ -38,10 +39,12 @@ class TicketController extends Controller
         $ticket = Ticket::create();
 
         foreach ($ticketRows as $key => $row) {
+
             $ticketRow = new Ticket_row();
             $ticketRow->ticket_id = $ticket->id;
             $ticketRow->price = $row['price'];
             $ticketRow->quantity = $row['quantity'];
+            $ticketRow->category_id = $row['name'];
 
             $ticketRow->save();
         }

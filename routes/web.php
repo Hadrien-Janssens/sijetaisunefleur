@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CaisseController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\TicketController;
@@ -13,9 +14,7 @@ Route::get('/', function () {
 
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('caisse', function () {
-        return Inertia::render('Caisse');
-    })->name('caisse');
+    Route::get('caisse', [CaisseController::class, 'index'])->name('caisse');
 
     Route::get('numbre', function () {
         return Inertia::render('Numbre');

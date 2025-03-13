@@ -3,10 +3,18 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import AppLayout from '@/layouts/AppLayout.vue';
+import { type BreadcrumbItem } from '@/types';
 import { Link, router } from '@inertiajs/vue3';
-import { Building, ContactRound, Hash, Mail, MapPin, Phone, Search, Users } from 'lucide-vue-next';
+import { Building, ContactRound, Flower, Hash, Mail, MapPin, Phone, Search } from 'lucide-vue-next';
 import { computed, reactive, ref } from 'vue';
 import CreateClientModal from './partials/CreateClientModal.vue';
+
+const breadcrumbs: BreadcrumbItem[] = [
+    {
+        title: 'clients',
+        href: '/client',
+    },
+];
 
 const props = defineProps({
     clients: {
@@ -39,9 +47,10 @@ const handleCreateClient = (clientData: any) => {
 </script>
 
 <template>
-    <AppLayout>
+    <AppLayout :breadcrumbs="breadcrumbs">
         <CreateClientModal :show="isModalOpen" @close="isModalOpen = false" @create="handleCreateClient" />
-        <Users class="fixed mt-10 h-screen w-full text-stone-100" />
+        <!-- <Users class="fixed w-full h-screen mt-10 text-stone-100" /> -->
+        <Flower class="fixed mt-10 h-screen w-full text-teal-600 opacity-10" />
         <div class="container z-10 mx-auto p-6">
             <div class="z-50 mb-6 flex items-center justify-between">
                 <h1 class="text-3xl font-bold">Clients</h1>
@@ -57,7 +66,7 @@ const handleCreateClient = (clientData: any) => {
                 <Card
                     v-for="client in filteredClients"
                     :key="client.id"
-                    class="w-full bg-gradient-to-br from-white to-gray-50/80 transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-lg"
+                    class="w-full bg-transparent from-white to-gray-50/80 backdrop-blur-md transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-lg"
                 >
                     <Link :href="route('client.edit', client.id)">
                         <CardHeader>
