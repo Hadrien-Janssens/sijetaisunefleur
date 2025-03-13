@@ -69,7 +69,7 @@ const mainNavItems: NavItem[] = [
 
         <SidebarFooter>
             <NavUser />
-            <Button class="h-16 bg-blue-500 hover:bg-blue-600">Fin de jour</Button>
+            <Button class="h-16 bg-teal-600 text-teal-100 duration-300 hover:bg-teal-700">Fin de jour</Button>
         </SidebarFooter>
     </Sidebar>
     <slot />

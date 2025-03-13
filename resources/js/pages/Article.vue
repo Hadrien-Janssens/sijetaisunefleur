@@ -13,10 +13,11 @@ defineProps({
 
 <template>
     <AppLayout>
-        <div class="container mx-auto p-6">
+        <Package class="fixed mt-10 h-screen w-full text-stone-100" />
+        <div class="container z-10 mx-auto p-6">
             <div class="mb-6 flex items-center justify-between">
                 <h1 class="text-3xl font-bold">Articles</h1>
-                <Button class="bg-green-600 font-bold text-green-100 hover:cursor-pointer hover:bg-green-700">Ajouter un article</Button>
+                <Button variant="teal">Ajouter un article</Button>
             </div>
 
             <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">

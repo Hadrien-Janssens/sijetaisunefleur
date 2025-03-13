@@ -14,7 +14,7 @@ class ClientController extends Controller
     {
         $clients = Client::all();
 
-        return inertia('Client', [
+        return inertia('client/Index', [
             'clients' => $clients
         ]);
     }
@@ -32,23 +32,24 @@ class ClientController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        Client::create($request->all());
+
+        return redirect()->back();
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(Client $client)
-    {
-        //
-    }
+    public function show(Client $client) {}
 
     /**
      * Show the form for editing the specified resource.
      */
     public function edit(Client $client)
     {
-        //
+        return inertia('client/Edit', [
+            'client' => $client
+        ]);
     }
 
     /**
@@ -56,7 +57,9 @@ class ClientController extends Controller
      */
     public function update(Request $request, Client $client)
     {
-        //
+        $client->update($request->all());
+
+        return redirect()->route('client.index');
     }
 
     /**
