@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Ticket_row;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -39,6 +40,12 @@ class HandleInertiaRequests extends Middleware
     {
         [$message, $author] = str(Inspiring::quotes()->random())->explode('-');
 
+        $dailyAmount = 0;
+        $ticket_rows = Ticket_row::whereDate('created_at', today())->get();
+        foreach ($ticket_rows as $key => $row) {
+            $dailyAmount += $row->price * $row->quantity;
+        }
+
         return [
             ...parent::share($request),
             'name' => config('app.name'),
@@ -50,6 +57,7 @@ class HandleInertiaRequests extends Middleware
                 ...(new Ziggy)->toArray(),
                 'location' => $request->url(),
             ],
+            'dailyAmount' => $dailyAmount,
         ];
     }
 }

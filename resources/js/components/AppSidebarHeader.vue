@@ -2,10 +2,13 @@
 import Breadcrumbs from '@/components/Breadcrumbs.vue';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import type { BreadcrumbItemType } from '@/types';
+import { usePage } from '@inertiajs/vue3';
 
 defineProps<{
     breadcrumbs?: BreadcrumbItemType[];
 }>();
+
+const page = usePage();
 </script>
 
 <template>
@@ -20,7 +23,9 @@ defineProps<{
                         <Breadcrumbs :breadcrumbs="breadcrumbs" />
                     </div>
                     <div>
-                        <p>Aujourd'hui : 314,25€</p>
+                        <p>
+                            Aujourd'hui : <span class="font-bold"> {{ $page.props.dailyAmount.toFixed(2) }}€</span>
+                        </p>
                     </div>
                 </div>
             </template>

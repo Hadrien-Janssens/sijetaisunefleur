@@ -13,6 +13,8 @@ export default {
         extend: {
             fontFamily: {
                 sans: ['Instrument Sans', ...defaultTheme.fontFamily.sans],
+
+                'ma-police': ['MaPolicePersonnalisée', 'sans-serif'],
             },
             borderRadius: {
                 lg: 'var(--radius)',

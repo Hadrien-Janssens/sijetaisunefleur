@@ -5,7 +5,7 @@ import { Switch } from '@/components/ui/switch';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/vue3';
-import { Ticket, Trash } from 'lucide-vue-next';
+import { Ticket, Trash, UserCheck, UserRoundX } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 import SearchClientModal from './SearchClientModal.vue';
 
@@ -16,40 +16,34 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-defineProps<{
+const props = defineProps<{
     clients: Array<{
         id: number;
         name: string;
         email: string;
         phone?: string;
     }>;
+    categories: Array<{
+        id: number;
+        name: string;
+    }>;
 }>();
 
-const ticket = ref([
-    {
-        id: 1,
-        name: 1,
-        price: 9,
-        quantity: 2,
-        tva: 21,
-    },
-    {
-        id: 2,
-        name: 2,
-        price: 3,
-        quantity: 5,
-        tva: 6,
-    },
-]);
+const ticket = ref([]);
 
 const priceRow = ref<null | number>(null);
 const quantityRow = ref(1);
-const nameRow = ref(2);
+const category_idRow = ref(2);
 const setMultiplicatator = ref(false);
 const decimal = ref(false);
 const centimal = ref(false);
 const diff = ref(0);
 const isInPaiyment = ref(false);
+const selectedClient = ref(null);
+
+const getNameCategory = (id: number) => {
+    return props.categories.find((category) => category.id === id)?.name;
+};
 
 const calculator = (number: number) => {
     if (setMultiplicatator.value) {
@@ -74,7 +68,7 @@ const calculator = (number: number) => {
         return;
     }
     if (priceRow.value) {
-        priceRow.value = priceRow.value * 10 + number;
+        priceRow.value = parseFloat(priceRow.value * 10 + number).toFixed(2);
     }
 };
 
@@ -82,6 +76,7 @@ const validation = () => {
     if (isInPaiyment.value) {
         deleteCurrentRow();
         isInPaiyment.value = false;
+        selectedClient.value = null;
         sendTicket();
         ticket.value = [];
         return;
@@ -89,7 +84,7 @@ const validation = () => {
     if (priceRow.value) {
         ticket.value.push({
             id: ticket.value.length + 1,
-            name: nameRow.value,
+            category_id: category_idRow.value,
             price: priceRow.value,
             quantity: quantityRow.value,
             tva: tva.value,
@@ -112,7 +107,7 @@ const deleteRow = (id: number) => {
 };
 
 const tva = computed(() => {
-    if (nameRow.value == 2) {
+    if (category_idRow.value == 2) {
         return 6;
     } else {
         return 21;
@@ -125,18 +120,37 @@ const total = computed(() => {
 
 const paid = () => {
     isInPaiyment.value = true;
-    diff.value = priceRow.value - total.value;
+    diff.value = (priceRow.value - total.value).toFixed(2);
 };
 
 const sendTicket = () => {
     const form = {
         ticket: ticket.value,
+        client_id: selectedClient.value?.id || null,
     };
 
     router.post(route('ticket.store'), form);
 };
 
 const isModalOpen = ref(false);
+
+const setSelectedClient = (client: any) => {
+    selectedClient.value = client;
+    isModalOpen.value = false;
+};
+
+const hasSelectedClient = computed({
+    get() {
+        return selectedClient.value !== null;
+    },
+    set(value) {
+        if (!value) {
+            selectedClient.value = null;
+        } else if (selectedClient.value === null) {
+            isModalOpen.value = true;
+        }
+    },
+});
 </script>
 
 <template>
@@ -146,25 +160,32 @@ const isModalOpen = ref(false);
         <div class="flex h-full">
             <!-- LEFTSIDE -->
             <div class="flex basis-1/3 flex-col">
-                <div class="flex h-20 items-center border-b p-3">
-                    <h2 class="flex gap-2"><Ticket class="text-teal-600" /> Ticket en cours</h2>
+                <div class="flex h-20 flex-col gap-2 border-b p-3">
+                    <h2 class="flex items-center gap-2"><Ticket class="text-teal-600" /> Ticket en cours</h2>
+                    <p v-if="selectedClient" class="flex items-center gap-2">
+                        <UserCheck class="text-blue-500" /> {{ selectedClient.lastname }} {{ selectedClient.firstname }}
+                    </p>
+                    <p v-else class="flex items-center gap-2"><UserRoundX class="text-orange-500" /> Pas de client</p>
                 </div>
-                <div class="grow overflow-y-auto p-3">
+                <div class="grow overflow-scroll overflow-y-auto p-3">
+                    <p v-if="ticket.length === 0" class="mt-20 text-center text-xl font-extrabold text-gray-400">Aucun achat sur ce ticket</p>
                     <TransitionGroup tag="ul" name="v">
                         <li v-for="article in ticket" :key="article.id" class="flex h-20 items-center justify-between border-b">
                             <Trash class="w-5 text-red-400" @click="deleteRow(article.id)" />
                             <p>
                                 <span class="mr-3"
-                                    >{{ article.name }} <span class="text-xs italic">({{ article.tva }}%)</span> :</span
+                                    >{{ getNameCategory(article.category_id) }} <span class="text-xs italic">({{ article.tva }}%)</span> :</span
                                 >
                                 {{ article.price }}€ X {{ article.quantity }} =
-                                <span class="font-bold">{{ article.price * article.quantity }} €</span>
+                                <span class="font-bold">{{ (article.price * article.quantity).toFixed(2) }} €</span>
                             </p>
                         </li>
                     </TransitionGroup>
                 </div>
                 <footer class="flex h-20 items-center justify-between border-t">
-                    <p class="basis-1/2 text-center">Total : {{ total }}€</p>
+                    <p class="basis-1/2 text-center">
+                        Total : <span class="font-bold">{{ total }}€</span>
+                    </p>
                     <div
                         class="flex h-full basis-1/2 items-center justify-center bg-orange-200 text-center font-extrabold text-orange-800 dark:bg-orange-950 dark:text-orange-400"
                         @click="paid"
@@ -177,20 +198,26 @@ const isModalOpen = ref(false);
             <div class="flex basis-2/3 flex-col border-l">
                 <div class="flex h-20 w-full items-center border-b">
                     <div class="flex w-full items-center justify-between p-3">
-                        <SearchClientModal :show="isModalOpen" :clients="clients" @close="isModalOpen = false" />
+                        <SearchClientModal
+                            :show="isModalOpen"
+                            :clients="clients"
+                            @close="isModalOpen = false"
+                            @validation="setSelectedClient($event)"
+                        />
                         <div class="flex items-center space-x-2" @click="isModalOpen = true">
-                            <Switch id="invoice" />
+                            <Switch id="invoice" v-model="hasSelectedClient" />
                             <Label for="invoice">Facture</Label>
                         </div>
 
-                        <Select :defaultValue="2" v-model="nameRow">
+                        <Select defaultValue="Fleurs" v-model="category_idRow">
                             <SelectTrigger class="w-[180px]">
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectGroup>
-                                    <SelectItem :value="1"> Décoration </SelectItem>
-                                    <SelectItem :value="2"> Fleurs </SelectItem>
+                                    <SelectItem v-for="category in categories" :value="category.id" :key="category.id">
+                                        {{ category.name }}
+                                    </SelectItem>
                                 </SelectGroup>
                             </SelectContent>
                         </Select>
@@ -209,7 +236,7 @@ const isModalOpen = ref(false);
                             {{ priceRow }}€ <span v-if="setMultiplicatator">X</span> <span v-if="quantityRow != 1">{{ quantityRow }}</span>
                         </p>
                         <hr v-if="setMultiplicatator || isInPaiyment" />
-                        <p v-if="setMultiplicatator">= {{ priceRow * quantityRow }}€</p>
+                        <p v-if="setMultiplicatator">= {{ (priceRow * quantityRow).toFixed(2) }}€</p>
                         <p v-if="isInPaiyment">à rendre : {{ diff }}€</p>
                     </div>
                     <div class="grid grid-cols-3 border-b border-t text-2xl font-extrabold text-teal-600">

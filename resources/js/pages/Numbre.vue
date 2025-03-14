@@ -1,8 +1,18 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
+import { type BreadcrumbItem } from '@/types';
+import { Head } from '@inertiajs/vue3';
+
+const breadcrumbs: BreadcrumbItem[] = [
+    {
+        title: 'chiffres',
+        href: '/chiffres',
+    },
+];
 </script>
 <template>
-    <AppLayout>
+    <Head title="Chiffres" />
+    <AppLayout :breadcrumbs="breadcrumbs">
         <div class="container mx-auto p-6">
             <div class="mb-6 flex items-center justify-between">
                 <h1 class="text-3xl font-bold">Chiffres</h1>

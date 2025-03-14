@@ -4,10 +4,18 @@ import Card from '@/components/ui/card/Card.vue';
 import Label from '@/components/ui/label/Label.vue';
 import Switch from '@/components/ui/switch/Switch.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
-import { router } from '@inertiajs/vue3';
+import { type BreadcrumbItem } from '@/types';
+import { Head, Link, router } from '@inertiajs/vue3';
 import { Barcode, CalendarDays, ChevronDown, ChevronUp, Clock, Flower, ShoppingBag, User } from 'lucide-vue-next';
 import { ref } from 'vue';
 import { getHour } from '../lib/utils';
+
+const breadcrumbs: BreadcrumbItem[] = [
+    {
+        title: 'ventes',
+        href: '/ventes',
+    },
+];
 
 interface Ticket {
     id: number;
@@ -58,7 +66,8 @@ const formatDate = (dateString: string) => {
 console.log(props.tickets);
 </script>
 <template>
-    <AppLayout>
+    <Head title="Ventes" />
+    <AppLayout :breadcrumbs="breadcrumbs">
         <Flower class="fixed mt-10 h-screen w-full text-teal-600 opacity-5" />
         <div class="container z-10 mx-auto p-6">
             <div class="mb-6 flex items-center justify-between">
@@ -89,7 +98,7 @@ console.log(props.tickets);
                         <div class="flex cursor-pointer items-center justify-between">
                             <div class="flex items-center gap-4">
                                 <div>
-                                    <p class="flex items-center gap-2 font-medium"><Barcode class="h-4 w-4" /> N° {{ ticket.id }}</p>
+                                    <p class="flex items-center gap-2 font-medium"><Barcode class="h-4 w-4 text-teal-600" /> N° {{ ticket.id }}</p>
                                 </div>
                                 <div class="text-gray-600">|</div>
                                 <div>
@@ -121,9 +130,15 @@ console.log(props.tickets);
                                         </div>
                                         <div>
                                             <p class="flex items-start gap-1 text-sm text-gray-500"><User class="h-4 w-4" />Client</p>
-                                            <p class="font-medium">
-                                                {{ ticket.client?.firstname || 'Pas défini' }}
-                                            </p>
+
+                                            <Link
+                                                v-if="ticket.client"
+                                                :href="route('client.edit', ticket.client.id)"
+                                                class="font-medium duration-200 hover:cursor-pointer hover:text-teal-600"
+                                            >
+                                                {{ ticket.client?.firstname }}
+                                            </Link>
+                                            <p v-else class="font-medium">Client non défini</p>
                                         </div>
                                     </div>
 

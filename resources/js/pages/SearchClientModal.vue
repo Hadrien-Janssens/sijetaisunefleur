@@ -3,8 +3,9 @@ import { Button } from '@/components/ui/button';
 import Card from '@/components/ui/card/Card.vue';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import Input from '@/components/ui/input/Input.vue';
+import { computed, ref } from 'vue';
 
-defineProps<{
+const props = defineProps<{
     show: boolean;
     clients: Array<{
         id: number;
@@ -14,7 +15,23 @@ defineProps<{
     }>;
 }>();
 
-const emit = defineEmits(['close']);
+const emit = defineEmits(['close', 'validation']);
+
+const searchTerm = ref('');
+
+const selectedClient = ref(null);
+
+const filteredClients = computed(() => {
+    if (!searchTerm.value) return props.clients;
+
+    const search = searchTerm.value.toLowerCase();
+    return props.clients.filter(
+        (client) =>
+            client.firstname.toLowerCase().includes(search) ||
+            client.email.toLowerCase().includes(search) ||
+            client.lastname.toLowerCase().includes(search),
+    );
+});
 </script>
 
 <template>
@@ -26,12 +43,18 @@ const emit = defineEmits(['close']);
                 <DialogDescription class="flex flex-col gap-4">
                     <p>Sélectionne un client pour lui assigner une facture</p>
                     <div class="flex items-center gap-2">
-                        <Input class="basis-1/2" placeholder="Recherche" />
+                        <Input v-model="searchTerm" class="basis-1/2" placeholder="Recherche" />
                         <Button class="grow" variant="teal" @click="emit('close')">Nouveau</Button>
                     </div>
                     <Card class="h-48 overflow-y-auto">
-                        <div v-if="clients.length" class="flex flex-col gap-2 p-3">
-                            <div v-for="client in clients" :key="client.id" class="cursor-pointer rounded p-2 hover:bg-gray-100">
+                        <div v-if="filteredClients.length" class="flex flex-col gap-2 p-3">
+                            <div
+                                v-for="client in filteredClients"
+                                :key="client.id"
+                                class="cursor-pointer rounded p-2 duration-300 hover:bg-gray-100"
+                                :class="{ 'bg-teal-600 text-white hover:bg-teal-600': selectedClient === client }"
+                                @click="selectedClient = client"
+                            >
                                 <div class="flex justify-between font-medium">
                                     <div class="flex gap-2 font-medium">
                                         <div>{{ client.lastname }}</div>
@@ -49,7 +72,7 @@ const emit = defineEmits(['close']);
 
             <DialogFooter>
                 <Button variant="secondary" @click="emit('close')">Annuler</Button>
-                <Button variant="teal" @click="emit('close')">Valider</Button>
+                <Button variant="teal" @click="emit('validation', selectedClient)">Valider</Button>
             </DialogFooter>
         </DialogContent>
     </Dialog>

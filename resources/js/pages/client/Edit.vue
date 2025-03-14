@@ -3,7 +3,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import AppLayout from '@/layouts/AppLayout.vue';
-import { Head, Link, useForm } from '@inertiajs/vue3';
+import { type BreadcrumbItem } from '@/types';
+import { Head, useForm } from '@inertiajs/vue3';
 import { ArrowLeft, Building, ContactRound, Hash, Mail, MapPin, Phone } from 'lucide-vue-next';
 
 const props = defineProps<{
@@ -33,18 +34,31 @@ const form = useForm({
     country: props.client.country,
 });
 
+const breadcrumbs: BreadcrumbItem[] = [
+    {
+        title: 'clients',
+        href: route('client.index'),
+    },
+    {
+        title: 'Modification',
+        href: '/edit',
+    },
+];
+
 const submit = () => {
     form.put(route('client.update', props.client.id));
+};
+
+const goBack = () => {
+    window.history.back();
 };
 </script>
 
 <template>
     <Head title="Modification d'un client" />
-    <AppLayout>
+    <AppLayout :breadcrumbs="breadcrumbs">
         <div class="container z-10 mx-auto p-6">
-            <Link :href="route('client.index')">
-                <Button variant="teal" class="mb-3"><ArrowLeft /> Retour</Button>
-            </Link>
+            <Button @click="goBack" variant="teal" class="mb-3"><ArrowLeft /> Retour</Button>
             <Card class="w-full bg-gradient-to-br from-white to-gray-50/80">
                 <form @submit.prevent="submit">
                     <CardHeader>

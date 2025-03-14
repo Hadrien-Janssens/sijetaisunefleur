@@ -2,7 +2,16 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import AppLayout from '@/layouts/AppLayout.vue';
+import { type BreadcrumbItem } from '@/types';
+import { Head } from '@inertiajs/vue3';
 import { Package } from 'lucide-vue-next';
+
+const breadcrumbs: BreadcrumbItem[] = [
+    {
+        title: 'articles',
+        href: '/articles',
+    },
+];
 
 defineProps({
     categories: {
@@ -12,7 +21,8 @@ defineProps({
 </script>
 
 <template>
-    <AppLayout>
+    <Head title="Articles" />
+    <AppLayout :breadcrumbs="breadcrumbs">
         <Package class="fixed mt-10 h-screen w-full text-stone-100" />
         <div class="container z-10 mx-auto p-6">
             <div class="mb-6 flex items-center justify-between">

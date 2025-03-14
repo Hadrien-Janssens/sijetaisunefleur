@@ -37,6 +37,8 @@ class TicketController extends Controller
         // dd($request->ticket);
         $ticketRows = $request->ticket;
         $ticket = Ticket::create();
+        $ticket->client_id = $request->client_id;
+        $ticket->save();
 
         foreach ($ticketRows as $key => $row) {
 
@@ -44,7 +46,7 @@ class TicketController extends Controller
             $ticketRow->ticket_id = $ticket->id;
             $ticketRow->price = $row['price'];
             $ticketRow->quantity = $row['quantity'];
-            $ticketRow->category_id = $row['name'];
+            $ticketRow->category_id = $row['category_id'];
 
             $ticketRow->save();
         }

@@ -2,12 +2,16 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { useToast } from '@/components/ui/toast';
+import Toaster from '@/components/ui/toast/Toaster.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Link, router } from '@inertiajs/vue3';
 import { Building, ContactRound, Flower, Hash, Mail, MapPin, Phone, Search } from 'lucide-vue-next';
 import { computed, reactive, ref } from 'vue';
 import CreateClientModal from './partials/CreateClientModal.vue';
+
+const { toast } = useToast();
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -106,6 +110,19 @@ const handleCreateClient = (clientData: any) => {
                     </Link>
                 </Card>
             </div>
+            <button
+                @click="
+                    () => {
+                        toast({
+                            title: 'Scheduled: Catch up',
+                            description: 'Friday, February 10, 2023 at 5:57 PM',
+                        });
+                    }
+                "
+            >
+                Test Log
+            </button>
+            <Toaster />
         </div>
     </AppLayout>
 </template>

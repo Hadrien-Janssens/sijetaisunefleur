@@ -34,7 +34,7 @@ class ClientController extends Controller
     {
         Client::create($request->all());
 
-        return redirect()->back();
+        return redirect()->back()->with('success', 'Client ajouté avec succès');
     }
 
     /**
