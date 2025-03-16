@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('tickets', function (Blueprint $table) {
             $table->id();
             $table->timestamps();
-            $table->boolean('with_invoice')->default(false);
+            // $table->boolean('with_invoice')->default(false);
             $table->boolean('is_sent')->default(false);
             $table->boolean('is_paid')->default(true);
             $table->foreignId('client_id')->nullable()->constrained()->onDelete('set null');

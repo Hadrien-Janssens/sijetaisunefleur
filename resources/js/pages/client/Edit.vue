@@ -105,6 +105,8 @@ const goBack = () => {
                     </CardContent>
                 </form>
             </Card>
+
+            <!--  All tickets of this client  -->
         </div>
     </AppLayout>
 </template>

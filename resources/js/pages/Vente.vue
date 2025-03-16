@@ -7,7 +7,7 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { Barcode, CalendarDays, ChevronDown, ChevronUp, Clock, Flower, ShoppingBag, User } from 'lucide-vue-next';
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import { getHour } from '../lib/utils';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -28,7 +28,36 @@ interface Ticket {
 
 const props = defineProps<{
     tickets: Ticket | null;
+    filters: {
+        search: string;
+        withInvoice?: boolean;
+        date?: string;
+    };
 }>();
+
+const searchQuery = ref(props.filters.search || '');
+const withInvoice = ref(props.filters.withInvoice || false);
+const selectedDate = ref(props.filters.date || '');
+
+const performSearch = () => {
+    router.get(
+        '/vente',
+        {
+            search: searchQuery.value,
+            withInvoice: withInvoice.value,
+            date: selectedDate.value,
+        },
+        {
+            preserveState: true,
+            preserveScroll: true,
+            replace: true,
+        },
+    );
+};
+
+watch([searchQuery, withInvoice, selectedDate], () => {
+    performSearch();
+});
 
 const visit = (url: string) => {
     router.visit(url, {
@@ -79,12 +108,21 @@ console.log(props.tickets);
                     <p>Année</p>
                 </div>
             </div>
+            <!-- SEARCHBAR -->
+            <input
+                type="text"
+                v-model="searchQuery"
+                @input="performSearch"
+                placeholder="Rechercher par référence ou client..."
+                class="rounded-md border border-gray-300 p-2"
+            />
+
             <div class="flex items-center justify-between space-x-2">
                 <div class="flex items-center space-x-2">
-                    <Switch id="invoice" />
+                    <Switch id="invoice" v-model="withInvoice" />
                     <Label for="invoice">Avec facture</Label>
                 </div>
-                <input type="date" class="rounded-md border border-gray-300 p-2" />
+                <input type="date" v-model="selectedDate" class="rounded-md border border-gray-300 p-2" />
             </div>
             <div v-if="tickets?.data?.length" class="mt-4 space-y-3">
                 <div v-for="ticket in tickets.data" :key="ticket.id" class="transition-all duration-300 ease-in-out">

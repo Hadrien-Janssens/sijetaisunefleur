@@ -76,8 +76,8 @@ const validation = () => {
     if (isInPaiyment.value) {
         deleteCurrentRow();
         isInPaiyment.value = false;
-        selectedClient.value = null;
         sendTicket();
+        selectedClient.value = null;
         ticket.value = [];
         return;
     }

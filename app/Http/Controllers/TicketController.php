@@ -12,12 +12,38 @@ class TicketController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
 
+        // Récupérer la requête de recherche
+        $search = $request->input('search');
+        $withInvoice = $request->input('withInvoice');
+
+        // Construire la requête des tickets
+        $query = Ticket::with(['ticketRows', 'client'])
+            ->orderBy('created_at', 'desc');
+
+        // Appliquer la recherche si un terme est présent
+        if (!empty($search)) {
+            $query->where('reference', 'like', "%$search%")
+                ->orWhereHas('client', function ($q) use ($search) {
+                    $q->where('firstname', 'like', "%$search%")
+                        ->orWhere('lastname', 'like', "%$search%");
+                });
+        }
+
+        if ($withInvoice === 'true') {
+            $query->where('with_invoice', true);
+        }
+
+        if ($request->date) {
+            $query->whereDate('created_at', $request->date);
+        }
+
         return inertia('Vente', [
-            'tickets' => Ticket::with(['ticketRows', 'client'])->orderBy('created_at', 'desc')->paginate(10),
+            'tickets' => $query->paginate(10)->withQueryString(), // Garde les filtres dans l'URL
             'clients' => Client::all(),
+            'filters' => $request->only('search'), // Garde la recherche en mémoire pour le front
         ]);
     }
 
