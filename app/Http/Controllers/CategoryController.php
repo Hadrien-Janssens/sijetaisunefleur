@@ -32,7 +32,12 @@ class CategoryController extends Controller
      */
     public function store(Request $request)
     {
-        //
+
+        Category::create([
+            'name' => $request->name,
+        ]);
+
+        return redirect()->back();
     }
 
     /**
@@ -64,6 +69,8 @@ class CategoryController extends Controller
      */
     public function destroy(Category $category)
     {
-        //
+        $category->delete();
+
+        return redirect()->route('article.index')->with('success', 'article supprimé avec succès');
     }
 }

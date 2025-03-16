@@ -3,7 +3,9 @@ import { Button } from '@/components/ui/button';
 import Card from '@/components/ui/card/Card.vue';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import Input from '@/components/ui/input/Input.vue';
-import { computed, ref } from 'vue';
+import { router } from '@inertiajs/vue3';
+import { computed, reactive, ref } from 'vue';
+import CreateClientModal from '../components/CreateClientModal.vue';
 
 const props = defineProps<{
     show: boolean;
@@ -32,9 +34,18 @@ const filteredClients = computed(() => {
             client.lastname.toLowerCase().includes(search),
     );
 });
+
+const isCreateClientModalOpen = ref(false);
+
+const handleCreateClient = (clientData: any) => {
+    const form = reactive(clientData);
+    router.post(route('client.store'), form);
+    isCreateClientModalOpen.value = false;
+};
 </script>
 
 <template>
+    <CreateClientModal :show="isCreateClientModalOpen" @close="isCreateClientModalOpen = false" @create="handleCreateClient" class="z-50" />
     <Dialog :open="show" @update:open="emit('close')">
         <!-- <DialogTrigger> Edit Profile </DialogTrigger> -->
         <DialogContent>
@@ -44,7 +55,17 @@ const filteredClients = computed(() => {
                     <p>Sélectionne un client pour lui assigner une facture</p>
                     <div class="flex items-center gap-2">
                         <Input v-model="searchTerm" class="basis-1/2" placeholder="Recherche" />
-                        <Button class="grow" variant="teal" @click="emit('close')">Nouveau</Button>
+                        <Button
+                            class="grow"
+                            variant="teal"
+                            @click="
+                                () => {
+                                    emit('close');
+                                    isCreateClientModalOpen = true;
+                                }
+                            "
+                            >Nouveau</Button
+                        >
                     </div>
                     <Card class="h-48 overflow-y-auto">
                         <div v-if="filteredClients.length" class="flex flex-col gap-2 p-3">

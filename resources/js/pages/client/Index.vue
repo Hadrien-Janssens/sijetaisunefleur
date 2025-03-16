@@ -9,7 +9,7 @@ import { type BreadcrumbItem } from '@/types';
 import { Link, router } from '@inertiajs/vue3';
 import { Building, ContactRound, Flower, Hash, Mail, MapPin, Phone, Search } from 'lucide-vue-next';
 import { computed, reactive, ref } from 'vue';
-import CreateClientModal from './partials/CreateClientModal.vue';
+import CreateClientModal from '../../components/CreateClientModal.vue';
 
 const { toast } = useToast();
 

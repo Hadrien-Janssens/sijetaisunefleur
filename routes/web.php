@@ -29,11 +29,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('client/{client}', [ClientController::class, 'edit'])->name('client.edit');
     Route::post('client', [ClientController::class, 'store'])->name('client.store');
     Route::put('client/{client}', [ClientController::class, 'update'])->name('client.update');
+    Route::delete('client/{client}', [ClientController::class, 'destroy'])->name('client.destroy');
+
 
     Route::get('vente', [TicketController::class, 'index'])->name('vente.index');
     Route::post('ticket', [TicketController::class, 'store'])->name('ticket.store');
 
     Route::get('article', [CategoryController::class, 'index'])->name('article.index');
+    Route::post('article', [CategoryController::class, 'store'])->name('article.store');
+    Route::delete('article/{category}', [CategoryController::class, 'destroy'])->name('article.destroy');
 });
 
 

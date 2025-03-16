@@ -69,6 +69,12 @@ class ClientController extends Controller
      */
     public function destroy(Client $client)
     {
-        //
+
+        $clientFirstname = $client->firstname;
+        $clientLastname = $client->lastname;
+
+        $client->delete();
+
+        return redirect()->route('client.index')->with('success', 'Client supprimé avec succès');
     }
 }

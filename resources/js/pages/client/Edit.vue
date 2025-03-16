@@ -1,11 +1,13 @@
 <script setup lang="ts">
+import DeleteConfirmationModal from '@/components/DeleteConfirmationModal.vue';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, useForm } from '@inertiajs/vue3';
 import { ArrowLeft, Building, ContactRound, Hash, Mail, MapPin, Phone } from 'lucide-vue-next';
+import { ref } from 'vue';
 
 const props = defineProps<{
     client: {
@@ -51,6 +53,13 @@ const submit = () => {
 
 const goBack = () => {
     window.history.back();
+};
+
+const showDeleteModal = ref(false);
+
+const confirmDelete = () => {
+    form.delete(route('client.destroy', props.client.id));
+    showDeleteModal.value = false;
 };
 </script>
 
@@ -99,11 +108,14 @@ const goBack = () => {
                                 </div>
                             </div>
                         </div>
-                        <div class="flex justify-end pt-4">
-                            <Button variant="teal" type="submit" :disabled="form.processing">Sauvegarder</Button>
-                        </div>
                     </CardContent>
                 </form>
+                <CardFooter class="m-3 flex items-center justify-end gap-3">
+                    <DeleteConfirmationModal v-model:open="showDeleteModal" @delete="confirmDelete" />
+                    <div class="flex justify-end">
+                        <Button variant="teal" type="submit" :disabled="form.processing">Sauvegarder</Button>
+                    </div>
+                </CardFooter>
             </Card>
 
             <!--  All tickets of this client  -->

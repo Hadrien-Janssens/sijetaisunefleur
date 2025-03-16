@@ -1,10 +1,13 @@
 <script setup lang="ts">
+import CreateCategoryModal from '@/components/CreateCategoryModal.vue';
+import DeleteConfirmationModal from '@/components/DeleteConfirmationModal.vue';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
-import { Head } from '@inertiajs/vue3';
+import { Head, router } from '@inertiajs/vue3';
 import { Package } from 'lucide-vue-next';
+import { reactive, ref } from 'vue';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -18,6 +21,26 @@ defineProps({
         type: Array,
     },
 });
+
+const openCategoryModal = ref(false);
+
+const createCategory = (clientData: any) => {
+    const form = reactive(clientData);
+    router.post(route('article.store'), form);
+    openCategoryModal.value = false;
+};
+
+// Remplacer la variable showDeleteModal simple par un Map
+const deleteModalStates = ref(new Map());
+
+const toggleDeleteModal = (id: number, value: boolean) => {
+    deleteModalStates.value.set(id, value);
+};
+
+const confirmDelete = (id: number) => {
+    router.delete(route('article.destroy', id));
+    toggleDeleteModal(id, false);
+};
 </script>
 
 <template>
@@ -27,7 +50,8 @@ defineProps({
         <div class="container z-10 mx-auto p-6">
             <div class="mb-6 flex items-center justify-between">
                 <h1 class="text-3xl font-bold">Articles</h1>
-                <Button variant="teal">Ajouter un article</Button>
+                <CreateCategoryModal :show="openCategoryModal" @close="openCategoryModal = false" @create="createCategory" />
+                <Button variant="teal" @click="openCategoryModal = true">Ajouter un article</Button>
             </div>
 
             <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -44,7 +68,13 @@ defineProps({
                             </div>
                         </CardTitle>
                     </CardHeader>
-                    <CardContent class="space-y-4"> </CardContent>
+                    <CardContent class="flex w-full justify-end space-y-4">
+                        <DeleteConfirmationModal
+                            :open="deleteModalStates.get(category.id) || false"
+                            @update:open="(value) => toggleDeleteModal(category.id, value)"
+                            @delete="confirmDelete(category.id)"
+                        />
+                    </CardContent>
                 </Card>
             </div>
         </div>
