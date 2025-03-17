@@ -25,9 +25,11 @@ class DatabaseSeeder extends Seeder
 
         Category::factory()->create([
             'name' => 'Décoration',
+            'tva' => 21,
         ]);
         Category::factory()->create([
             'name' => 'Fleurs',
+            'tva' => 6,
         ]);
 
         Client::factory(10)->create();

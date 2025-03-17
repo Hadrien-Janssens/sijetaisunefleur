@@ -17,7 +17,7 @@ class TicketFactory extends Factory
     public function definition(): array
     {
         return [
-            'with_invoice' => fake()->boolean(),
+            // 'with_invoice' => fake()->boolean(),
             'is_sent' => fake()->boolean(),
             'is_paid' => fake()->boolean(),
             'client_id' => fake()->numberBetween(1, 10),

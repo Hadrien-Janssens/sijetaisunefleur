@@ -109,13 +109,13 @@ const confirmDelete = () => {
                             </div>
                         </div>
                     </CardContent>
+                    <CardFooter class="m-3 flex items-center justify-end gap-3">
+                        <DeleteConfirmationModal v-model:open="showDeleteModal" @delete="confirmDelete" />
+                        <div class="flex justify-end">
+                            <Button variant="teal" type="submit" :disabled="form.processing">Sauvegarder</Button>
+                        </div>
+                    </CardFooter>
                 </form>
-                <CardFooter class="m-3 flex items-center justify-end gap-3">
-                    <DeleteConfirmationModal v-model:open="showDeleteModal" @delete="confirmDelete" />
-                    <div class="flex justify-end">
-                        <Button variant="teal" type="submit" :disabled="form.processing">Sauvegarder</Button>
-                    </div>
-                </CardFooter>
             </Card>
 
             <!--  All tickets of this client  -->

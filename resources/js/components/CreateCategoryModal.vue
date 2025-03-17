@@ -12,12 +12,14 @@ const emit = defineEmits(['close', 'create']);
 
 const formData = ref({
     name: '',
+    tva: '',
 });
 
 const handleSubmit = () => {
     emit('create', formData.value);
     formData.value = {
         name: '',
+        tva: '',
     };
 };
 </script>
@@ -33,6 +35,10 @@ const handleSubmit = () => {
                     <div class="space-y-2">
                         <label>Nom</label>
                         <Input v-model="formData.name" required />
+                    </div>
+                    <div class="space-y-2">
+                        <label>Tva</label>
+                        <Input type="number" v-model="formData.tva" required />
                     </div>
                 </div>
 

@@ -34,7 +34,11 @@ class ClientController extends Controller
     {
         Client::create($request->all());
 
-        return redirect()->back()->with('success', 'Client ajouté avec succès');
+        $firstname = $request->firstname;
+        $lastname = $request->lastname;
+        $message = "$firstname $lastname a été ajouté à la liste des clients";
+
+        return redirect()->back()->with('success', $message);
     }
 
     /**
@@ -60,8 +64,9 @@ class ClientController extends Controller
     public function update(Request $request, Client $client)
     {
         $client->update($request->all());
+        $message = "La fiche de $client->firstname $client->lastname a été modifié";
 
-        return redirect()->route('client.index');
+        return redirect()->route('client.index')->with('success', $message);
     }
 
     /**
@@ -73,8 +78,10 @@ class ClientController extends Controller
         $clientFirstname = $client->firstname;
         $clientLastname = $client->lastname;
 
+        $message = "$clientFirstname $clientLastname a été supprimé";
+
         $client->delete();
 
-        return redirect()->route('client.index')->with('success', 'Client supprimé avec succès');
+        return redirect()->route('client.index')->with('success', $message);
     }
 }

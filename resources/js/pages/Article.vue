@@ -64,7 +64,9 @@ const confirmDelete = (id: number) => {
                         <CardTitle class="flex items-start gap-2 text-gray-600">
                             <Package class="h-5 w-5" />
                             <div>
-                                <p>{{ category.name }}</p>
+                                <p>
+                                    {{ category.name }} <span class="text-sm italic text-gray-500">({{ category.tva }}%)</span>
+                                </p>
                             </div>
                         </CardTitle>
                     </CardHeader>
@@ -75,6 +77,7 @@ const confirmDelete = (id: number) => {
                             @delete="confirmDelete(category.id)"
                         />
                     </CardContent>
+                    <CardFooter> </CardFooter>
                 </Card>
             </div>
         </div>

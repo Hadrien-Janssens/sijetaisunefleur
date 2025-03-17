@@ -35,9 +35,10 @@ class CategoryController extends Controller
 
         Category::create([
             'name' => $request->name,
+            'tva' => $request->tva
         ]);
 
-        return redirect()->back();
+        return redirect()->back()->with('success', 'Article ajouté avec succès');
     }
 
     /**
