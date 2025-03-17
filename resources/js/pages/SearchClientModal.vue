@@ -3,7 +3,11 @@ import { Button } from '@/components/ui/button';
 import Card from '@/components/ui/card/Card.vue';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import Input from '@/components/ui/input/Input.vue';
+import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
+import { Switch } from '@/components/ui/switch';
 import { router } from '@inertiajs/vue3';
+import { ClipboardList } from 'lucide-vue-next';
 import { computed, reactive, ref } from 'vue';
 import CreateClientModal from '../components/CreateClientModal.vue';
 
@@ -20,8 +24,8 @@ const props = defineProps<{
 const emit = defineEmits(['close', 'validation']);
 
 const searchTerm = ref('');
-
 const selectedClient = ref(null);
+const withTVA = ref(false);
 
 const filteredClients = computed(() => {
     if (!searchTerm.value) return props.clients;
@@ -50,11 +54,22 @@ const handleCreateClient = (clientData: any) => {
         <!-- <DialogTrigger> Edit Profile </DialogTrigger> -->
         <DialogContent>
             <DialogHeader>
-                <DialogTitle>Facture client</DialogTitle>
+                <DialogTitle class="mb-5 flex items-center gap-3">
+                    <ClipboardList class="text-teal-600" />
+                    <div>Facture client</div>
+                    <Switch id="withTVA" v-model="withTVA" class="ml-10" />
+                    <Label for="withTVA" class="text-sm">TVA</Label>
+                </DialogTitle>
                 <DialogDescription class="flex flex-col gap-4">
-                    <p>Sélectionne un client pour lui assigner une facture</p>
+                    <Label for="email">Envoie une facture sans enregistremment </Label>
+                    <Input id="email" type="text" placeholder="exemple@email.com" />
+                </DialogDescription>
+
+                <Separator class="my-4" label="Ou" />
+                <DialogDescription class="flex flex-col gap-4">
+                    <Label for="search">Sélectionne un client pour lui assigner une facture</Label>
                     <div class="flex items-center gap-2">
-                        <Input v-model="searchTerm" class="basis-1/2" placeholder="Recherche" />
+                        <Input id="search" v-model="searchTerm" class="basis-1/2" placeholder="Recherche" />
                         <Button
                             class="grow"
                             variant="teal"

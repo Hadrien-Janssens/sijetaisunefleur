@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button';
 import Card from '@/components/ui/card/Card.vue';
+import { Input } from '@/components/ui/input';
 import Label from '@/components/ui/label/Label.vue';
 import Switch from '@/components/ui/switch/Switch.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
@@ -37,7 +38,7 @@ const props = defineProps<{
 
 const searchQuery = ref(props.filters.search || '');
 const withInvoice = ref(props.filters.withInvoice || false);
-const selectedDate = ref(props.filters.date || '');
+const selectedDate = ref(props.filters.date || new Date().toISOString().split('T')[0]);
 
 const performSearch = () => {
     router.get(
@@ -55,9 +56,13 @@ const performSearch = () => {
     );
 };
 
-watch([searchQuery, withInvoice, selectedDate], () => {
-    performSearch();
-});
+watch(
+    [searchQuery, withInvoice, selectedDate],
+    () => {
+        performSearch();
+    },
+    { immediate: true },
+);
 
 const visit = (url: string) => {
     router.visit(url, {
@@ -71,7 +76,7 @@ const getTicketPrice = (ticket: any) => {
     ticket.ticket_rows.forEach((row: object) => {
         totalPrice += row.price * row.quantity;
     });
-    return totalPrice;
+    return totalPrice.toFixed(2);
 };
 
 const expandedTicketId = ref<number | null>(null);
@@ -92,7 +97,6 @@ const formatDate = (dateString: string) => {
         day: 'numeric',
     });
 };
-console.log(props.tickets);
 </script>
 <template>
     <Head title="Ventes" />
@@ -109,12 +113,12 @@ console.log(props.tickets);
                 </div>
             </div>
             <!-- SEARCHBAR -->
-            <input
+            <Input
                 type="text"
                 v-model="searchQuery"
                 @input="performSearch"
-                placeholder="Rechercher par référence ou client..."
-                class="rounded-md border border-gray-300 p-2"
+                placeholder="Recherche des tickets par client"
+                class="mb-3 rounded-md border border-gray-300 p-2"
             />
 
             <div class="flex items-center justify-between space-x-2">
@@ -139,6 +143,7 @@ console.log(props.tickets);
                                     <p class="flex items-center gap-2 font-medium"><Barcode class="h-4 w-4 text-teal-600" /> N° {{ ticket.id }}</p>
                                 </div>
                                 <div class="text-gray-600">|</div>
+
                                 <div>
                                     <p class="font-medium">Total : {{ getTicketPrice(ticket) }}€</p>
                                 </div>
@@ -195,7 +200,7 @@ console.log(props.tickets);
                                                 <span>{{ row.product_name || `Article #${index + 1}` }}</span>
                                                 <span class="text-sm text-gray-500">{{ row.price }}€ x{{ row.quantity }}</span>
                                             </div>
-                                            <span class="font-medium">{{ row.price * row.quantity }}€</span>
+                                            <span class="font-medium">{{ (row.price * row.quantity).toFixed(2) }}€</span>
                                         </div>
                                     </div>
 

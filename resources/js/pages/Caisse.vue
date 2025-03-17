@@ -199,25 +199,13 @@ const hasSelectedClient = computed({
                 <div class="flex h-20 w-full items-center border-b">
                     <div class="flex w-full items-center justify-between p-3">
                         <SearchClientModal
-                            v-if="selectedClient === null"
                             :show="isModalOpen"
                             :clients="clients"
                             @close="isModalOpen = false"
                             @validation="setSelectedClient($event)"
                         />
 
-                        <div
-                            class="flex items-center space-x-2"
-                            @click="
-                                () => {
-                                    if (hasSelectedClient) {
-                                        hasSelectedClient = false;
-                                    } else {
-                                        isModalOpen = true;
-                                    }
-                                }
-                            "
-                        >
+                        <div class="flex items-center space-x-2">
                             <Switch id="invoice" v-model="hasSelectedClient" />
                             <Label for="invoice">Facture</Label>
                         </div>
