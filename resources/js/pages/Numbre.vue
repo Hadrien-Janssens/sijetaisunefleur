@@ -58,10 +58,10 @@ const stats = [
             <div class="mb-8 flex items-center justify-between">
                 <h1 class="text-3xl font-bold">Tableau de bord</h1>
                 <div class="flex items-center gap-2">
-                    <button class="rounded-lg px-4 py-2 font-medium hover:bg-gray-100">Jour</button>
+                    <button class="rounded-lg bg-teal-600 px-4 py-2 font-medium text-white">Jour</button>
                     <button class="rounded-lg px-4 py-2 font-medium hover:bg-gray-100">Semaine</button>
                     <button class="rounded-lg px-4 py-2 font-medium hover:bg-gray-100">Mois</button>
-                    <button class="rounded-lg bg-teal-600 px-4 py-2 font-medium text-white">Année</button>
+                    <button class="rounded-lg px-4 py-2 font-medium hover:bg-gray-100">Année</button>
                 </div>
             </div>
 

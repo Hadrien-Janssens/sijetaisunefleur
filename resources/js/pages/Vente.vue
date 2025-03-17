@@ -113,11 +113,11 @@ const downloadFile = () => {
                     <button @click="downloadFile" class="text-teal-600 hover:text-teal-700"><Printer class="h-6 w-6" /></button>
                 </h1>
 
-                <div class="flex items-center gap-4">
-                    <p>Jour</p>
-                    <p>Semaine</p>
-                    <p>Mois</p>
-                    <p>Année</p>
+                <div class="flex items-center gap-2">
+                    <button class="rounded-lg bg-teal-600 px-4 py-2 font-medium text-white">Jour</button>
+                    <button class="rounded-lg px-4 py-2 font-medium hover:bg-gray-100">Semaine</button>
+                    <button class="rounded-lg px-4 py-2 font-medium hover:bg-gray-100">Mois</button>
+                    <button class="rounded-lg px-4 py-2 font-medium hover:bg-gray-100">Année</button>
                 </div>
             </div>
             <!-- SEARCHBAR -->
@@ -140,8 +140,8 @@ const downloadFile = () => {
                 <div v-for="ticket in tickets.data" :key="ticket.id" class="transition-all duration-300 ease-in-out">
                     <Card
                         :class="[
-                            'w-full bg-transparent from-white to-gray-50/80 p-4 shadow backdrop-blur-md transition-all duration-300 ease-in-out',
-                            expandedTicketId === ticket.id ? 'scale-102 shadow-lg' : 'hover:-translate-y-1 hover:shadow-md',
+                            'w-full bg-transparent from-white to-gray-50/80 p-4 shadow transition-all duration-300 ease-in-out',
+                            expandedTicketId === ticket.id ? 'scale-102 shadow-lg' : 'backdrop-blur-md hover:-translate-y-1 hover:shadow-md',
                         ]"
                         @click="toggleTicket(ticket.id)"
                     >
