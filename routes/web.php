@@ -38,6 +38,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('article', [CategoryController::class, 'index'])->name('article.index');
     Route::post('article', [CategoryController::class, 'store'])->name('article.store');
     Route::delete('article/{category}', [CategoryController::class, 'destroy'])->name('article.destroy');
+
+    Route::get('ticket/export/', [TicketController::class, 'export'])->name('ticket.export');
 });
 
 

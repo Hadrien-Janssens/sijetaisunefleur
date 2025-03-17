@@ -7,7 +7,7 @@ import Switch from '@/components/ui/switch/Switch.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/vue3';
-import { Barcode, CalendarDays, ChevronDown, ChevronUp, Clock, Flower, ShoppingBag, User } from 'lucide-vue-next';
+import { Barcode, CalendarDays, ChevronDown, ChevronUp, Clock, Flower, Printer, ShoppingBag, User } from 'lucide-vue-next';
 import { ref, watch } from 'vue';
 import { getHour } from '../lib/utils';
 
@@ -97,6 +97,9 @@ const formatDate = (dateString: string) => {
         day: 'numeric',
     });
 };
+const downloadFile = () => {
+    window.location.href = route('ticket.export');
+};
 </script>
 <template>
     <Head title="Ventes" />
@@ -104,7 +107,12 @@ const formatDate = (dateString: string) => {
         <Flower class="fixed mt-10 h-screen w-full text-teal-600 opacity-5" />
         <div class="container z-10 mx-auto p-6">
             <div class="mb-6 flex items-center justify-between">
-                <h1 class="text-3xl font-bold">Ventes</h1>
+                <h1 class="flex items-center gap-3 text-3xl font-bold">
+                    Ventes
+
+                    <button @click="downloadFile" class="text-teal-600 hover:text-teal-700"><Printer class="h-6 w-6" /></button>
+                </h1>
+
                 <div class="flex items-center gap-4">
                     <p>Jour</p>
                     <p>Semaine</p>

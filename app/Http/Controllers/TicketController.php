@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\TicketExport;
 use App\Models\Client;
 use App\Models\Ticket;
 use App\Models\Ticket_row;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 
 class TicketController extends Controller
 {
@@ -108,5 +110,10 @@ class TicketController extends Controller
     public function destroy(Ticket $ticket)
     {
         //
+    }
+
+    public function export()
+    {
+        return Excel::download(new TicketExport, 'tickets.xlsx');
     }
 }
