@@ -3,11 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Exports\TicketExport;
+use App\Mail\InvoiceMail;
 use App\Models\Client;
 use App\Models\Ticket;
 use App\Models\Ticket_row;
+use App\Notifications\TicketCreated;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Notification;
 use Maatwebsite\Excel\Facades\Excel;
 
 class TicketController extends Controller
@@ -83,6 +87,11 @@ class TicketController extends Controller
         if ($ticket->client_id) {
             // Send an email to the client
             $message = "La facture a été envoyé à " . $ticket->client->email;
+
+            $pdf = Pdf::loadView('facture');
+
+            Mail::to('hadrien.janssens7@gmail.com')->send(new InvoiceMail($pdf->output(), "facture_.pdf"));
+
             return redirect()->route('caisse')->with('success', $message);
         }
 

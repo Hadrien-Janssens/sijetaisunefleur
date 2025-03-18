@@ -7,6 +7,16 @@ use App\Http\Controllers\TicketController;
 use Database\Seeders\TicketRowSeeder;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Mail;
+
+Route::get('/test-email', function () {
+    Mail::raw('Ceci est un test avec OVH', function ($message) {
+        $message->to('hadrien.janssens7@gmail.com')
+            ->subject('Test Laravel Mail avec OVH');
+    });
+
+    return 'Email envoyé !';
+});
 
 Route::get('/', function () {
     return Inertia::render('auth/Login');
