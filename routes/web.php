@@ -40,6 +40,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('article/{category}', [CategoryController::class, 'destroy'])->name('article.destroy');
 
     Route::get('ticket/export/', [TicketController::class, 'export'])->name('ticket.export');
+
+    Route::get('/facture/{ticketId}', [TicketController::class, 'generatePDF']);
 });
 
 

@@ -7,7 +7,7 @@ import Switch from '@/components/ui/switch/Switch.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/vue3';
-import { Barcode, CalendarDays, ChevronDown, ChevronUp, Clock, Flower, Printer, ShoppingBag, User } from 'lucide-vue-next';
+import { Barcode, CalendarDays, ChevronDown, ChevronUp, Clock, Flower, Printer, ShoppingBag, Ticket, User } from 'lucide-vue-next';
 import { ref, watch } from 'vue';
 import { getHour } from '../lib/utils';
 
@@ -35,6 +35,8 @@ const props = defineProps<{
         date?: string;
     };
 }>();
+
+console.log(props.tickets);
 
 const searchQuery = ref(props.filters.search || '');
 const withInvoice = ref(props.filters.withInvoice || false);

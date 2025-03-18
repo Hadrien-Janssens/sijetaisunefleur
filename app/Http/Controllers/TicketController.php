@@ -6,6 +6,7 @@ use App\Exports\TicketExport;
 use App\Models\Client;
 use App\Models\Ticket;
 use App\Models\Ticket_row;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -35,7 +36,7 @@ class TicketController extends Controller
         }
 
         if ($withInvoice === 'true') {
-            $query->where('with_invoice', true);
+            $query->where('client_id', '!=', null);
         }
 
         if ($request->date) {
@@ -62,7 +63,7 @@ class TicketController extends Controller
      */
     public function store(Request $request)
     {
-        // dd($request->ticket);
+        // dd($request->all());
         $ticketRows = $request->ticket;
         $ticket = Ticket::create();
         $ticket->client_id = $request->client_id;
@@ -78,6 +79,14 @@ class TicketController extends Controller
 
             $ticketRow->save();
         }
+
+        if ($ticket->client_id) {
+            // Send an email to the client
+            $message = "La facture a été envoyé à " . $ticket->client->email;
+            return redirect()->route('caisse')->with('success', $message);
+        }
+
+        return redirect()->route('caisse');
     }
 
     /**
@@ -115,5 +124,23 @@ class TicketController extends Controller
     public function export()
     {
         return Excel::download(new TicketExport, 'tickets.xlsx');
+    }
+
+    public function generatePDF($ticketId)
+    {
+        // Récupérer les données du ticket
+        // $ticket = Ticket::findOrFail($ticketId);
+
+        // Passer les données à la vue
+        // $data = ['ticket' => $ticket];
+
+        // Générer le PDF à partir de la vue Blade
+        // $pdf = Pdf::loadView('pdf.invoice', $data);
+        $pdf = Pdf::loadView('facture');
+        return $pdf->stream();
+
+        // Retourner le PDF en téléchargement
+        // return $pdf->download("facture_{$ticket->id}.pdf");
+        // return $pdf->download("facture_.pdf");
     }
 }
