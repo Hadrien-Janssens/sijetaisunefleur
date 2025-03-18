@@ -32,7 +32,7 @@ const props = defineProps<{
 const ticket = ref([]);
 
 const priceRow = ref<null | number>(null);
-const quantityRow = ref(1);
+const quantityRow = ref<number | null>(null);
 const category_idRow = ref(2);
 const setMultiplicatator = ref(false);
 const decimal = ref(false);
@@ -47,7 +47,11 @@ const getNameCategory = (id: number) => {
 
 const calculator = (number: number) => {
     if (setMultiplicatator.value) {
-        quantityRow.value = number;
+        if (quantityRow.value) {
+            quantityRow.value = quantityRow.value * 10 + number;
+        } else {
+            quantityRow.value = number;
+        }
         return;
     }
 
@@ -57,18 +61,18 @@ const calculator = (number: number) => {
     }
 
     if (decimal.value) {
-        priceRow.value = parseFloat((priceRow.value + number / 10).toFixed(2));
+        priceRow.value = priceRow.value + number / 10;
         decimal.value = false;
         centimal.value = true;
         return;
     }
     if (centimal.value) {
-        priceRow.value = parseFloat((priceRow.value + number / 100).toFixed(2));
+        priceRow.value = priceRow.value + number / 100;
         centimal.value = false;
         return;
     }
     if (priceRow.value) {
-        priceRow.value = parseFloat(priceRow.value * 10 + number).toFixed(2);
+        priceRow.value = priceRow.value * 10 + number;
     }
 };
 
@@ -87,20 +91,22 @@ const validation = () => {
             id: ticket.value.length + 1,
             category_id: category_idRow.value,
             price: priceRow.value,
-            quantity: quantityRow.value,
+            quantity: quantityRow.value ? quantityRow.value : 1,
             tva: tva.value,
         });
         priceRow.value = null;
-        quantityRow.value = 1;
+        quantityRow.value = null;
         setMultiplicatator.value = false;
     }
 };
 
 const deleteCurrentRow = () => {
     priceRow.value = null;
-    quantityRow.value = 1;
+    quantityRow.value = null;
     setMultiplicatator.value = false;
     isInPaiyment.value = false;
+    decimal.value = false;
+    centimal.value = false;
 };
 
 const deleteRow = (id: number) => {
@@ -177,7 +183,7 @@ const hasSelectedClient = computed({
                                 <span class="mr-3"
                                     >{{ getNameCategory(article.category_id) }} <span class="text-xs italic">({{ article.tva }}%)</span> :</span
                                 >
-                                {{ article.price }}€ X {{ article.quantity }} =
+                                {{ article.price.toFixed(2) }}€ X {{ article.quantity }} =
                                 <span class="font-bold">{{ (article.price * article.quantity).toFixed(2) }} €</span>
                             </p>
                         </li>
@@ -235,10 +241,10 @@ const hasSelectedClient = computed({
                 <div class="flex grow flex-col justify-end">
                     <div class="h-full w-full space-y-3 bg-slate-50 p-10 text-end text-4xl">
                         <p v-if="priceRow">
-                            {{ priceRow }}€ <span v-if="setMultiplicatator">X</span> <span v-if="quantityRow != 1">{{ quantityRow }}</span>
+                            {{ priceRow.toFixed(2) }}€ <span v-if="setMultiplicatator">X</span> <span v-if="quantityRow">{{ quantityRow }}</span>
                         </p>
                         <hr v-if="setMultiplicatator || isInPaiyment" />
-                        <p v-if="setMultiplicatator">= {{ (priceRow * quantityRow).toFixed(2) }}€</p>
+                        <p v-if="setMultiplicatator && quantityRow">= {{ (priceRow * quantityRow).toFixed(2) }}€</p>
                         <p v-if="isInPaiyment">à rendre : {{ diff }}€</p>
                     </div>
                     <div class="grid grid-cols-3 border-b border-t text-2xl font-extrabold text-teal-600">
@@ -287,7 +293,18 @@ const hasSelectedClient = computed({
                         <div class="flex h-20 items-center justify-center border-x bg-sidebar duration-300 hover:bg-slate-100" @click="calculator(0)">
                             0
                         </div>
-                        <div class="flex h-20 items-center justify-center bg-sidebar duration-300 hover:bg-slate-100" @click="decimal = true">,</div>
+                        <div
+                            class="flex h-20 items-center justify-center bg-sidebar duration-300 hover:bg-slate-100"
+                            @click="
+                                () => {
+                                    if (priceRow) {
+                                        decimal = true;
+                                    }
+                                }
+                            "
+                        >
+                            ,
+                        </div>
                     </div>
                 </div>
                 <footer class="flex h-20 items-center justify-between border-t">
