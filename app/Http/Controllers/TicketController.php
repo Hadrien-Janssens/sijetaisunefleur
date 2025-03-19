@@ -77,7 +77,7 @@ class TicketController extends Controller
         if ($request->client_id ? true : false) {
             $lastNumber = DB::table('tickets')->where('with_tva', true)->max('reference');
 
-            $reference =  ($lastNumber ? $lastNumber + 1 : 1) . 'A';
+            $reference =  ($lastNumber ? $lastNumber + 1 : 1);
         } else {
             $lastNumber = DB::table('tickets')->where('with_tva', false)->max('reference');
 
