@@ -207,7 +207,7 @@ const downloadFile = () => {
                                         >
                                             <div class="flex items-center gap-2">
                                                 <ShoppingBag class="h-4 w-4 text-gray-500" />
-                                                <span>{{ row.product_name || `Article #${index + 1}` }}</span>
+                                                <span>{{ row.category.name || `Article #${index + 1}` }}</span>
                                                 <span class="text-sm text-gray-500">{{ row.price }}€ x{{ row.quantity }}</span>
                                             </div>
                                             <span class="font-medium">{{ (row.price * row.quantity).toFixed(2) }}€</span>

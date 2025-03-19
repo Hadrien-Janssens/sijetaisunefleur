@@ -10,6 +10,7 @@ use App\Models\Ticket_row;
 use App\Notifications\TicketCreated;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Notification;
 use Maatwebsite\Excel\Facades\Excel;
@@ -27,7 +28,7 @@ class TicketController extends Controller
         $withInvoice = $request->input('withInvoice');
 
         // Construire la requête des tickets
-        $query = Ticket::with(['ticketRows', 'client'])
+        $query = Ticket::with(['ticketRows.category', 'client'])
             ->orderBy('created_at', 'desc');
 
         // Appliquer la recherche si un terme est présent
@@ -68,10 +69,27 @@ class TicketController extends Controller
     public function store(Request $request)
     {
         // dd($request->all());
+        $reference = '';
 
-        $ticket = Ticket::create();
-        $ticket->client_id = $request->client_id;
-        $ticket->save();
+
+        //attention c'est a changer
+        // if ($request->with_tva) {
+        if ($request->client_id ? true : false) {
+            $lastNumber = DB::table('tickets')->where('with_tva', true)->max('reference');
+
+            $reference =  ($lastNumber ? $lastNumber + 1 : 1) . 'A';
+        } else {
+            $lastNumber = DB::table('tickets')->where('with_tva', false)->max('reference');
+
+            $reference =  $lastNumber ? $lastNumber + 1 : 1;
+        };
+
+        $ticket = Ticket::create([
+            'client_id' => $request->client_id,
+            'with_tva' => $request->client_id ? true : false,
+            // 'with_tva' =>  $request->with_tva,
+            'reference' => $reference,
+        ]);
 
         $ticketRows = $request->ticket;
 
@@ -98,8 +116,7 @@ class TicketController extends Controller
 
             return redirect()->route('caisse')->with('success', $message);
         }
-        $message = "Un problème est survenu lors de l'envoi de la facture par email";
-        return redirect()->route('caisse')->with('success', $message);
+        return redirect()->route('caisse');
     }
 
     /**

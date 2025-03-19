@@ -15,6 +15,8 @@ class Ticket extends Model
         'is_sent',
         'is_paid',
         'client_id',
+        'reference',
+        'with_tva',
     ];
 
     public function client()

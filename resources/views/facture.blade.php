@@ -22,7 +22,7 @@
             </div>
 
             <div style="float: right; font-weight: bold; ">
-                <p>Facture n° {{ $ticket->created_at->format('Y') }}-054A</p>
+                <p>Facture n° {{ $ticket->created_at->format('Y') }}-{{ $ticket->reference }}</p>
                 <br><br>
                 <div style="width: 300px; word-wrap: break-word; line-height: 1.1em;">
                     <p>Client : {{ $ticket->client->company }} c/o {{ $ticket->client->firstname }}

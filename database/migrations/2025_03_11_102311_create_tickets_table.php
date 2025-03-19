@@ -14,9 +14,10 @@ return new class extends Migration
         Schema::create('tickets', function (Blueprint $table) {
             $table->id();
             $table->timestamps();
-            // $table->boolean('with_invoice')->default(false);
+            $table->integer('reference');
             $table->boolean('is_sent')->default(false);
             $table->boolean('is_paid')->default(true);
+            $table->boolean('with_tva')->default(false);
             $table->foreignId('client_id')->nullable()->constrained()->onDelete('set null');
         });
     }
