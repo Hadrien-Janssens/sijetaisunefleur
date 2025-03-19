@@ -68,10 +68,12 @@ class TicketController extends Controller
     public function store(Request $request)
     {
         // dd($request->all());
-        $ticketRows = $request->ticket;
+
         $ticket = Ticket::create();
         $ticket->client_id = $request->client_id;
         $ticket->save();
+
+        $ticketRows = $request->ticket;
 
         foreach ($ticketRows as $key => $row) {
 
@@ -83,19 +85,21 @@ class TicketController extends Controller
 
             $ticketRow->save();
         }
+        // dd($ticket = Ticket::with('ticketRows.category')->find($ticket->id));
 
         if ($ticket->client_id) {
             // Send an email to the client
             $message = "La facture a été envoyé à " . $ticket->client->email;
 
-            $pdf = Pdf::loadView('facture');
 
-            Mail::to('hadrien.janssens7@gmail.com')->send(new InvoiceMail($pdf->output(), "facture_.pdf"));
+            $pdf = Pdf::loadView('facture', ['ticket' => $ticket]);
+
+            Mail::to($ticket->client->email)->send(new InvoiceMail($pdf->output(), "facture.pdf"));
 
             return redirect()->route('caisse')->with('success', $message);
         }
-
-        return redirect()->route('caisse');
+        $message = "Un problème est survenu lors de l'envoi de la facture par email";
+        return redirect()->route('caisse')->with('success', $message);
     }
 
     /**

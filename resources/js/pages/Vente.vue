@@ -136,7 +136,7 @@ const downloadFile = () => {
                     <Switch id="invoice" v-model="withInvoice" />
                     <Label for="invoice">Avec facture</Label>
                 </div>
-                <input type="date" v-model="selectedDate" class="rounded-md border border-gray-300 p-2" />
+                <input type="date" lang="fr" v-model="selectedDate" class="rounded-md border border-gray-300 p-2" />
             </div>
             <div v-if="tickets?.data?.length" class="mt-4 space-y-3">
                 <div v-for="ticket in tickets.data" :key="ticket.id" class="transition-all duration-300 ease-in-out">

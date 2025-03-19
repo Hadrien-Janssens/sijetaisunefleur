@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Document</title>
+    <title>Facture client</title>
 </head>
 
 <body>
@@ -21,12 +21,15 @@
                 <p>BELFIUS IBAN : BE06 0688 9751 1422</p>
             </div>
 
-            <div style="float: right; font-weight: bold;">
-                <p>Facture n° 2024-054A</p>
+            <div style="float: right; font-weight: bold; ">
+                <p>Facture n° {{ $ticket->created_at->format('Y') }}-054A</p>
                 <br><br>
-                <p>Client : DFA1 c/o Charles Renard</p>
-                <p>Adesse : Noorderplaats 5 bus 2</p>
-                <p>2000 Antwerpen</p>
+                <div style="width: 300px; word-wrap: break-word; line-height: 1.1em;">
+                    <p>Client : {{ $ticket->client->company }} c/o {{ $ticket->client->firstname }}
+                        {{ $ticket->client->lastname }}</p>
+                    <p>Adresse : {{ $ticket->client->address }}</p>
+                    <p>{{ $ticket->client->city }}</p>
+                </div>
             </div>
         </div>
     </header>
@@ -35,9 +38,10 @@
     <table style="margin-top: 260px; border: 1px solid black; width: 100%;">
         <thead>
             <tr>
-                <th>Client : DFA </th>
-                <th>N° TVA : BE0 506 543 443 </th>
-                <th>Date : 28/03/2024</th>
+                <th>Client : {{ $ticket->client->company }} </th>
+                <th>N° TVA : {{ $ticket->client->tva_number }} </th>
+                <th>Date : {{ $ticket->created_at->format('Y-m-d') }}</th>
+
             </tr>
         </thead>
     </table>
@@ -54,48 +58,15 @@
             </tr>
         </thead>
         <tbody>
-            <tr>
-                <th>Décoration</th>
-                <th>1</th>
-                <th>€ 118,84</th>
-                <th>0%</th>
-                <th>€ 118,84</th>
-            </tr>
-            <tr>
-                <th></th>
-                <th></th>
-                <th>€ -</th>
-                <th></th>
-                <th>€ -</th>
-            </tr>
-            <tr>
-                <th></th>
-                <th></th>
-                <th>€ -</th>
-                <th></th>
-                <th>€ -</th>
-            </tr>
-            <tr>
-                <th></th>
-                <th></th>
-                <th>€ -</th>
-                <th></th>
-                <th>€ -</th>
-            </tr>
-            <tr>
-                <th></th>
-                <th></th>
-                <th>€ -</th>
-                <th></th>
-                <th>€ -</th>
-            </tr>
-            <tr>
-                <th></th>
-                <th></th>
-                <th>€ -</th>
-                <th></th>
-                <th>€ -</th>
-            </tr>
+            @foreach ($ticket->ticketRows as $row)
+                <tr>
+                    <th>{{ $row->category->name }}</th>
+                    <th>{{ $row->quantity }}</th>
+                    <th>€ {{ $row->price }}</th>
+                    <th>0%</th>
+                    <th>€ {{ $row->price * $row->quantity }}</th>
+                </tr>
+            @endforeach
         </tbody>
     </table>
 
