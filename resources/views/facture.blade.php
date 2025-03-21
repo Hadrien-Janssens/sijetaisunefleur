@@ -23,7 +23,7 @@
 
             <div style="float: right; font-weight: bold; ">
                 <p>Facture n°
-                    {{ $ticket->created_at->format('Y') }}-{{ $ticket->reference }}{{ $ticket->with_tva ? 'A' : '' }}
+                    {{ $ticket->created_at->format('Y') }}-{{ str_pad($ticket->reference, 3, '0', STR_PAD_LEFT) }}{{ $ticket->with_tva ? 'A' : '' }}
                 </p>
                 <br><br>
                 <div style="width: 300px; word-wrap: break-word; line-height: 1.1em;">

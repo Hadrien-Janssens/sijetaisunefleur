@@ -5,7 +5,7 @@ import { Switch } from '@/components/ui/switch';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/vue3';
-import { Ticket, Trash, UserCheck, UserRoundX } from 'lucide-vue-next';
+import { Building, Hash, Mail, MapPin, Phone, Ticket, Trash, UserCheck, UserRoundX } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 import SearchClientModal from './SearchClientModal.vue';
 
@@ -167,11 +167,21 @@ const hasSelectedClient = computed({
         <div class="flex h-full">
             <!-- LEFTSIDE -->
             <div class="flex basis-1/3 flex-col">
-                <div class="flex h-20 flex-col gap-2 border-b p-3">
-                    <h2 class="flex items-center gap-2"><Ticket class="text-teal-600" /> Ticket en cours</h2>
-                    <p v-if="selectedClient" class="flex items-center gap-2">
-                        <UserCheck class="text-blue-500" /> {{ selectedClient.lastname }} {{ selectedClient.firstname }}
-                    </p>
+                <div class="flex flex-col gap-2 border-b p-3">
+                    <h2 class="flex items-center gap-2"><Ticket class="text-primary-color" />Ticket en cours</h2>
+                    <div v-if="selectedClient">
+                        <p class="flex items-center gap-2">
+                            <UserCheck class="text-blue-500" /> {{ selectedClient.lastname }} {{ selectedClient.firstname }}
+                        </p>
+
+                        <p class="flex items-center gap-2"><Mail class="text-blue-500" /> {{ selectedClient.email }}</p>
+                        <p class="flex items-center gap-2"><Phone class="text-blue-500" /> {{ selectedClient.phone }}</p>
+                        <p class="flex items-center gap-2"><Building class="text-blue-500" /> {{ selectedClient.company }}</p>
+                        <p class="flex items-center gap-2"><Hash class="text-blue-500" /> {{ selectedClient.tva_number }}</p>
+                        <p class="flex items-center gap-2">
+                            <MapPin class="text-blue-500" /> {{ selectedClient.address }} {{ selectedClient.city }} {{ selectedClient.country }}
+                        </p>
+                    </div>
                     <p v-else class="flex items-center gap-2"><UserRoundX class="text-orange-500" /> Pas de client</p>
                 </div>
                 <div class="grow overflow-scroll overflow-y-auto p-3">
@@ -194,7 +204,7 @@ const hasSelectedClient = computed({
                         Total : <span class="font-bold">{{ total }}€</span>
                     </p>
                     <div
-                        class="flex h-full basis-1/2 items-center justify-center bg-orange-200 text-center font-extrabold text-orange-800 dark:bg-orange-950 dark:text-orange-400"
+                        class="flex h-full basis-1/2 items-center justify-center bg-blue-500 text-center font-extrabold text-blue-100 dark:bg-orange-950 dark:text-orange-400"
                         @click="paid"
                     >
                         Payer
@@ -239,62 +249,83 @@ const hasSelectedClient = computed({
                     </div>
                 </div>
                 <div class="flex grow flex-col justify-end">
-                    <div class="h-full w-full space-y-3 bg-slate-50 p-10 text-end text-4xl">
-                        <p v-if="priceRow">
-                            {{ priceRow.toFixed(2) }}€ <span v-if="setMultiplicatator">X</span> <span v-if="quantityRow">{{ quantityRow }}</span>
+                    <div class="h-full w-full bg-slate-50 pr-3 pt-3 text-end text-4xl">
+                        <p v-if="priceRow" class="text-4xl">
+                            {{ priceRow.toFixed(2) }}€ <span class="text-4xl" v-if="setMultiplicatator">X</span>
+                            <span v-if="quantityRow" class="text-4xl">{{ quantityRow }}</span>
                         </p>
-                        <hr v-if="setMultiplicatator || isInPaiyment" />
-                        <p v-if="setMultiplicatator && quantityRow">= {{ (priceRow * quantityRow).toFixed(2) }}€</p>
+                        <!-- <p v-if="setMultiplicatator && quantityRow">= {{ (priceRow * quantityRow).toFixed(2) }}€</p> -->
                         <p v-if="isInPaiyment">à rendre : {{ diff }}€</p>
                     </div>
-                    <div class="grid grid-cols-3 border-b border-t text-2xl font-extrabold text-teal-600">
-                        <div class="flex h-20 items-center justify-center border-b bg-sidebar duration-300 hover:bg-slate-100" @click="calculator(9)">
+                    <div class="grid grid-cols-3 border-b border-t font-extrabold">
+                        <div
+                            class="flex h-20 items-center justify-center border-b bg-sidebar text-4xl duration-300 hover:bg-slate-100"
+                            @click="calculator(9)"
+                        >
                             9
                         </div>
                         <div
-                            class="flex h-20 items-center justify-center border-x border-b bg-sidebar duration-300 hover:bg-slate-100"
+                            class="flex h-20 items-center justify-center border-x border-b bg-sidebar text-4xl duration-300 hover:bg-slate-100"
                             @click="calculator(8)"
                         >
                             8
                         </div>
-                        <div class="flex h-20 items-center justify-center border-b bg-sidebar duration-300 hover:bg-slate-100" @click="calculator(7)">
+                        <div
+                            class="flex h-20 items-center justify-center border-b bg-sidebar text-4xl duration-300 hover:bg-slate-100"
+                            @click="calculator(7)"
+                        >
                             7
                         </div>
-                        <div class="flex h-20 items-center justify-center border-b bg-sidebar duration-300 hover:bg-slate-100" @click="calculator(6)">
+                        <div
+                            class="flex h-20 items-center justify-center border-b bg-sidebar text-4xl duration-300 hover:bg-slate-100"
+                            @click="calculator(6)"
+                        >
                             6
                         </div>
                         <div
-                            class="flex h-20 items-center justify-center border-x border-b bg-sidebar duration-300 hover:bg-slate-100"
+                            class="flex h-20 items-center justify-center border-x border-b bg-sidebar text-4xl duration-300 hover:bg-slate-100"
                             @click="calculator(5)"
                         >
                             5
                         </div>
-                        <div class="flex h-20 items-center justify-center border-b bg-sidebar duration-300 hover:bg-slate-100" @click="calculator(4)">
+                        <div
+                            class="flex h-20 items-center justify-center border-b bg-sidebar text-4xl duration-300 hover:bg-slate-100"
+                            @click="calculator(4)"
+                        >
                             4
                         </div>
-                        <div class="flex h-20 items-center justify-center border-b bg-sidebar duration-300 hover:bg-slate-100" @click="calculator(3)">
+                        <div
+                            class="flex h-20 items-center justify-center border-b bg-sidebar text-4xl duration-300 hover:bg-slate-100"
+                            @click="calculator(3)"
+                        >
                             3
                         </div>
                         <div
-                            class="flex h-20 items-center justify-center border-x border-b bg-sidebar duration-300 hover:bg-slate-100"
+                            class="flex h-20 items-center justify-center border-x border-b bg-sidebar text-4xl duration-300 hover:bg-slate-100"
                             @click="calculator(2)"
                         >
                             2
                         </div>
-                        <div class="flex h-20 items-center justify-center border-b bg-sidebar duration-300 hover:bg-slate-100" @click="calculator(1)">
+                        <div
+                            class="flex h-20 items-center justify-center border-b bg-sidebar text-4xl duration-300 hover:bg-slate-100"
+                            @click="calculator(1)"
+                        >
                             1
                         </div>
                         <div
-                            class="flex h-20 items-center justify-center bg-sidebar duration-300 hover:bg-slate-100"
+                            class="flex h-20 items-center justify-center bg-sidebar text-4xl duration-300 hover:bg-slate-100"
                             @click="setMultiplicatator = true"
                         >
                             X
                         </div>
-                        <div class="flex h-20 items-center justify-center border-x bg-sidebar duration-300 hover:bg-slate-100" @click="calculator(0)">
+                        <div
+                            class="flex h-20 items-center justify-center border-x bg-sidebar text-4xl duration-300 hover:bg-slate-100"
+                            @click="calculator(0)"
+                        >
                             0
                         </div>
                         <div
-                            class="flex h-20 items-center justify-center bg-sidebar duration-300 hover:bg-slate-100"
+                            class="flex h-20 items-center justify-center bg-sidebar text-4xl duration-300 hover:bg-slate-100"
                             @click="
                                 () => {
                                     if (priceRow) {
@@ -309,13 +340,13 @@ const hasSelectedClient = computed({
                 </div>
                 <footer class="flex h-20 items-center justify-between border-t">
                     <div
-                        class="flex h-full basis-1/3 items-center justify-center bg-red-200 font-extrabold text-red-800 dark:bg-red-950 dark:text-red-400"
+                        class="flex h-full basis-1/3 items-center justify-center bg-red-500 font-extrabold text-red-100 dark:bg-red-950 dark:text-red-400"
                         @click="deleteCurrentRow"
                     >
                         Supprimer
                     </div>
                     <div
-                        class="flex h-full basis-2/3 items-center justify-center border-l bg-blue-200 font-extrabold text-blue-800 dark:bg-blue-900 dark:text-teal-400"
+                        class="bg-primary-color flex h-full basis-2/3 items-center justify-center border-l font-extrabold text-blue-100 dark:bg-blue-900 dark:text-teal-400"
                         @click="validation"
                     >
                         Valider

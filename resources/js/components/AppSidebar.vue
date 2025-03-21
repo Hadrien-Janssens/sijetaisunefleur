@@ -6,7 +6,6 @@ import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/vue3';
 import { ClipboardList, LineChart, Package, Receipt, ShoppingCart, Users } from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
-import { Button } from './ui/button';
 
 const mainNavItems: NavItem[] = [
     {
@@ -69,7 +68,7 @@ const mainNavItems: NavItem[] = [
 
         <SidebarFooter>
             <NavUser />
-            <Button class="h-16 bg-teal-600 text-teal-100 duration-300 hover:bg-teal-700">Fin de jour</Button>
+            <!-- <Button variant="teal" class="h-16 text-teal-100 duration-300">Fin de jour</Button> -->
         </SidebarFooter>
     </Sidebar>
     <slot />

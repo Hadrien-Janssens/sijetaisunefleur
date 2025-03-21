@@ -15,7 +15,7 @@ const page = usePage<SharedData>();
         <SidebarMenu class="mt-5">
             <SidebarMenuItem v-for="item in items" :key="item.title" class="py-2">
                 <SidebarMenuButton as-child :is-active="item.href === page.url">
-                    <Link :href="item.href" class="text-md py-8">
+                    <Link :href="item.href" class="py-8 text-xl">
                         <component :is="item.icon" :class="item.color ? item.color : ''" />
                         <span>{{ item.title }}</span>
                     </Link>

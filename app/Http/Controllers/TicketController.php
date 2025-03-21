@@ -113,6 +113,7 @@ class TicketController extends Controller
             $pdf = Pdf::loadView('facture', ['ticket' => $ticket]);
 
             Mail::to($ticket->client->email)->send(new InvoiceMail($pdf->output(), "facture.pdf"));
+            Mail::to("contact@sijetaisunefleur.com")->send(new InvoiceMail($pdf->output(), "facture.pdf"));
 
             return redirect()->route('caisse')->with('success', $message);
         }

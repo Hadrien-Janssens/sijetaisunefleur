@@ -19,6 +19,7 @@ html {
     :root {
         --background: 0 0% 100%;
         --foreground: 0 0% 3.9%;
+        --primary-color: hsl(90deg 64% 54%);
         --card: 0 0% 100%;
         --card-foreground: 0 0% 3.9%;
         --popover: 0 0% 100%;
@@ -91,9 +92,25 @@ html {
 @layer base {
     * {
         @apply border-border;
+        font-size: large;
     }
 
     body {
         @apply bg-background text-foreground;
+    }
+}
+
+@layer utilities {
+    .text-primary-color {
+        color: var(--primary-color);
+    }
+    .text-hover-primary-color:hover {
+        color: var(--primary-color);
+    }
+    .bg-primary-color {
+        background-color: var(--primary-color);
+    }
+    .bg-hover-primary-color:hover {
+        background-color: var(--primary-color);
     }
 }

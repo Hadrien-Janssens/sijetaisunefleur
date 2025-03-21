@@ -36,10 +36,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     })->name('invoice.index');
 
     Route::get('client', [ClientController::class, 'index'])->name('client.index');
-    Route::get('client/{client}', [ClientController::class, 'edit'])->name('client.edit');
+    Route::get('client/{id}', [ClientController::class, 'edit'])->name('client.edit');
     Route::post('client', [ClientController::class, 'store'])->name('client.store');
     Route::put('client/{client}', [ClientController::class, 'update'])->name('client.update');
-    Route::delete('client/{client}', [ClientController::class, 'destroy'])->name('client.destroy');
+    Route::delete('client/{id}', [ClientController::class, 'destroy'])->name('client.destroy');
 
 
     Route::get('vente', [TicketController::class, 'index'])->name('vente.index');

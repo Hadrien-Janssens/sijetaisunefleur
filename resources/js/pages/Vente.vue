@@ -36,8 +36,6 @@ const props = defineProps<{
     };
 }>();
 
-console.log(props.tickets);
-
 const searchQuery = ref(props.filters.search || '');
 const withInvoice = ref(props.filters.withInvoice || false);
 const selectedDate = ref(props.filters.date || new Date().toISOString().split('T')[0]);
@@ -112,11 +110,11 @@ const downloadFile = () => {
                 <h1 class="flex items-center gap-3 text-3xl font-bold">
                     Ventes
 
-                    <button @click="downloadFile" class="text-teal-600 hover:text-teal-700"><Printer class="h-6 w-6" /></button>
+                    <button @click="downloadFile" class="text-primary-color hover:text-hover-primary-color"><Printer class="h-6 w-6" /></button>
                 </h1>
 
                 <div class="flex items-center gap-2">
-                    <button class="rounded-lg bg-teal-600 px-4 py-2 font-medium text-white">Jour</button>
+                    <button class="bg-primary-color rounded-lg px-4 py-2 font-medium text-white">Jour</button>
                     <button class="rounded-lg px-4 py-2 font-medium hover:bg-gray-100">Semaine</button>
                     <button class="rounded-lg px-4 py-2 font-medium hover:bg-gray-100">Mois</button>
                     <button class="rounded-lg px-4 py-2 font-medium hover:bg-gray-100">Année</button>

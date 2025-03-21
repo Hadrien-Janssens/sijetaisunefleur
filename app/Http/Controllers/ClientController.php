@@ -12,10 +12,9 @@ class ClientController extends Controller
      */
     public function index()
     {
-        $clients = Client::all();
 
         return inertia('client/Index', [
-            'clients' => $clients
+            'clients' => Client::withTrashed()->get()
         ]);
     }
 
@@ -49,9 +48,10 @@ class ClientController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Client $client)
+    public function edit($id)
     {
 
+        $client = Client::withTrashed()->findOrFail($id);
 
         return inertia('client/Edit', [
             'client' => $client,
@@ -72,9 +72,9 @@ class ClientController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Client $client)
+    public function destroy($id)
     {
-
+        $client = Client::withTrashed()->findOrFail($id);
         $clientFirstname = $client->firstname;
         $clientLastname = $client->lastname;
 

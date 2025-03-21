@@ -13,7 +13,8 @@ export const buttonVariants = cva(
                 secondary: 'bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80',
                 ghost: 'hover:bg-accent hover:text-accent-foreground',
                 link: 'text-primary underline-offset-4 hover:underline',
-                teal:'bg-teal-600 text-teal-100 shadow hover:bg-teal-700',
+                // teal:'bg-teal-600 text-teal-100 shadow hover:bg-teal-700',
+                teal:'bg-[#88d43e] text-teal-100 shadow hover:bg-[#7ac03c]',
 
 
             },
