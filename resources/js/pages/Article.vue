@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/vue3';
-import { Package } from 'lucide-vue-next';
+import { Flower } from 'lucide-vue-next';
 import { reactive, ref } from 'vue';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -46,7 +46,7 @@ const confirmDelete = (id: number) => {
 <template>
     <Head title="Articles" />
     <AppLayout :breadcrumbs="breadcrumbs">
-        <Package class="fixed mt-10 h-screen w-full text-stone-100" />
+        <Flower class="text-primary-color fixed mt-10 h-screen w-full opacity-10" />
         <div class="container z-10 mx-auto p-6">
             <div class="mb-6 flex items-center justify-between">
                 <h1 class="text-3xl font-bold">Articles</h1>
@@ -58,7 +58,7 @@ const confirmDelete = (id: number) => {
                 <Card
                     v-for="category in categories"
                     :key="category.id"
-                    class="w-full bg-gradient-to-br from-white to-gray-50/80 transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-lg"
+                    class="w-full bg-transparent from-white to-gray-50/80 backdrop-blur-md transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-lg"
                 >
                     <CardHeader>
                         <CardTitle class="flex items-start gap-2 text-gray-600">

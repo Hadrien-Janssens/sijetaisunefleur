@@ -21,15 +21,12 @@ const handleDelete = () => {
 <template>
     <Dialog :open="open" @update:open="(value) => emit('update:open', value)">
         <DialogTrigger asChild>
-            <Button variant="secondary">Supprimer</Button>
+            <Button variant="outline">Supprimer</Button>
         </DialogTrigger>
         <DialogContent>
             <DialogHeader>
                 <DialogTitle>Confirmation de suppression</DialogTitle>
-                <DialogDescription>
-                    🤔 T'es sûr de vouloir supprimer ce client ? <br />
-                    Cette action est irréversible 💥.
-                </DialogDescription>
+                <DialogDescription> T'es sûr de vouloir supprimer ? <br /> </DialogDescription>
             </DialogHeader>
             <DialogFooter>
                 <Button variant="ghost" @click="handleClose">Annuler</Button>

@@ -44,6 +44,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('vente', [TicketController::class, 'index'])->name('vente.index');
     Route::post('ticket', [TicketController::class, 'store'])->name('ticket.store');
+    Route::delete('ticket/{id}', [TicketController::class, 'destroy'])->name('ticket.destroy');
 
     Route::get('article', [CategoryController::class, 'index'])->name('article.index');
     Route::post('article', [CategoryController::class, 'store'])->name('article.store');

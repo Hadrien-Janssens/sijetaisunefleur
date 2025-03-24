@@ -3,7 +3,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/vue3';
-import { BadgeEuro, Euro, ShoppingBag, Store, TrendingUp, Users } from 'lucide-vue-next';
+import { BadgeEuro, Euro, Flower, ShoppingBag, Store, TrendingUp, Users } from 'lucide-vue-next';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -54,6 +54,7 @@ const stats = [
 <template>
     <Head title="Chiffres" />
     <AppLayout :breadcrumbs="breadcrumbs">
+        <Flower class="text-primary-color fixed mt-10 h-screen w-full opacity-10" />
         <div class="container mx-auto p-6">
             <div class="mb-8 flex items-center justify-between">
                 <h1 class="text-3xl font-bold">Tableau de bord</h1>
@@ -66,18 +67,22 @@ const stats = [
             </div>
 
             <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-                <Card v-for="stat in stats" :key="stat.title" class="transition-shadow duration-200 hover:shadow-lg">
+                <Card
+                    v-for="stat in stats"
+                    :key="stat.title"
+                    class="w-full bg-transparent from-white to-gray-50/80 backdrop-blur-md transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-lg"
+                >
                     <CardContent class="pt-6">
                         <div class="flex items-start justify-between">
                             <div class="space-y-2">
                                 <p class="text-sm text-gray-500">{{ stat.title }}</p>
                                 <p class="text-2xl font-bold">{{ stat.value }}</p>
                                 <div v-if="stat.change" class="flex items-center space-x-1">
-                                    <span class="text-sm text-emerald-600">{{ stat.change }}</span>
+                                    <span class="text-primary-color text-sm">{{ stat.change }}</span>
                                 </div>
                                 <p v-if="stat.secondary" class="text-sm text-gray-500">{{ stat.secondary }}</p>
                             </div>
-                            <component :is="stat.icon" class="h-8 w-8 text-teal-600" />
+                            <component :is="stat.icon" class="text-primary-color h-8 w-8" />
                         </div>
                     </CardContent>
                 </Card>

@@ -19,6 +19,7 @@ return new class extends Migration
             $table->boolean('is_paid')->default(true);
             $table->boolean('with_tva')->default(false);
             $table->foreignId('client_id')->nullable()->constrained()->onDelete('set null');
+            $table->softDeletes();
         });
     }
 

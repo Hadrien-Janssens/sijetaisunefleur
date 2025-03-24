@@ -7,12 +7,10 @@ use App\Mail\InvoiceMail;
 use App\Models\Client;
 use App\Models\Ticket;
 use App\Models\Ticket_row;
-use App\Notifications\TicketCreated;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Notification;
 use Maatwebsite\Excel\Facades\Excel;
 
 class TicketController extends Controller
@@ -26,10 +24,19 @@ class TicketController extends Controller
         // Récupérer la requête de recherche
         $search = $request->input('search');
         $withInvoice = $request->input('withInvoice');
+        $actif = $request->input('actif');
 
-        // Construire la requête des tickets
-        $query = Ticket::with(['ticketRows.category', 'client'])
-            ->orderBy('created_at', 'desc');
+        if ($actif === 'active') {
+            // Construire la requête des tickets
+            $query = Ticket::with(['ticketRows.category', 'client'])
+                ->orderBy('created_at', 'desc');
+        } else {
+
+            $query = Ticket::onlyTrashed()->with(['ticketRows.category', 'client'])
+                ->orderBy('created_at', 'desc');
+        }
+
+
 
         // Appliquer la recherche si un terme est présent
         if (!empty($search)) {
@@ -147,10 +154,17 @@ class TicketController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Ticket $ticket)
+    public function destroy(string $id)
     {
-        //
+        $ticket = Ticket::withTrashed()->findOrFail($id);
+
+        $message = "Le ticket a été supprimé";
+
+        $ticket->delete();
+
+        return redirect()->back()->with('success', $message);
     }
+
 
     public function export()
     {

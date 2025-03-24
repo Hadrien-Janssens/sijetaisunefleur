@@ -62,7 +62,7 @@ const downloadFile = () => {
     <Head title="Chiffres" />
     <AppLayout :breadcrumbs="breadcrumbs">
         <CreateClientModal :show="isModalOpen" @close="isModalOpen = false" @create="handleCreateClient" />
-        <Flower class="fixed mt-10 h-screen w-full text-teal-600 opacity-10" />
+        <Flower class="text-primary-color fixed mt-10 h-screen w-full opacity-10" />
         <div class="container z-10 mx-auto p-6">
             <div class="z-50 mb-6 flex items-center justify-between">
                 <h1 class="flex items-center gap-3 text-3xl font-bold">

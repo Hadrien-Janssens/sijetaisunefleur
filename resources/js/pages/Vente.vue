@@ -1,13 +1,17 @@
 <script setup lang="ts">
+import DeleteConfirmationModal from '@/components/DeleteConfirmationModal.vue';
 import { Button } from '@/components/ui/button';
 import Card from '@/components/ui/card/Card.vue';
 import { Input } from '@/components/ui/input';
 import Label from '@/components/ui/label/Label.vue';
 import Switch from '@/components/ui/switch/Switch.vue';
+import Tabs from '@/components/ui/tabs/Tabs.vue';
+import TabsList from '@/components/ui/tabs/TabsList.vue';
+import TabsTrigger from '@/components/ui/tabs/TabsTrigger.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/vue3';
-import { Barcode, CalendarDays, ChevronDown, ChevronUp, Clock, Flower, Printer, ShoppingBag, Ticket, User } from 'lucide-vue-next';
+import { Barcode, CalendarDays, ChevronDown, Clock, Flower, Printer, ShoppingBag, Ticket, User } from 'lucide-vue-next';
 import { ref, watch } from 'vue';
 import { getHour } from '../lib/utils';
 
@@ -33,12 +37,14 @@ const props = defineProps<{
         search: string;
         withInvoice?: boolean;
         date?: string;
+        actif?: string;
     };
 }>();
 
 const searchQuery = ref(props.filters.search || '');
 const withInvoice = ref(props.filters.withInvoice || false);
 const selectedDate = ref(props.filters.date || new Date().toISOString().split('T')[0]);
+const activeTab = ref(props.filters.actif || 'active');
 
 const performSearch = () => {
     router.get(
@@ -47,6 +53,7 @@ const performSearch = () => {
             search: searchQuery.value,
             withInvoice: withInvoice.value,
             date: selectedDate.value,
+            actif: activeTab.value,
         },
         {
             preserveState: true,
@@ -57,7 +64,7 @@ const performSearch = () => {
 };
 
 watch(
-    [searchQuery, withInvoice, selectedDate],
+    [searchQuery, withInvoice, selectedDate, activeTab],
     () => {
         performSearch();
     },
@@ -100,11 +107,18 @@ const formatDate = (dateString: string) => {
 const downloadFile = () => {
     window.location.href = route('ticket.export');
 };
+
+const showDeleteModal = ref(false);
+
+const confirmDelete = (id) => {
+    router.delete(route('ticket.destroy', id));
+    showDeleteModal.value = false;
+};
 </script>
 <template>
     <Head title="Ventes" />
     <AppLayout :breadcrumbs="breadcrumbs">
-        <Flower class="fixed mt-10 h-screen w-full text-teal-600 opacity-5" />
+        <Flower class="text-primary-color fixed mt-10 h-screen w-full opacity-10" />
         <div class="container z-10 mx-auto p-6">
             <div class="mb-6 flex items-center justify-between">
                 <h1 class="flex items-center gap-3 text-3xl font-bold">
@@ -121,21 +135,29 @@ const downloadFile = () => {
                 </div>
             </div>
             <!-- SEARCHBAR -->
-            <Input
-                type="text"
-                v-model="searchQuery"
-                @input="performSearch"
-                placeholder="Recherche des tickets par client"
-                class="mb-3 rounded-md border border-gray-300 p-2"
-            />
-
-            <div class="flex items-center justify-between space-x-2">
-                <div class="flex items-center space-x-2">
+            <div class="mb-2 flex items-center justify-between gap-2">
+                <Input
+                    type="text"
+                    v-model="searchQuery"
+                    @input="performSearch"
+                    placeholder="Recherche des tickets par client"
+                    class="rounded-md border border-gray-300 p-2"
+                />
+                <input type="date" lang="fr" v-model="selectedDate" class="rounded-md border border-gray-300 p-2" />
+            </div>
+            <div class="flex items-center justify-between">
+                <Tabs v-model="activeTab">
+                    <TabsList class="grid w-full max-w-[400px] grid-cols-2">
+                        <TabsTrigger value="active">Ticket actifs</TabsTrigger>
+                        <TabsTrigger value="deleted">Ticket supprimés</TabsTrigger>
+                    </TabsList>
+                </Tabs>
+                <div class="flex items-center gap-2">
                     <Switch id="invoice" v-model="withInvoice" />
                     <Label for="invoice">Avec facture</Label>
                 </div>
-                <input type="date" lang="fr" v-model="selectedDate" class="rounded-md border border-gray-300 p-2" />
             </div>
+
             <div v-if="tickets?.data?.length" class="mt-4 space-y-3">
                 <div v-for="ticket in tickets.data" :key="ticket.id" class="transition-all duration-300 ease-in-out">
                     <Card
@@ -148,7 +170,9 @@ const downloadFile = () => {
                         <div class="flex cursor-pointer items-center justify-between">
                             <div class="flex items-center gap-4">
                                 <div>
-                                    <p class="flex items-center gap-2 font-medium"><Barcode class="h-4 w-4 text-teal-600" /> N° {{ ticket.id }}</p>
+                                    <p class="flex items-center gap-2 font-medium">
+                                        <Barcode class="text-primary-color h-4 w-4" /> N° {{ ticket.id }}
+                                    </p>
                                 </div>
                                 <div class="text-gray-600">|</div>
 
@@ -164,8 +188,7 @@ const downloadFile = () => {
                                     class="rounded-full bg-gray-100 p-1 transition-transform duration-300"
                                     :class="{ 'rotate-180': expandedTicketId === ticket.id }"
                                 >
-                                    <ChevronDown v-if="expandedTicketId !== ticket.id" class="h-4 w-4" />
-                                    <ChevronUp v-else class="h-4 w-4" />
+                                    <ChevronDown class="h-4 w-4" />
                                 </div>
                             </div>
                         </div>
@@ -185,7 +208,7 @@ const downloadFile = () => {
                                             <Link
                                                 v-if="ticket.client"
                                                 :href="route('client.edit', ticket.client.id)"
-                                                class="font-medium duration-200 hover:cursor-pointer hover:text-teal-600"
+                                                class="hover:text-primary-color font-medium duration-200 hover:cursor-pointer"
                                             >
                                                 {{ ticket.client?.firstname }}
                                             </Link>
@@ -217,6 +240,16 @@ const downloadFile = () => {
                                             <p class="text-sm text-gray-500">Total</p>
                                             <p class="text-lg font-bold">{{ getTicketPrice(ticket) }}€</p>
                                         </div>
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <div class="space-x-2">
+                                        <Button class="mt-4" variant="outline">Imprimer le ticket</Button>
+                                        <Button class="mt-4" variant="outline">Envoyer par mail</Button>
+                                    </div>
+                                    <div class="space-x-2">
+                                        <DeleteConfirmationModal v-model:open="showDeleteModal" @delete="confirmDelete(ticket.id)" />
+                                        <Button class="mt-4" variant="teal">Sauvegarder</Button>
                                     </div>
                                 </div>
                             </div>
