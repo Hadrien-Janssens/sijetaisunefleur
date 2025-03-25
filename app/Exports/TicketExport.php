@@ -18,6 +18,7 @@ class TicketExport implements FromCollection, WithHeadings, WithMapping, WithSty
     // Largeur personnalisée des colonnes
     public function columnWidths(): array
     {
+
         return [
             'A' => 15,  // Colonne ID
             'B' => 10,  // Colonne Montant
@@ -103,10 +104,10 @@ class TicketExport implements FromCollection, WithHeadings, WithMapping, WithSty
     {
         return [
             $ticket->category->name,
-            $ticket->category->tva  == 6 && !$ticket->ticket->client_id  ? $ticket->price * $ticket->quantity : '',
-            $ticket->category->tva == 21 && !$ticket->ticket->client_id  ? $ticket->price * $ticket->quantity : '',
-            $ticket->ticket->client_id && $ticket->category->tva == 6 ? $ticket->price * $ticket->quantity : '',
-            $ticket->ticket->client_id && $ticket->category->tva == 21 ? $ticket->price * $ticket->quantity : '',
+            $ticket->category->tva  == 6 && !$ticket->ticket?->client_id  ? $ticket->price * $ticket->quantity : '',
+            $ticket->category->tva == 21 && !$ticket->ticket?->client_id  ? $ticket->price * $ticket->quantity : '',
+            $ticket->ticket?->client_id && $ticket->category->tva == 6 ? $ticket->price * $ticket->quantity : '',
+            $ticket->ticket?->client_id && $ticket->category->tva == 21 ? $ticket->price * $ticket->quantity : '',
             $ticket->created_at->format('d/m/Y'), // Format date français
 
         ];

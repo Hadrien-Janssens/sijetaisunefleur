@@ -2,20 +2,43 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\ClientExport;
 use App\Models\Client;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ClientController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
 
-        return inertia('client/Index', [
-            'clients' => Client::withTrashed()->get()
-        ]);
+        $search = request()->input('search');
+        $actif = request()->input('actif');
+
+        if ($actif === 'active') {
+            return inertia('client/Index', [
+                'clients' => Client::paginate(10),
+                'filters' => request()->all(),
+            ]);
+        } else if ($actif === 'with_tva') {
+            return inertia('client/Index', [
+                'clients' => Client::whereNotNull('tva_number')->paginate(10),
+                'filters' => request()->all(),
+            ]);
+        } else if ($actif === 'without_tva') {
+            return inertia('client/Index', [
+                'clients' => Client::whereNull('tva_number')->paginate(10),
+                'filters' => request()->all(),
+            ]);
+        } else {
+            return inertia('client/Index', [
+                'clients' => Client::onlyTrashed()->paginate(10),
+                'filters' => request()->all(),
+            ]);
+        }
     }
 
     /**
@@ -61,8 +84,9 @@ class ClientController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Client $client)
+    public function update(Request $request, String $id)
     {
+        $client = Client::withTrashed()->findOrFail($id);
         $client->update($request->all());
         $message = "La fiche de $client->firstname $client->lastname a été modifié";
 
@@ -83,5 +107,37 @@ class ClientController extends Controller
         $client->delete();
 
         return redirect()->route('client.index')->with('success', $message);
+    }
+
+    public function restore(String $id)
+    {
+        $client = Client::withTrashed()->findOrFail($id);
+        $clientFirstname = $client->firstname;
+        $clientLastname = $client->lastname;
+
+        $message = "$clientFirstname $clientLastname a été restauré";
+
+        $client->restore();
+
+        return redirect()->route('client.index')->with('success', $message);
+    }
+
+    public function export(Request $request)
+    {
+        $filename = 'clients_actifs.xlsx';
+
+        if ($request->input('tab') === 'with_tva') {
+            $filename = 'clients_assujettis.xlsx';
+        }
+        if ($request->input('tab') === 'without_tva') {
+            $filename = 'clients_non_assujettis.xlsx';
+        }
+        if ($request->input('tab') === 'deleted') {
+            $filename = 'clients_supprimés.xlsx';
+        }
+
+
+
+        return Excel::download(new ClientExport($request->input('tab')), $filename);
     }
 }

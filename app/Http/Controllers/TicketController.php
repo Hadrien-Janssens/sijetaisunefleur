@@ -9,9 +9,12 @@ use App\Models\Ticket;
 use App\Models\Ticket_row;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Maatwebsite\Excel\Facades\Excel;
+
+require_once __DIR__ . '/../lib/helper.php';
 
 class TicketController extends Controller
 {
@@ -20,11 +23,12 @@ class TicketController extends Controller
      */
     public function index(Request $request)
     {
-
         // Récupérer la requête de recherche
         $search = $request->input('search');
         $withInvoice = $request->input('withInvoice');
         $actif = $request->input('actif');
+        $timeSlot = $request->input('time_slot');
+
 
         if ($actif === 'active') {
             // Construire la requête des tickets
@@ -51,9 +55,31 @@ class TicketController extends Controller
             $query->where('client_id', '!=', null);
         }
 
-        if ($request->date) {
-            $query->whereDate('created_at', $request->date);
+        // if ($request->date) {
+        //     $query->whereDate('created_at', $request->date);
+        // }
+        if ($timeSlot !== null) {
+
+            if ($timeSlot !== 'day') {
+
+                $dates = dateFilter($request->start_date, $timeSlot);
+                $query->whereBetween('created_at', [
+                    Carbon::parse($dates['start'])->startOfDay(),
+                    Carbon::parse($dates['end'])->endOfDay()
+                ]);
+            } else {
+
+                if ($request->start_date && $request->end_date) {
+                    $query->whereBetween('created_at', [
+                        Carbon::parse($request->start_date)->startOfDay(),
+                        Carbon::parse($request->end_date)->endOfDay()
+                    ]);
+                }
+            }
+        } else {
+            $query->whereDate('created_at', Carbon::today());
         }
+
 
         return inertia('Vente', [
             'tickets' => $query->paginate(10)->withQueryString(), // Garde les filtres dans l'URL
@@ -119,8 +145,8 @@ class TicketController extends Controller
 
             $pdf = Pdf::loadView('facture', ['ticket' => $ticket]);
 
-            Mail::to($ticket->client->email)->send(new InvoiceMail($pdf->output(), "facture.pdf"));
-            Mail::to("contact@sijetaisunefleur.com")->send(new InvoiceMail($pdf->output(), "facture.pdf"));
+            // Mail::to($ticket->client->email)->send(new InvoiceMail($pdf->output(), "facture.pdf"));
+            // Mail::to("contact@sijetaisunefleur.com")->send(new InvoiceMail($pdf->output(), "facture.pdf"));
 
             return redirect()->route('caisse')->with('success', $message);
         }

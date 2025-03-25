@@ -36,4 +36,28 @@ export interface User {
     updated_at: string;
 }
 
+export interface Row {
+    id: number;
+    price: number;
+    quantity: number;
+    category: {
+        name: string;
+    };
+}
+
+export interface Client {
+    id: number;
+    firstname: string;
+    lastname: string;
+    email: string;
+    phone: string;
+    company: string;
+    tva_number: string;
+    address: string;
+    city: string;
+    country: string;
+    created_at: string;
+    updated_at: string;
+}
+
 export type BreadcrumbItemType = BreadcrumbItem;

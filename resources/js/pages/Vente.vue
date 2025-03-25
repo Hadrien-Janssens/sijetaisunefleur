@@ -14,7 +14,7 @@ import { Head, Link, router } from '@inertiajs/vue3';
 import { Barcode, CalendarDays, ChevronDown, Clock, Flower, Printer, ShoppingBag, Ticket, User } from 'lucide-vue-next';
 import { ref, watch } from 'vue';
 import { getHour } from '../lib/utils';
-
+import { Row } from '../types';
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'ventes',
@@ -29,6 +29,15 @@ interface Ticket {
     next_page_url: string | null;
     current_page: number;
     last_page: number;
+    data: Array<{
+        id: number;
+        created_at: string;
+        client: {
+            id: number;
+            firstname: string;
+        };
+        ticket_rows: Row[];
+    }>;
 }
 
 const props = defineProps<{
@@ -36,15 +45,19 @@ const props = defineProps<{
     filters: {
         search: string;
         withInvoice?: boolean;
-        date?: string;
+        start_date?: string;
+        end_date?: string;
         actif?: string;
+        time_slot?: string;
     };
 }>();
 
 const searchQuery = ref(props.filters.search || '');
 const withInvoice = ref(props.filters.withInvoice || false);
-const selectedDate = ref(props.filters.date || new Date().toISOString().split('T')[0]);
+const selectedDate = ref(props.filters.start_date || new Date().toISOString().split('T')[0]);
+const selectedEndDate = ref(props.filters.end_date || new Date().toISOString().split('T')[0]);
 const activeTab = ref(props.filters.actif || 'active');
+const timeSlot = ref(props.filters.time_slot || 'day');
 
 const performSearch = () => {
     router.get(
@@ -52,8 +65,10 @@ const performSearch = () => {
         {
             search: searchQuery.value,
             withInvoice: withInvoice.value,
-            date: selectedDate.value,
+            start_date: selectedDate.value,
+            end_date: selectedEndDate.value,
             actif: activeTab.value,
+            time_slot: timeSlot.value,
         },
         {
             preserveState: true,
@@ -64,14 +79,15 @@ const performSearch = () => {
 };
 
 watch(
-    [searchQuery, withInvoice, selectedDate, activeTab],
+    [searchQuery, withInvoice, selectedDate, activeTab, selectedEndDate, timeSlot],
     () => {
         performSearch();
     },
     { immediate: true },
 );
 
-const visit = (url: string) => {
+const visit = (url: string | null) => {
+    if (!url) return;
     router.visit(url, {
         preserveState: true,
         preserveScroll: true,
@@ -80,7 +96,7 @@ const visit = (url: string) => {
 
 const getTicketPrice = (ticket: any) => {
     let totalPrice = 0;
-    ticket.ticket_rows.forEach((row: object) => {
+    ticket.ticket_rows.forEach((row: Row) => {
         totalPrice += row.price * row.quantity;
     });
     return totalPrice.toFixed(2);
@@ -109,47 +125,98 @@ const downloadFile = () => {
 };
 
 const showDeleteModal = ref(false);
+const ticketToDelete = ref<number | null>(null);
 
-const confirmDelete = (id) => {
-    router.delete(route('ticket.destroy', id));
+const openDeleteModal = (id: number) => {
+    ticketToDelete.value = id;
+    showDeleteModal.value = true;
+};
+
+const confirmDelete = () => {
+    if (ticketToDelete.value !== null) {
+        router.delete(route('ticket.destroy', ticketToDelete.value));
+    }
     showDeleteModal.value = false;
+    ticketToDelete.value = null;
 };
 </script>
 <template>
     <Head title="Ventes" />
     <AppLayout :breadcrumbs="breadcrumbs">
-        <Flower class="text-primary-color fixed mt-10 h-screen w-full opacity-10" />
-        <div class="container z-10 mx-auto p-6">
-            <div class="mb-6 flex items-center justify-between">
+        <Flower class="fixed w-full h-screen mt-10 text-primary-color opacity-10" />
+        <div class="container z-10 p-6 mx-auto">
+            <div class="flex items-center justify-between mb-6">
                 <h1 class="flex items-center gap-3 text-3xl font-bold">
                     Ventes
 
-                    <button @click="downloadFile" class="text-primary-color hover:text-hover-primary-color"><Printer class="h-6 w-6" /></button>
+                    <button @click="downloadFile" class="text-primary-color hover:text-hover-primary-color"><Printer class="w-6 h-6" /></button>
                 </h1>
 
                 <div class="flex items-center gap-2">
-                    <button class="bg-primary-color rounded-lg px-4 py-2 font-medium text-white">Jour</button>
-                    <button class="rounded-lg px-4 py-2 font-medium hover:bg-gray-100">Semaine</button>
-                    <button class="rounded-lg px-4 py-2 font-medium hover:bg-gray-100">Mois</button>
-                    <button class="rounded-lg px-4 py-2 font-medium hover:bg-gray-100">Année</button>
+                    <input type="radio" name="timeSlot" id="day" value="day" v-model="timeSlot" class="hidden" />
+                    <label
+                        for="day"
+                        :class="[
+                            'cursor-pointer rounded-lg px-4 py-2 font-medium',
+                            timeSlot === 'day' ? 'bg-primary-color text-white' : 'hover:bg-gray-100',
+                        ]"
+                    >
+                        Jour
+                    </label>
+
+                    <input type="radio" name="timeSlot" id="week" value="week" v-model="timeSlot" class="hidden" />
+                    <label
+                        for="week"
+                        :class="[
+                            'cursor-pointer rounded-lg px-4 py-2 font-medium',
+                            timeSlot === 'week' ? 'bg-primary-color text-white' : 'hover:bg-gray-100',
+                        ]"
+                    >
+                        Semaine
+                    </label>
+
+                    <input type="radio" name="timeSlot" id="month" value="month" v-model="timeSlot" class="hidden" />
+                    <label
+                        for="month"
+                        :class="[
+                            'cursor-pointer rounded-lg px-4 py-2 font-medium',
+                            timeSlot === 'month' ? 'bg-primary-color text-white' : 'hover:bg-gray-100',
+                        ]"
+                    >
+                        Mois
+                    </label>
+
+                    <input type="radio" name="timeSlot" id="year" value="year" v-model="timeSlot" class="hidden" />
+                    <label
+                        for="year"
+                        :class="[
+                            'cursor-pointer rounded-lg px-4 py-2 font-medium',
+                            timeSlot === 'year' ? 'bg-primary-color text-white' : 'hover:bg-gray-100',
+                        ]"
+                    >
+                        Année
+                    </label>
                 </div>
             </div>
             <!-- SEARCHBAR -->
-            <div class="mb-2 flex items-center justify-between gap-2">
+            <div class="flex items-center justify-between gap-2 mb-2">
                 <Input
                     type="text"
                     v-model="searchQuery"
                     @input="performSearch"
                     placeholder="Recherche des tickets par client"
-                    class="rounded-md border border-gray-300 p-2"
+                    class="p-2 border border-gray-300 rounded-md"
                 />
-                <input type="date" lang="fr" v-model="selectedDate" class="rounded-md border border-gray-300 p-2" />
+                <div class="flex gap-2 items-cente grow">
+                    <Input type="date" lang="fr" v-model="selectedDate" class="p-2 border border-gray-300 rounded-md" />
+                    <Input type="date" lang="fr" v-model="selectedEndDate" class="p-2 border border-gray-300 rounded-md" />
+                </div>
             </div>
             <div class="flex items-center justify-between">
                 <Tabs v-model="activeTab">
                     <TabsList class="grid w-full max-w-[400px] grid-cols-2">
-                        <TabsTrigger value="active">Ticket actifs</TabsTrigger>
-                        <TabsTrigger value="deleted">Ticket supprimés</TabsTrigger>
+                        <TabsTrigger value="active">Tickets actifs</TabsTrigger>
+                        <TabsTrigger value="deleted">Tickets supprimés</TabsTrigger>
                     </TabsList>
                 </Tabs>
                 <div class="flex items-center gap-2">
@@ -167,11 +234,11 @@ const confirmDelete = (id) => {
                         ]"
                         @click="toggleTicket(ticket.id)"
                     >
-                        <div class="flex cursor-pointer items-center justify-between">
+                        <div class="flex items-center justify-between cursor-pointer">
                             <div class="flex items-center gap-4">
                                 <div>
                                     <p class="flex items-center gap-2 font-medium">
-                                        <Barcode class="text-primary-color h-4 w-4" /> N° {{ ticket.id }}
+                                        <Barcode class="w-4 h-4 text-primary-color" /> N° {{ ticket.id }}
                                     </p>
                                 </div>
                                 <div class="text-gray-600">|</div>
@@ -182,33 +249,33 @@ const confirmDelete = (id) => {
                             </div>
                             <div class="flex items-center gap-5">
                                 <p class="flex items-center gap-1 text-sm text-gray-600">
-                                    <Clock class="h-4 w-4" /> {{ getHour(ticket.created_at) }}
+                                    <Clock class="w-4 h-4" /> {{ getHour(ticket.created_at) }}
                                 </p>
                                 <div
-                                    class="rounded-full bg-gray-100 p-1 transition-transform duration-300"
+                                    class="p-1 transition-transform duration-300 bg-gray-100 rounded-full"
                                     :class="{ 'rotate-180': expandedTicketId === ticket.id }"
                                 >
-                                    <ChevronDown class="h-4 w-4" />
+                                    <ChevronDown class="w-4 h-4" />
                                 </div>
                             </div>
                         </div>
                         <Transition name="expand">
                             <div v-show="expandedTicketId === ticket.id" class="mt-4 overflow-hidden transition-all duration-300 ease-in-out">
-                                <div class="rounded-md bg-gray-50 p-4">
-                                    <div class="mb-4 grid grid-cols-2 gap-4">
+                                <div class="p-4 rounded-md bg-gray-50">
+                                    <div class="grid grid-cols-2 gap-4 mb-4">
                                         <div>
                                             <p class="flex items-start gap-1 text-sm text-gray-500">
-                                                <CalendarDays class="h-4 w-4" />Date de création
+                                                <CalendarDays class="w-4 h-4" />Date de création
                                             </p>
                                             <p class="font-medium">{{ formatDate(ticket.created_at) }}</p>
                                         </div>
                                         <div>
-                                            <p class="flex items-start gap-1 text-sm text-gray-500"><User class="h-4 w-4" />Client</p>
+                                            <p class="flex items-start gap-1 text-sm text-gray-500"><User class="w-4 h-4" />Client</p>
 
                                             <Link
                                                 v-if="ticket.client"
                                                 :href="route('client.edit', ticket.client.id)"
-                                                class="hover:text-primary-color font-medium duration-200 hover:cursor-pointer"
+                                                class="font-medium duration-200 hover:text-primary-color hover:cursor-pointer"
                                             >
                                                 {{ ticket.client?.firstname }}
                                             </Link>
@@ -216,7 +283,7 @@ const confirmDelete = (id) => {
                                         </div>
                                     </div>
 
-                                    <div class="mb-2 border-b border-gray-200 pb-2">
+                                    <div class="pb-2 mb-2 border-b border-gray-200">
                                         <p class="font-semibold">Détails des articles</p>
                                     </div>
 
@@ -224,10 +291,10 @@ const confirmDelete = (id) => {
                                         <div
                                             v-for="(row, index) in ticket.ticket_rows"
                                             :key="index"
-                                            class="flex items-center justify-between rounded-md bg-white p-2"
+                                            class="flex items-center justify-between p-2 bg-white rounded-md"
                                         >
                                             <div class="flex items-center gap-2">
-                                                <ShoppingBag class="h-4 w-4 text-gray-500" />
+                                                <ShoppingBag class="w-4 h-4 text-gray-500" />
                                                 <span>{{ row.category.name || `Article #${index + 1}` }}</span>
                                                 <span class="text-sm text-gray-500">{{ row.price }}€ x{{ row.quantity }}</span>
                                             </div>
@@ -235,7 +302,7 @@ const confirmDelete = (id) => {
                                         </div>
                                     </div>
 
-                                    <div class="mt-4 flex justify-end border-t border-gray-200 pt-4">
+                                    <div class="flex justify-end pt-4 mt-4 border-t border-gray-200">
                                         <div class="text-right">
                                             <p class="text-sm text-gray-500">Total</p>
                                             <p class="text-lg font-bold">{{ getTicketPrice(ticket) }}€</p>
@@ -248,8 +315,10 @@ const confirmDelete = (id) => {
                                         <Button class="mt-4" variant="outline">Envoyer par mail</Button>
                                     </div>
                                     <div class="space-x-2">
-                                        <DeleteConfirmationModal v-model:open="showDeleteModal" @delete="confirmDelete(ticket.id)" />
-                                        <Button class="mt-4" variant="teal">Sauvegarder</Button>
+                                        <DeleteConfirmationModal v-model:open="showDeleteModal" @delete="confirmDelete()" :hiddenbutton="true" />
+
+                                        <Button @click="openDeleteModal(ticket.id)" variant="outline"> Supprimer </Button>
+                                        <Button class="mt-4" variant="teal" @click="console.log(ticket.id)">Sauvegarder</Button>
                                     </div>
                                 </div>
                             </div>

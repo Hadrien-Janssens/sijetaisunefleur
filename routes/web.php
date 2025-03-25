@@ -38,8 +38,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('client', [ClientController::class, 'index'])->name('client.index');
     Route::get('client/{id}', [ClientController::class, 'edit'])->name('client.edit');
     Route::post('client', [ClientController::class, 'store'])->name('client.store');
-    Route::put('client/{client}', [ClientController::class, 'update'])->name('client.update');
+    Route::put('client/{id}', [ClientController::class, 'update'])->name('client.update');
     Route::delete('client/{id}', [ClientController::class, 'destroy'])->name('client.destroy');
+    Route::get('restore/client/{id}', [ClientController::class, 'restore'])->name('client.restore');
+    Route::get('export/client', [ClientController::class, 'export'])->name('client.export');
 
 
     Route::get('vente', [TicketController::class, 'index'])->name('vente.index');
@@ -50,7 +52,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('article', [CategoryController::class, 'store'])->name('article.store');
     Route::delete('article/{category}', [CategoryController::class, 'destroy'])->name('article.destroy');
 
-    Route::get('ticket/export/', [TicketController::class, 'export'])->name('ticket.export');
+    Route::get('export/ticket', [TicketController::class, 'export'])->name('ticket.export');
 
     Route::get('/facture/{ticketId}', [TicketController::class, 'generatePDF']);
 });

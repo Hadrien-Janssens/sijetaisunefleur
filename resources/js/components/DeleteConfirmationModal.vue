@@ -2,8 +2,9 @@
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 
-defineProps<{
+const props = defineProps<{
     open: boolean;
+    hiddenbutton?: boolean;
 }>();
 
 const emit = defineEmits(['update:open', 'delete']);
@@ -20,7 +21,7 @@ const handleDelete = () => {
 
 <template>
     <Dialog :open="open" @update:open="(value) => emit('update:open', value)">
-        <DialogTrigger asChild>
+        <DialogTrigger asChild v-if="!hiddenbutton">
             <Button variant="outline">Supprimer</Button>
         </DialogTrigger>
         <DialogContent>

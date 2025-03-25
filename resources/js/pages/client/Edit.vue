@@ -5,7 +5,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { Input } from '@/components/ui/input';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
-import { Head, useForm } from '@inertiajs/vue3';
+import { Head, Link, useForm } from '@inertiajs/vue3';
 import { ArrowLeft, Building, ContactRound, Hash, Mail, MapPin, Phone } from 'lucide-vue-next';
 import { ref } from 'vue';
 
@@ -21,6 +21,7 @@ const props = defineProps<{
         address: string;
         city: string;
         country: string;
+        deleted_at: string | null;
     };
 }>();
 
@@ -66,13 +67,13 @@ const confirmDelete = () => {
 <template>
     <Head title="Modification d'un client" />
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="container z-10 mx-auto p-6">
+        <div class="container z-10 p-6 mx-auto">
             <Button @click="goBack" variant="teal" class="mb-3"><ArrowLeft /> Retour</Button>
             <Card class="w-full bg-gradient-to-br from-white to-gray-50/80">
                 <form @submit.prevent="submit">
                     <CardHeader>
                         <CardTitle class="flex items-start gap-2 text-gray-600">
-                            <ContactRound class="h-5 w-5" />
+                            <ContactRound class="w-5 h-5" />
                             <div class="w-full space-y-4">
                                 <div class="flex gap-4">
                                     <Input v-model="form.firstname" placeholder="Prénom" />
@@ -83,23 +84,23 @@ const confirmDelete = () => {
                     </CardHeader>
                     <CardContent class="space-y-4">
                         <div class="flex items-center gap-2">
-                            <Mail class="h-4 w-4 text-blue-400" />
+                            <Mail class="w-4 h-4 text-blue-400" />
                             <Input v-model="form.email" placeholder="Email" class="flex-1" />
                         </div>
                         <div class="flex items-center gap-2">
-                            <Phone class="h-4 w-4 text-green-400" />
+                            <Phone class="w-4 h-4 text-green-400" />
                             <Input v-model="form.phone" placeholder="Téléphone" class="flex-1" />
                         </div>
                         <div class="flex items-center gap-2">
-                            <Building class="h-4 w-4 text-yellow-400" />
+                            <Building class="w-4 h-4 text-yellow-400" />
                             <Input v-model="form.company" placeholder="Société" class="flex-1" />
                         </div>
                         <div class="flex items-center gap-2">
-                            <Hash class="h-4 w-4 text-red-400" />
+                            <Hash class="w-4 h-4 text-red-400" />
                             <Input v-model="form.tva_number" placeholder="Numéro de TVA" class="flex-1" />
                         </div>
                         <div class="flex items-start gap-2">
-                            <MapPin class="h-4 w-4 shrink-0 text-orange-400" />
+                            <MapPin class="w-4 h-4 text-orange-400 shrink-0" />
                             <div class="flex-1 space-y-2">
                                 <Input v-model="form.address" placeholder="Adresse" />
                                 <div class="flex gap-2">
@@ -109,10 +110,13 @@ const confirmDelete = () => {
                             </div>
                         </div>
                     </CardContent>
-                    <CardFooter class="m-3 flex items-center justify-end gap-3">
-                        <DeleteConfirmationModal v-model:open="showDeleteModal" @delete="confirmDelete" />
-                        <div class="flex justify-end">
-                            <Button variant="teal" type="submit" :disabled="form.processing">Sauvegarder</Button>
+                    <CardFooter class="flex items-center justify-between gap-3 m-3" :class="{ 'justify-end': !client.deleted_at }">
+                        <Link v-if="client.deleted_at" :href="route('client.restore', client.id)"> <Button variant="outline">Restaurer</Button></Link>
+                        <div class="flex items-center gap-3">
+                            <DeleteConfirmationModal v-model:open="showDeleteModal" @delete="confirmDelete" />
+                            <div class="flex justify-end">
+                                <Button variant="teal" type="submit" :disabled="form.processing">Sauvegarder</Button>
+                            </div>
                         </div>
                     </CardFooter>
                 </form>
