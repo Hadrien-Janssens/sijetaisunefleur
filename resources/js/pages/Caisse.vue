@@ -3,8 +3,8 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import AppLayout from '@/layouts/AppLayout.vue';
-import { type BreadcrumbItem } from '@/types';
-import { Head, router } from '@inertiajs/vue3';
+import { Client, type BreadcrumbItem } from '@/types';
+import { Head, Link, router } from '@inertiajs/vue3';
 import { Building, Hash, Mail, MapPin, Phone, Ticket, Trash, UserCheck, UserRoundX } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 import SearchClientModal from './SearchClientModal.vue';
@@ -17,12 +17,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 const props = defineProps<{
-    clients: Array<{
-        id: number;
-        name: string;
-        email: string;
-        phone?: string;
-    }>;
+    clients: Array<Client>;
     categories: Array<{
         id: number;
         name: string;
@@ -39,7 +34,8 @@ const decimal = ref(false);
 const centimal = ref(false);
 const diff = ref(0);
 const isInPaiyment = ref(false);
-const selectedClient = ref(null);
+const selectedClient = ref<null | Client>(null);
+const selectedEmail = ref('');
 
 const getNameCategory = (id: number) => {
     return props.categories.find((category) => category.id === id)?.name;
@@ -134,6 +130,8 @@ const sendTicket = () => {
     const form = {
         ticket: ticket.value,
         client_id: selectedClient.value?.id || null,
+        email: selectedEmail.value || null,
+        with_tva: selectedClient.value?.tva_number ? true : false,
     };
 
     router.post(route('ticket.store'), form);
@@ -142,18 +140,24 @@ const sendTicket = () => {
 const isModalOpen = ref(false);
 
 const setSelectedClient = (client: any) => {
-    selectedClient.value = client;
-    isModalOpen.value = false;
+    if (typeof client === 'string') {
+        selectedEmail.value = client;
+        isModalOpen.value = false;
+    } else {
+        selectedClient.value = client;
+        isModalOpen.value = false;
+    }
 };
 
 const hasSelectedClient = computed({
     get() {
-        return selectedClient.value !== null;
+        return selectedClient.value !== null || selectedEmail.value !== '';
     },
     set(value) {
         if (!value) {
             selectedClient.value = null;
-        } else if (selectedClient.value === null) {
+            selectedEmail.value = '';
+        } else if (selectedClient.value === null && selectedEmail.value === '') {
             isModalOpen.value = true;
         }
     },
@@ -166,10 +170,10 @@ const hasSelectedClient = computed({
     <AppLayout :breadcrumbs="breadcrumbs" class="h-screen">
         <div class="flex h-full">
             <!-- LEFTSIDE -->
-            <div class="flex basis-1/3 flex-col">
-                <div class="flex flex-col gap-2 border-b p-3">
+            <div class="flex flex-col basis-1/3">
+                <div class="flex flex-col gap-2 p-3 border-b">
                     <h2 class="flex items-center gap-2"><Ticket class="text-primary-color" />Ticket en cours</h2>
-                    <div v-if="selectedClient">
+                    <Link :href="route('client.edit', selectedClient.id)" v-if="selectedClient">
                         <p class="flex items-center gap-2">
                             <UserCheck class="text-blue-500" /> {{ selectedClient.lastname }} {{ selectedClient.firstname }}
                         </p>
@@ -181,13 +185,14 @@ const hasSelectedClient = computed({
                         <p class="flex items-center gap-2">
                             <MapPin class="text-blue-500" /> {{ selectedClient.address }} {{ selectedClient.city }} {{ selectedClient.country }}
                         </p>
-                    </div>
+                    </Link>
+                    <p v-else-if="selectedEmail" class="flex items-center gap-2"><Mail class="text-blue-500" /> {{ selectedEmail }}</p>
                     <p v-else class="flex items-center gap-2"><UserRoundX class="text-orange-500" /> Pas de client</p>
                 </div>
-                <div class="grow overflow-scroll overflow-y-auto p-3">
-                    <p v-if="ticket.length === 0" class="mt-20 text-center text-xl font-extrabold text-gray-400">Aucun achat sur ce ticket</p>
+                <div class="p-3 overflow-scroll overflow-y-auto grow">
+                    <p v-if="ticket.length === 0" class="mt-20 text-xl font-extrabold text-center text-gray-400">Aucun achat sur ce ticket</p>
                     <TransitionGroup tag="ul" name="v">
-                        <li v-for="article in ticket" :key="article.id" class="flex h-20 items-center justify-between border-b">
+                        <li v-for="article in ticket" :key="article.id" class="flex items-center justify-between h-20 border-b">
                             <Trash class="w-5 text-red-400" @click="deleteRow(article.id)" />
                             <p>
                                 <span class="mr-3"
@@ -199,12 +204,12 @@ const hasSelectedClient = computed({
                         </li>
                     </TransitionGroup>
                 </div>
-                <footer class="flex h-20 items-center justify-between border-t">
-                    <p class="basis-1/2 text-center">
+                <footer class="flex items-center justify-between h-20 border-t">
+                    <p class="text-center basis-1/2">
                         Total : <span class="font-bold">{{ total }}€</span>
                     </p>
                     <div
-                        class="flex h-full basis-1/2 items-center justify-center bg-blue-500 text-center font-extrabold text-blue-100 dark:bg-orange-950 dark:text-orange-400"
+                        class="flex items-center justify-center h-full font-extrabold text-center text-blue-100 bg-blue-500 basis-1/2 dark:bg-orange-950 dark:text-orange-400"
                         @click="paid"
                     >
                         Payer
@@ -212,9 +217,9 @@ const hasSelectedClient = computed({
                 </footer>
             </div>
             <!-- RightSide -->
-            <div class="flex basis-2/3 flex-col border-l">
-                <div class="flex h-20 w-full items-center border-b">
-                    <div class="flex w-full items-center justify-between p-3">
+            <div class="flex flex-col border-l basis-2/3">
+                <div class="flex items-center w-full h-20 border-b">
+                    <div class="flex items-center justify-between w-full p-3">
                         <SearchClientModal
                             :show="isModalOpen"
                             :clients="clients"
@@ -248,8 +253,8 @@ const hasSelectedClient = computed({
                         </div>
                     </div>
                 </div>
-                <div class="flex grow flex-col justify-end">
-                    <div class="h-full w-full bg-slate-50 pr-3 pt-3 text-end text-4xl">
+                <div class="flex flex-col justify-end grow">
+                    <div class="w-full h-full pt-3 pr-3 text-4xl bg-slate-50 text-end">
                         <p v-if="priceRow" class="text-4xl">
                             {{ priceRow.toFixed(2) }}€ <span class="text-4xl" v-if="setMultiplicatator">X</span>
                             <span v-if="quantityRow" class="text-4xl">{{ quantityRow }}</span>
@@ -257,75 +262,75 @@ const hasSelectedClient = computed({
                         <!-- <p v-if="setMultiplicatator && quantityRow">= {{ (priceRow * quantityRow).toFixed(2) }}€</p> -->
                         <p v-if="isInPaiyment">à rendre : {{ diff }}€</p>
                     </div>
-                    <div class="grid grid-cols-3 border-b border-t font-extrabold">
+                    <div class="grid grid-cols-3 font-extrabold border-t border-b">
                         <div
-                            class="flex h-20 items-center justify-center border-b bg-sidebar text-4xl duration-300 hover:bg-slate-100"
+                            class="flex items-center justify-center h-20 text-4xl duration-300 border-b bg-sidebar hover:bg-slate-100"
                             @click="calculator(9)"
                         >
                             9
                         </div>
                         <div
-                            class="flex h-20 items-center justify-center border-x border-b bg-sidebar text-4xl duration-300 hover:bg-slate-100"
+                            class="flex items-center justify-center h-20 text-4xl duration-300 border-b border-x bg-sidebar hover:bg-slate-100"
                             @click="calculator(8)"
                         >
                             8
                         </div>
                         <div
-                            class="flex h-20 items-center justify-center border-b bg-sidebar text-4xl duration-300 hover:bg-slate-100"
+                            class="flex items-center justify-center h-20 text-4xl duration-300 border-b bg-sidebar hover:bg-slate-100"
                             @click="calculator(7)"
                         >
                             7
                         </div>
                         <div
-                            class="flex h-20 items-center justify-center border-b bg-sidebar text-4xl duration-300 hover:bg-slate-100"
+                            class="flex items-center justify-center h-20 text-4xl duration-300 border-b bg-sidebar hover:bg-slate-100"
                             @click="calculator(6)"
                         >
                             6
                         </div>
                         <div
-                            class="flex h-20 items-center justify-center border-x border-b bg-sidebar text-4xl duration-300 hover:bg-slate-100"
+                            class="flex items-center justify-center h-20 text-4xl duration-300 border-b border-x bg-sidebar hover:bg-slate-100"
                             @click="calculator(5)"
                         >
                             5
                         </div>
                         <div
-                            class="flex h-20 items-center justify-center border-b bg-sidebar text-4xl duration-300 hover:bg-slate-100"
+                            class="flex items-center justify-center h-20 text-4xl duration-300 border-b bg-sidebar hover:bg-slate-100"
                             @click="calculator(4)"
                         >
                             4
                         </div>
                         <div
-                            class="flex h-20 items-center justify-center border-b bg-sidebar text-4xl duration-300 hover:bg-slate-100"
+                            class="flex items-center justify-center h-20 text-4xl duration-300 border-b bg-sidebar hover:bg-slate-100"
                             @click="calculator(3)"
                         >
                             3
                         </div>
                         <div
-                            class="flex h-20 items-center justify-center border-x border-b bg-sidebar text-4xl duration-300 hover:bg-slate-100"
+                            class="flex items-center justify-center h-20 text-4xl duration-300 border-b border-x bg-sidebar hover:bg-slate-100"
                             @click="calculator(2)"
                         >
                             2
                         </div>
                         <div
-                            class="flex h-20 items-center justify-center border-b bg-sidebar text-4xl duration-300 hover:bg-slate-100"
+                            class="flex items-center justify-center h-20 text-4xl duration-300 border-b bg-sidebar hover:bg-slate-100"
                             @click="calculator(1)"
                         >
                             1
                         </div>
                         <div
-                            class="flex h-20 items-center justify-center bg-sidebar text-4xl duration-300 hover:bg-slate-100"
+                            class="flex items-center justify-center h-20 text-4xl duration-300 bg-sidebar hover:bg-slate-100"
                             @click="setMultiplicatator = true"
                         >
                             X
                         </div>
                         <div
-                            class="flex h-20 items-center justify-center border-x bg-sidebar text-4xl duration-300 hover:bg-slate-100"
+                            class="flex items-center justify-center h-20 text-4xl duration-300 border-x bg-sidebar hover:bg-slate-100"
                             @click="calculator(0)"
                         >
                             0
                         </div>
                         <div
-                            class="flex h-20 items-center justify-center bg-sidebar text-4xl duration-300 hover:bg-slate-100"
+                            class="flex items-center justify-center h-20 text-4xl duration-300 bg-sidebar hover:bg-slate-100"
                             @click="
                                 () => {
                                     if (priceRow) {
@@ -338,15 +343,15 @@ const hasSelectedClient = computed({
                         </div>
                     </div>
                 </div>
-                <footer class="flex h-20 items-center justify-between border-t">
+                <footer class="flex items-center justify-between h-20 border-t">
                     <div
-                        class="flex h-full basis-1/3 items-center justify-center bg-red-500 font-extrabold text-red-100 dark:bg-red-950 dark:text-red-400"
+                        class="flex items-center justify-center h-full font-extrabold text-red-100 bg-red-500 basis-1/3 dark:bg-red-950 dark:text-red-400"
                         @click="deleteCurrentRow"
                     >
                         Supprimer
                     </div>
                     <div
-                        class="bg-primary-color flex h-full basis-2/3 items-center justify-center border-l font-extrabold text-blue-100 dark:bg-blue-900 dark:text-teal-400"
+                        class="flex items-center justify-center h-full font-extrabold text-blue-100 border-l bg-primary-color basis-2/3 dark:bg-blue-900 dark:text-teal-400"
                         @click="validation"
                     >
                         Valider

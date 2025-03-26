@@ -101,13 +101,13 @@ class TicketController extends Controller
      */
     public function store(Request $request)
     {
-        // dd($request->all());
+        dd($request->all());
         $reference = '';
 
 
-        //attention c'est a changer
-        // if ($request->with_tva) {
-        if ($request->client_id ? true : false) {
+        //la ça devrait etre bon
+        // if ($request->client_id ? true : false) {
+        if ($request->with_tva) {
             $lastNumber = DB::table('tickets')->where('with_tva', true)->max('reference');
 
             $reference =  ($lastNumber ? $lastNumber + 1 : 1);
@@ -144,6 +144,8 @@ class TicketController extends Controller
 
 
             $pdf = Pdf::loadView('facture', ['ticket' => $ticket]);
+
+
 
             // Mail::to($ticket->client->email)->send(new InvoiceMail($pdf->output(), "facture.pdf"));
             // Mail::to("contact@sijetaisunefleur.com")->send(new InvoiceMail($pdf->output(), "facture.pdf"));

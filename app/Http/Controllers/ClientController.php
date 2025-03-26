@@ -90,7 +90,7 @@ class ClientController extends Controller
         $client->update($request->all());
         $message = "La fiche de $client->firstname $client->lastname a été modifié";
 
-        return redirect()->route('client.index')->with('success', $message);
+        return redirect()->back()->with('success', $message);
     }
 
     /**
