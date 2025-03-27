@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import CreateClientModal from '@/components/CreateClientModal.vue';
 import { Button } from '@/components/ui/button';
 import Card from '@/components/ui/card/Card.vue';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -12,7 +13,8 @@ import { Client } from '@/types';
 import { router } from '@inertiajs/vue3';
 import { ClipboardList } from 'lucide-vue-next';
 import { computed, reactive, ref } from 'vue';
-import CreateClientModal from '../components/CreateClientModal.vue';
+
+import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
 
 const props = defineProps<{
     show: boolean;
@@ -73,7 +75,25 @@ const handleCreateClient = (clientData: any) => {
                     <div class="flex items-center gap-2">
                         <Switch v-if="activeTab == 'saved'" id="withTVA" v-model="ClientTVASwitch" class="ml-10" />
                         <Switch v-else id="withTVA" v-model="EmailTVASwitch" class="ml-10" />
-                        <Label for="withTVA" class="text-sm">TVA</Label>
+
+                        <HoverCard>
+                            <HoverCardTrigger as-child>
+                                <Label for="withTVA" class="text-sm">TVA</Label>
+                            </HoverCardTrigger>
+                            <HoverCardContent class="w-80">
+                                <div class="flex justify-between space-x-4">
+                                    <!-- <Avatar>
+                                        <AvatarImage src="https://github.com/vuejs.png" />
+                                        <AvatarFallback>VC</AvatarFallback>
+                                    </Avatar> -->
+                                    <div class="space-y-1">
+                                        <h4 class="text-sm font-semibold">Information</h4>
+                                        <p class="text-sm">Si c'est coché, tu auras le "A" dans les références de tes factures</p>
+                                        <p class="text-sm">Par exemple : 25-054A</p>
+                                    </div>
+                                </div>
+                            </HoverCardContent>
+                        </HoverCard>
                     </div>
                 </div>
                 <DialogDescription class="flex flex-col gap-4" v-if="activeTab === 'email'">
@@ -130,8 +150,10 @@ const handleCreateClient = (clientData: any) => {
 
             <div class="flex items-end justify-end gap-3">
                 <Button variant="secondary" @click="emit('close')">Annuler</Button>
-                <Button v-if="activeTab === 'saved'" variant="teal" @click="emit('validation', selectedClient)">Valider</Button>
-                <Button v-if="activeTab === 'email'" variant="teal" @click="emit('validation', selectedEmail)">Valider</Button>
+                <Button v-if="activeTab === 'saved'" variant="teal" @click="emit('validation', selectedClient, ClientTVASwitch)">Valider</Button>
+                <Button v-if="activeTab === 'email'" variant="teal" @click="emit('validation', selectedEmail, EmailTVASwitch, selectedTVA)"
+                    >Valider</Button
+                >
             </div>
         </DialogContent>
     </Dialog>

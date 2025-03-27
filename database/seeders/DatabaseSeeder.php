@@ -34,6 +34,18 @@ class DatabaseSeeder extends Seeder
 
         Client::factory(10)->create();
 
+        Client::factory()->create([
+            'firstname' => 'Hadrien',
+            'lastname' => 'Janssens',
+            'email' => 'hadrien.janssens7@gmail.com',
+            'company' => 'BlackPigCompany',
+            'city' => 'Morlanwelz',
+            'country' => 'Belgique',
+            'address' => 'Rue joseph Wauters 81',
+            'phone' => '0499/12.34.56',
+            'tva_number' => 'BE0123456789',
+        ]);
+
         Ticket::factory(30)->create();
     }
 }

@@ -12,7 +12,7 @@ class CaisseController extends Controller
     public function index()
     {
 
-        return inertia('Caisse', [
+        return inertia('caisse/Caisse', [
             'clients' => Client::orderBy('lastname')->get(),
             'categories' => Category::all(),
         ]);

@@ -101,7 +101,7 @@ class TicketController extends Controller
      */
     public function store(Request $request)
     {
-        dd($request->all());
+        // dd($request->all());
         $reference = '';
 
 
@@ -116,12 +116,12 @@ class TicketController extends Controller
 
             $reference =  $lastNumber ? $lastNumber + 1 : 1;
         };
-
         $ticket = Ticket::create([
             'client_id' => $request->client_id,
-            'with_tva' => $request->client_id ? true : false,
-            // 'with_tva' =>  $request->with_tva,
+            // 'with_tva' => $request->client_id ? true : false,
+            'with_tva' =>  $request->with_tva,
             'reference' => $reference,
+            'comment' => $request->comment,
         ]);
 
         $ticketRows = $request->ticket;
@@ -140,15 +140,23 @@ class TicketController extends Controller
 
         if ($ticket->client_id) {
             // Send an email to the client
+
             $message = "La facture a été envoyé à " . $ticket->client->email;
 
+            $pdf = Pdf::loadView('facture', ['ticket' => $ticket, 'with_tva' => $request->with_tva]);
 
-            $pdf = Pdf::loadView('facture', ['ticket' => $ticket]);
-
-
-
-            // Mail::to($ticket->client->email)->send(new InvoiceMail($pdf->output(), "facture.pdf"));
+            Mail::to($ticket->client->email)->send(new InvoiceMail($pdf->output(), "facture.pdf"));
             // Mail::to("contact@sijetaisunefleur.com")->send(new InvoiceMail($pdf->output(), "facture.pdf"));
+
+            return redirect()->route('caisse')->with('success', $message);
+        } else if ($request->input('email')) {
+            // Send an email to the client
+            $message = "La facture a été envoyé à " . $request->input('email');
+
+            $pdf = Pdf::loadView('facture', ['ticket' => $ticket, 'with_tva' => $request->with_tva, 'tva_number' => $request->tva_number]);
+
+            Mail::to($request->input('email'))->send(new InvoiceMail($pdf->output(), "facture.pdf"));
+
 
             return redirect()->route('caisse')->with('success', $message);
         }

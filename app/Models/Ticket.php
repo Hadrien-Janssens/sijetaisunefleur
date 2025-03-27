@@ -19,6 +19,7 @@ class Ticket extends Model
         'client_id',
         'reference',
         'with_tva',
+        'comment',
     ];
 
     public function client()

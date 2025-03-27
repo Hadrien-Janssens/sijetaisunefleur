@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
@@ -7,6 +8,7 @@ import { Client, type BreadcrumbItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { Building, Hash, Mail, MapPin, Phone, Ticket, Trash, UserCheck, UserRoundX } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
+import CommentModal from './CommentModal.vue';
 import SearchClientModal from './SearchClientModal.vue';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -36,6 +38,10 @@ const diff = ref(0);
 const isInPaiyment = ref(false);
 const selectedClient = ref<null | Client>(null);
 const selectedEmail = ref('');
+const selectedTva = ref(false);
+const TVANumber = ref('');
+const isCommentModalOpen = ref(false);
+const comment = ref('');
 
 const getNameCategory = (id: number) => {
     return props.categories.find((category) => category.id === id)?.name;
@@ -79,7 +85,11 @@ const validation = () => {
 
         sendTicket();
         selectedClient.value = null;
+        selectedEmail.value = '';
+        selectedTva.value = false;
         ticket.value = [];
+        TVANumber.value = '';
+
         return;
     }
     if (priceRow.value) {
@@ -131,7 +141,9 @@ const sendTicket = () => {
         ticket: ticket.value,
         client_id: selectedClient.value?.id || null,
         email: selectedEmail.value || null,
-        with_tva: selectedClient.value?.tva_number ? true : false,
+        with_tva: selectedTva.value,
+        tva_number: TVANumber.value,
+        comment: comment.value || null,
     };
 
     router.post(route('ticket.store'), form);
@@ -139,7 +151,9 @@ const sendTicket = () => {
 
 const isModalOpen = ref(false);
 
-const setSelectedClient = (client: any) => {
+const setSelectedClient = (client: any, tva: boolean, tvaNumber = '') => {
+    console.log(client, tva);
+
     if (typeof client === 'string') {
         selectedEmail.value = client;
         isModalOpen.value = false;
@@ -147,6 +161,8 @@ const setSelectedClient = (client: any) => {
         selectedClient.value = client;
         isModalOpen.value = false;
     }
+    selectedTva.value = tva;
+    TVANumber.value = tvaNumber;
 };
 
 const hasSelectedClient = computed({
@@ -162,6 +178,13 @@ const hasSelectedClient = computed({
         }
     },
 });
+
+const commentValidation = (c: string) => {
+    console.log(c);
+
+    comment.value = c;
+    isCommentModalOpen.value = false;
+};
 </script>
 
 <template>
@@ -172,20 +195,39 @@ const hasSelectedClient = computed({
             <!-- LEFTSIDE -->
             <div class="flex flex-col basis-1/3">
                 <div class="flex flex-col gap-2 p-3 border-b">
-                    <h2 class="flex items-center gap-2"><Ticket class="text-primary-color" />Ticket en cours</h2>
-                    <Link :href="route('client.edit', selectedClient.id)" v-if="selectedClient">
-                        <p class="flex items-center gap-2">
-                            <UserCheck class="text-blue-500" /> {{ selectedClient.lastname }} {{ selectedClient.firstname }}
-                        </p>
+                    <div class="flex items-center justify-between">
+                        <h2 class="flex items-center gap-2"><Ticket class="text-primary-color" />Ticket en cours</h2>
+                        <CommentModal
+                            v-if="selectedClient || selectedEmail"
+                            :open="isCommentModalOpen"
+                            @close="isCommentModalOpen = false"
+                            @open="isCommentModalOpen = true"
+                            @comment_validation="commentValidation"
+                        />
+                    </div>
+                    <HoverCard v-if="selectedClient">
+                        <HoverCardTrigger as-child>
+                            <Link :href="route('client.edit', selectedClient.id)">
+                                <p class="flex items-center gap-2">
+                                    <UserCheck class="text-blue-500" /> {{ selectedClient.lastname }} {{ selectedClient.firstname }}
+                                </p>
+                            </Link>
+                        </HoverCardTrigger>
+                        <HoverCardContent class="w-80">
+                            <p class="flex items-center gap-2">
+                                <UserCheck class="text-blue-500" /> {{ selectedClient.lastname }} {{ selectedClient.firstname }}
+                            </p>
 
-                        <p class="flex items-center gap-2"><Mail class="text-blue-500" /> {{ selectedClient.email }}</p>
-                        <p class="flex items-center gap-2"><Phone class="text-blue-500" /> {{ selectedClient.phone }}</p>
-                        <p class="flex items-center gap-2"><Building class="text-blue-500" /> {{ selectedClient.company }}</p>
-                        <p class="flex items-center gap-2"><Hash class="text-blue-500" /> {{ selectedClient.tva_number }}</p>
-                        <p class="flex items-center gap-2">
-                            <MapPin class="text-blue-500" /> {{ selectedClient.address }} {{ selectedClient.city }} {{ selectedClient.country }}
-                        </p>
-                    </Link>
+                            <p class="flex items-center gap-2"><Mail class="text-blue-500" /> {{ selectedClient.email }}</p>
+                            <p class="flex items-center gap-2"><Phone class="text-blue-500" /> {{ selectedClient.phone }}</p>
+                            <p class="flex items-center gap-2"><Building class="text-blue-500" /> {{ selectedClient.company }}</p>
+                            <p class="flex items-center gap-2"><Hash class="text-blue-500" /> {{ selectedClient.tva_number }}</p>
+                            <p class="flex items-center gap-2">
+                                <MapPin class="text-blue-500" /> {{ selectedClient.address }} {{ selectedClient.city }} {{ selectedClient.country }}
+                            </p>
+                        </HoverCardContent>
+                    </HoverCard>
+
                     <p v-else-if="selectedEmail" class="flex items-center gap-2"><Mail class="text-blue-500" /> {{ selectedEmail }}</p>
                     <p v-else class="flex items-center gap-2"><UserRoundX class="text-orange-500" /> Pas de client</p>
                 </div>
@@ -220,12 +262,7 @@ const hasSelectedClient = computed({
             <div class="flex flex-col border-l basis-2/3">
                 <div class="flex items-center w-full h-20 border-b">
                     <div class="flex items-center justify-between w-full p-3">
-                        <SearchClientModal
-                            :show="isModalOpen"
-                            :clients="clients"
-                            @close="isModalOpen = false"
-                            @validation="setSelectedClient($event)"
-                        />
+                        <SearchClientModal :show="isModalOpen" :clients="clients" @close="isModalOpen = false" @validation="setSelectedClient" />
 
                         <div class="flex items-center space-x-2">
                             <Switch id="invoice" v-model="hasSelectedClient" />

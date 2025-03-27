@@ -26,12 +26,14 @@
                     {{ $ticket->created_at->format('Y') }}-{{ str_pad($ticket->reference, 3, '0', STR_PAD_LEFT) }}{{ $ticket->with_tva ? 'A' : '' }}
                 </p>
                 <br><br>
-                <div style="width: 300px; word-wrap: break-word; line-height: 1.1em;">
-                    <p>Client : {{ $ticket->client->company }} c/o {{ $ticket->client->firstname }}
-                        {{ $ticket->client->lastname }}</p>
-                    <p>Adresse : {{ $ticket->client->address }}</p>
-                    <p>{{ $ticket->client->city }}</p>
-                </div>
+                @if ($ticket->client)
+                    <div style="width: 300px; word-wrap: break-word; line-height: 1.1em;">
+                        <p>Client : {{ $ticket->client->company }} c/o {{ $ticket->client->firstname }}
+                            {{ $ticket->client->lastname }}</p>
+                        <p>Adresse : {{ $ticket->client->address }}</p>
+                        <p>{{ $ticket->client->city }}</p>
+                    </div>
+                @endif
             </div>
         </div>
     </header>
@@ -40,8 +42,16 @@
     <table style="margin-top: 260px; border: 1px solid black; width: 100%;">
         <thead>
             <tr>
-                <th>Client : {{ $ticket->client->company }} </th>
-                <th>N° TVA : {{ $ticket->client->tva_number }} </th>
+                @if ($ticket->client && $ticket->client->company)
+                    <th>Client : {{ $ticket->client->company }} </th>
+                @endif
+                @if ($with_tva)
+                    @if (isset($tva_number))
+                        <th>N° TVA : {{ $tva_number }} </th>
+                    @else
+                        <th>N° TVA : {{ $ticket->client->tva_number }} </th>
+                    @endif
+                @endif
                 <th>Date : {{ $ticket->created_at->format('Y-m-d') }}</th>
 
             </tr>
@@ -71,6 +81,13 @@
             @endforeach
         </tbody>
     </table>
+
+    {{-- COMMENTAIRE --}}
+    @if ($ticket->comment)
+        <p style="margin-top: 50px">Commentaire : {{ $ticket->comment }}</p>
+    @else
+        <p style="margin-top: 50px">Commentaire : /</p>
+    @endif
 
     {{-- footer --}}
     <footer style="margin-top: 250px">
