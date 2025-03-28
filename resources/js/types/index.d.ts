@@ -60,4 +60,17 @@ export interface Client {
     updated_at: string;
 }
 
+export interface Ticket {
+    id: number;
+    reference: number;
+    is_sent: boolean;
+    is_paid: boolean;
+    with_tva: boolean;
+    comment: string;
+    client: number;
+    deleted_at: string | null;
+    created_at: string;
+    updated_at: string;
+}
+
 export type BreadcrumbItemType = BreadcrumbItem;

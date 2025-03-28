@@ -5,6 +5,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 const props = defineProps<{
     open: boolean;
     hiddenbutton?: boolean;
+    text?: string | null;
 }>();
 
 const emit = defineEmits(['update:open', 'delete']);
@@ -22,7 +23,8 @@ const handleDelete = () => {
 <template>
     <Dialog :open="open" @update:open="(value) => emit('update:open', value)">
         <DialogTrigger asChild v-if="!hiddenbutton">
-            <Button variant="outline">Supprimer</Button>
+            <Button v-if="text" variant="outline">{{ text }}</Button>
+            <Button v-else variant="outline">Supprimer</Button>
         </DialogTrigger>
         <DialogContent>
             <DialogHeader>

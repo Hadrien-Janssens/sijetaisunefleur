@@ -8,10 +8,15 @@
     <title>Facture client</title>
 </head>
 
+
 <body>
     <header style="width: 100%; line-height: 0.5em;">
         <div>
             <div style="float: left;">
+
+
+                {{-- <img style="margin-bottom : 30px;" src="{{ asset('/public/logo.jpg') }}" alt="si j'étais une fleur"
+                    width="200"> --}}
                 <p style="margin-bottom : 30px; font-weight:bold ">SI J'ETAIS UNE FLEUR</p>
                 <p>Rue de l'Espinette</p>
                 <p>7160 Godarville</p>
@@ -64,9 +69,9 @@
             <tr>
                 <th>Description</th>
                 <th>Qté</th>
-                <th>Prix Unit</th>
+                <th>Prix Unit (htva)</th>
                 <th>Remise</th>
-                <th>Prix Total</th>
+                <th>Prix Total (htva)</th>
             </tr>
         </thead>
         <tbody>
@@ -74,9 +79,9 @@
                 <tr>
                     <th>{{ $row->category->name }}</th>
                     <th>{{ $row->quantity }}</th>
-                    <th>€ {{ $row->price }}</th>
+                    <th>€ {{ number_format($row->price / (1 + $row->category->tva / 100), 2) }}</th>
                     <th>0%</th>
-                    <th>€ {{ $row->price * $row->quantity }}</th>
+                    <th>€ {{ number_format($row->price / (1 + $row->category->tva / 100), 2) * $row->quantity }}</th>
                 </tr>
             @endforeach
         </tbody>
@@ -90,8 +95,30 @@
     @endif
 
     {{-- footer --}}
-    <footer style="margin-top: 250px">
-        <p style="font-weight: bold; ">TOTAL € 118,84 hTVA</p>
+    <footer style="margin-top: 150px">
+        @php
+            $base = 0;
+            $base21 = 0;
+            $base6 = 0;
+            // $tvaTotal = 0;
+            $tva21 = 0;
+            $tva6 = 0;
+
+            foreach ($ticket->ticketRows as $row) {
+                $base += number_format($row->price / (1 + $row->category->tva / 100), 2) * $row->quantity;
+                // $tvaTotal +=
+                //     $row->price - number_format($row->price / (1 + $row->category->tva / 100), 2) * $row->quantity;
+                if ($row->category->tva == 21) {
+                    $base21 += number_format($row->price / (1 + $row->category->tva / 100), 2) * $row->quantity;
+                }
+                if ($row->category->tva == 6) {
+                    $base6 += number_format($row->price / (1 + $row->category->tva / 100), 2) * $row->quantity;
+                }
+            }
+            $tva6 = $base6 * 0.06;
+            $tva21 = $base21 * 0.21;
+        @endphp
+        <p style="font-weight: bold; ">TOTAL € {{ $base }} hTVA</p>
         <p>Pour acquis : (cash/banconact)</p>
 
         <table style="margin-top: 50px; border: 1px solid black; width: 100%;">
@@ -109,24 +136,24 @@
                 <tr>
                     <th>Base</th>
                     <th>€ -</th>
+                    <th>€ {{ $base6 }} </th>
                     <th>€ -</th>
-                    <th>€ -</th>
-                    <th>€ 118,84</th>
-                    <th>€ 118,84</th>
+                    <th>€ {{ $base21 }}</th>
+                    <th>€ {{ $base }}</th>
                 </tr>
                 <tr>
                     <th>TVA</th>
                     <th>€ -</th>
+                    <th>€ {{ number_format($tva6, 2) }}</th>
                     <th>€ -</th>
-                    <th>€ -</th>
-                    <th>€ 24,96</th>
-                    <th>€ 24,96</th>
+                    <th>€ {{ number_format($tva21, 2) }}</th>
+                    <th>€ {{ number_format($tva6 + $tva21, 2) }}</th>
                 </tr>
             </tbody>
             <tfoot>
                 <tr>
                     <th colspan="5">Echéance : Acquitté</th>
-                    <th> A PAYER <br> € 143,80</th>
+                    <th> A PAYER <br> € {{ number_format($base + $tva6 + $tva21, 2) }}</th>
                 </tr>
         </table>
         <p style="text-align: right">Exemplaire client</p>

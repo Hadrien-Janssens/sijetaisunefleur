@@ -4,12 +4,13 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import AppLayout from '@/layouts/AppLayout.vue';
-import { Client, type BreadcrumbItem } from '@/types';
+import { type BreadcrumbItem, type Client } from '@/types';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { Building, Hash, Mail, MapPin, Phone, Ticket, Trash, UserCheck, UserRoundX } from 'lucide-vue-next';
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import CommentModal from './CommentModal.vue';
 import SearchClientModal from './SearchClientModal.vue';
+import TicketReductionModal from './TicketReductionModal.vue';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -23,14 +24,23 @@ const props = defineProps<{
     categories: Array<{
         id: number;
         name: string;
+        tva: number;
     }>;
 }>();
 
-const ticket = ref([]);
+interface Ticket {
+    id: number;
+    category_id: number;
+    price: number;
+    quantity: number;
+    tva: number;
+}
+
+const ticket = ref<Array<Ticket>>([]);
 
 const priceRow = ref<null | number>(null);
 const quantityRow = ref<number | null>(null);
-const category_idRow = ref(2);
+
 const setMultiplicatator = ref(false);
 const decimal = ref(false);
 const centimal = ref(false);
@@ -40,6 +50,8 @@ const selectedClient = ref<null | Client>(null);
 const selectedEmail = ref('');
 const selectedTva = ref(false);
 const TVANumber = ref('');
+const isTicketReductionModalOpen = ref(false);
+const isArticleReductionModalOpen = ref(false);
 const isCommentModalOpen = ref(false);
 const comment = ref('');
 
@@ -82,20 +94,13 @@ const validation = () => {
     if (isInPaiyment.value) {
         deleteCurrentRow();
         isInPaiyment.value = false;
-
         sendTicket();
-        selectedClient.value = null;
-        selectedEmail.value = '';
-        selectedTva.value = false;
-        ticket.value = [];
-        TVANumber.value = '';
-
         return;
     }
     if (priceRow.value) {
         ticket.value.push({
             id: ticket.value.length + 1,
-            category_id: category_idRow.value,
+            category_id: selectedCategoryId.value,
             price: priceRow.value,
             quantity: quantityRow.value ? quantityRow.value : 1,
             tva: tva.value,
@@ -119,21 +124,19 @@ const deleteRow = (id: number) => {
     ticket.value = ticket.value.filter((article) => article.id !== id);
 };
 
-const tva = computed(() => {
-    if (category_idRow.value == 2) {
-        return 6;
-    } else {
-        return 21;
-    }
-});
-
 const total = computed(() => {
-    return ticket.value.reduce((acc, article) => acc + article.price * article.quantity, 0).toFixed(2);
+    if (ticket.value.length === 0) {
+        return 0;
+    }
+    return ticket.value.reduce((acc, row) => acc + row.price * row.quantity, 0);
 });
 
 const paid = () => {
+    if (priceRow.value === null) {
+        priceRow.value = 0;
+    }
     isInPaiyment.value = true;
-    diff.value = (priceRow.value - total.value).toFixed(2);
+    diff.value = priceRow.value - total.value;
 };
 
 const sendTicket = () => {
@@ -145,6 +148,11 @@ const sendTicket = () => {
         tva_number: TVANumber.value,
         comment: comment.value || null,
     };
+    selectedClient.value = null;
+    selectedEmail.value = '';
+    selectedTva.value = false;
+    ticket.value = [];
+    TVANumber.value = '';
 
     router.post(route('ticket.store'), form);
 };
@@ -180,11 +188,27 @@ const hasSelectedClient = computed({
 });
 
 const commentValidation = (c: string) => {
-    console.log(c);
-
     comment.value = c;
     isCommentModalOpen.value = false;
 };
+
+const tva = ref(6);
+const filterCategories = computed(() => {
+    return props.categories.filter((category) => category.tva === tva.value);
+});
+
+const selectedCategoryId = ref(filterCategories.value[0].id);
+
+const toggleTva = (value: number) => {
+    tva.value = value;
+};
+
+watch(tva, (newVal) => {
+    const newCategories = props.categories.filter((c) => c.tva === newVal);
+    if (newCategories.length > 0) {
+        selectedCategoryId.value = newCategories[0].id;
+    }
+});
 </script>
 
 <template>
@@ -213,18 +237,23 @@ const commentValidation = (c: string) => {
                                 </p>
                             </Link>
                         </HoverCardTrigger>
-                        <HoverCardContent class="w-80">
+                        <HoverCardContent class="space-y-3 w-80">
                             <p class="flex items-center gap-2">
                                 <UserCheck class="text-blue-500" /> {{ selectedClient.lastname }} {{ selectedClient.firstname }}
                             </p>
 
-                            <p class="flex items-center gap-2"><Mail class="text-blue-500" /> {{ selectedClient.email }}</p>
-                            <p class="flex items-center gap-2"><Phone class="text-blue-500" /> {{ selectedClient.phone }}</p>
-                            <p class="flex items-center gap-2"><Building class="text-blue-500" /> {{ selectedClient.company }}</p>
-                            <p class="flex items-center gap-2"><Hash class="text-blue-500" /> {{ selectedClient.tva_number }}</p>
+                            <p class="flex items-center gap-2"><Mail class="text-blue-500 shrink-0" /> {{ selectedClient.email }}</p>
+                            <p class="flex items-center gap-2"><Phone class="text-blue-500 shrink-0" /> {{ selectedClient.phone }}</p>
+                            <p class="flex items-center gap-2"><Building class="text-blue-500 shrink-0" /> {{ selectedClient.company }}</p>
+                            <p class="flex items-center gap-2"><Hash class="text-blue-500 shrink-0" /> {{ selectedClient.tva_number }}</p>
                             <p class="flex items-center gap-2">
-                                <MapPin class="text-blue-500" /> {{ selectedClient.address }} {{ selectedClient.city }} {{ selectedClient.country }}
+                                <MapPin class="text-blue-500 shrink-0" /> {{ selectedClient.address }} {{ selectedClient.city }}
+                                {{ selectedClient.country }}
                             </p>
+                            <div v-if="comment">
+                                <p class="font-bold">Commentaire :</p>
+                                <p>{{ comment }}</p>
+                            </div>
                         </HoverCardContent>
                     </HoverCard>
 
@@ -250,12 +279,16 @@ const commentValidation = (c: string) => {
                     <p class="text-center basis-1/2">
                         Total : <span class="font-bold">{{ total }}€</span>
                     </p>
-                    <div
-                        class="flex items-center justify-center h-full font-extrabold text-center text-blue-100 bg-blue-500 basis-1/2 dark:bg-orange-950 dark:text-orange-400"
-                        @click="paid"
-                    >
-                        Payer
-                    </div>
+
+                    <TicketReductionModal
+                        title="Séléctionne la réduction"
+                        trigger="Réduction ticket"
+                        description="Cette réduction sera appliquée sur l'ensemble du ticket"
+                        :open="isTicketReductionModalOpen"
+                        @close="isTicketReductionModalOpen = false"
+                        @open="isTicketReductionModalOpen = true"
+                        @comment_validation="commentValidation"
+                    />
                 </footer>
             </div>
             <!-- RightSide -->
@@ -269,13 +302,13 @@ const commentValidation = (c: string) => {
                             <Label for="invoice">Facture</Label>
                         </div>
 
-                        <Select defaultValue="Fleurs" v-model="category_idRow">
+                        <Select v-model="selectedCategoryId">
                             <SelectTrigger class="w-[180px]">
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectGroup>
-                                    <SelectItem v-for="category in categories" :value="category.id" :key="category.id">
+                                    <SelectItem v-for="category in filterCategories" :value="category.id" :key="category.id">
                                         {{ category.name }}
                                     </SelectItem>
                                 </SelectGroup>
@@ -283,9 +316,9 @@ const commentValidation = (c: string) => {
                         </Select>
 
                         <div class="flex items-center space-x-2">
-                            <Switch id="r1" :model-value="tva == 6" @click="tva = 6" />
+                            <Switch id="r1" @click="toggleTva(6)" :model-value="tva == 6" />
                             <Label for="r1">6%</Label>
-                            <Switch id="r2" :model-value="tva == 21" @click="tva = 21" />
+                            <Switch id="r2" @click="toggleTva(21)" :model-value="tva == 21" />
                             <Label for="r2">21%</Label>
                         </div>
                     </div>
@@ -299,7 +332,7 @@ const commentValidation = (c: string) => {
                         <!-- <p v-if="setMultiplicatator && quantityRow">= {{ (priceRow * quantityRow).toFixed(2) }}€</p> -->
                         <p v-if="isInPaiyment">à rendre : {{ diff }}€</p>
                     </div>
-                    <div class="grid grid-cols-3 font-extrabold border-t border-b">
+                    <div class="grid grid-cols-4 font-extrabold border-t border-b">
                         <div
                             class="flex items-center justify-center h-20 text-4xl duration-300 border-b bg-sidebar hover:bg-slate-100"
                             @click="calculator(9)"
@@ -319,6 +352,12 @@ const commentValidation = (c: string) => {
                             7
                         </div>
                         <div
+                            class="flex items-center justify-center h-full row-span-2 font-extrabold text-green-100 border-l bg-primary-color basis-2/3"
+                            @click="validation"
+                        >
+                            Valider
+                        </div>
+                        <div
                             class="flex items-center justify-center h-20 text-4xl duration-300 border-b bg-sidebar hover:bg-slate-100"
                             @click="calculator(6)"
                         >
@@ -336,6 +375,7 @@ const commentValidation = (c: string) => {
                         >
                             4
                         </div>
+
                         <div
                             class="flex items-center justify-center h-20 text-4xl duration-300 border-b bg-sidebar hover:bg-slate-100"
                             @click="calculator(3)"
@@ -354,6 +394,17 @@ const commentValidation = (c: string) => {
                         >
                             1
                         </div>
+
+                        <TicketReductionModal
+                            title="Séléctionne la réduction"
+                            trigger="Réduction article"
+                            description="Cette réduction sera appliquée sur l'article"
+                            :open="isArticleReductionModalOpen"
+                            @close="isArticleReductionModalOpen = false"
+                            @open="isArticleReductionModalOpen = true"
+                            @comment_validation="commentValidation"
+                        />
+
                         <div
                             class="flex items-center justify-center h-20 text-4xl duration-300 bg-sidebar hover:bg-slate-100"
                             @click="setMultiplicatator = true"
@@ -378,20 +429,20 @@ const commentValidation = (c: string) => {
                         >
                             ,
                         </div>
+                        <div
+                            class="flex items-center justify-center h-full font-extrabold text-gray-100 bg-gray-500 basis-1/3"
+                            @click="deleteCurrentRow"
+                        >
+                            Supprimer
+                        </div>
                     </div>
                 </div>
                 <footer class="flex items-center justify-between h-20 border-t">
                     <div
-                        class="flex items-center justify-center h-full font-extrabold text-red-100 bg-red-500 basis-1/3 dark:bg-red-950 dark:text-red-400"
-                        @click="deleteCurrentRow"
+                        class="flex items-center justify-center w-full h-full font-extrabold text-center text-blue-100 bg-blue-500 dark:bg-orange-950 dark:text-orange-400"
+                        @click="paid"
                     >
-                        Supprimer
-                    </div>
-                    <div
-                        class="flex items-center justify-center h-full font-extrabold text-blue-100 border-l bg-primary-color basis-2/3 dark:bg-blue-900 dark:text-teal-400"
-                        @click="validation"
-                    >
-                        Valider
+                        Payer
                     </div>
                 </footer>
             </div>

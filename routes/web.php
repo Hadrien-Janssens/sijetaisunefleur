@@ -40,6 +40,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('client', [ClientController::class, 'store'])->name('client.store');
     Route::put('client/{id}', [ClientController::class, 'update'])->name('client.update');
     Route::delete('client/{id}', [ClientController::class, 'destroy'])->name('client.destroy');
+    Route::delete('client/delete/{id}', [ClientController::class, 'forceDelete'])->name('client.forceDelete');
+
     Route::get('restore/client/{id}', [ClientController::class, 'restore'])->name('client.restore');
     Route::get('export/client', [ClientController::class, 'export'])->name('client.export');
 

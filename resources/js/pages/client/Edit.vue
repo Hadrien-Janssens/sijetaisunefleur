@@ -62,6 +62,11 @@ const confirmDelete = () => {
     form.delete(route('client.destroy', props.client.id));
     showDeleteModal.value = false;
 };
+
+const forceDelete = () => {
+    form.delete(route('client.forceDelete', props.client.id));
+    showDeleteModal.value = false;
+};
 </script>
 
 <template>
@@ -113,7 +118,14 @@ const confirmDelete = () => {
                     <CardFooter class="flex items-center justify-between gap-3 m-3" :class="{ 'justify-end': !client.deleted_at }">
                         <Link v-if="client.deleted_at" :href="route('client.restore', client.id)"> <Button variant="outline">Restaurer</Button></Link>
                         <div class="flex items-center gap-3">
-                            <DeleteConfirmationModal v-model:open="showDeleteModal" @delete="confirmDelete" />
+                            <DeleteConfirmationModal
+                                v-if="client.deleted_at"
+                                v-model:open="showDeleteModal"
+                                @delete="forceDelete"
+                                text="Supprimer définitivement"
+                            />
+                            <DeleteConfirmationModal v-else v-model:open="showDeleteModal" @delete="confirmDelete" />
+
                             <div class="flex justify-end">
                                 <Button variant="teal" type="submit" :disabled="form.processing">Sauvegarder</Button>
                             </div>

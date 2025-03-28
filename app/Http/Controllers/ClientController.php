@@ -152,4 +152,16 @@ class ClientController extends Controller
 
         return Excel::download(new ClientExport($request->input('tab')), $filename);
     }
+    public function forceDelete($id)
+    {
+        $client = Client::withTrashed()->findOrFail($id);
+        $clientFirstname = $client->firstname;
+        $clientLastname = $client->lastname;
+
+        $message = "$clientFirstname $clientLastname a été supprimé définitivement";
+
+        $client->forceDelete();
+
+        return redirect()->route('client.index')->with('success', $message);
+    }
 }
