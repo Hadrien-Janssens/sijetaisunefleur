@@ -161,8 +161,6 @@ const loadTicket = (ticketId: number) => {
     // router.get(route('ticket.print', ticketId), {}, { preserveState: true, preserveScroll: true });
     window.open(route('ticket.print', { id: ticketId }), '_blank');
 };
-
-console.log(props.tickets.data);
 </script>
 <template>
     <Head title="Ventes" />

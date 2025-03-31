@@ -13,9 +13,10 @@ import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Client, Row, type BreadcrumbItem } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/vue3';
-import { ArrowLeft, ShoppingBag, Ticket } from 'lucide-vue-next';
+import { ArrowLeft, ListPlus, ShoppingBag, Ticket, Trash } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 import ChangeClientModal from './ChangeClientModal.vue';
+import CreateRowModal from './CreateRowModal.vue';
 
 const props = defineProps<{
     ticket: {
@@ -32,9 +33,7 @@ const props = defineProps<{
             id: number;
             price: number;
             quantity: number;
-            category: {
-                name: string;
-            };
+            category_id: number;
         }[];
     };
     clients: Client[];
@@ -52,7 +51,10 @@ const form = useForm({
     comment: props.ticket.comment,
     date: new Date(props.ticket.created_at).toISOString().split('T')[0],
     client: props.ticket.client?.id || null,
+    ticket_rows: props.ticket.ticket_rows,
 });
+
+console.log(props.ticket.ticket_rows);
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -100,13 +102,28 @@ const clientName = computed(() => {
 
 const getTicketPrice = (ticket: any) => {
     let totalPrice = 0;
+
     ticket.ticket_rows.forEach((row: Row) => {
         totalPrice += row.price * row.quantity;
     });
     return totalPrice.toFixed(2);
 };
 
-console.log(props.category);
+const openCreateRowModal = ref(false);
+
+const createRow = (rowData: any) => {
+    form.ticket_rows.push({
+        id: Date.now(), // Temporary ID for new rows
+        category_id: rowData.category_id,
+        price: rowData.price,
+        quantity: rowData.quantity,
+    });
+    openCreateRowModal.value = false;
+};
+
+const deleteRow = (index: number) => {
+    form.ticket_rows.splice(index, 1);
+};
 </script>
 
 <template>
@@ -167,22 +184,29 @@ console.log(props.category);
                             <Textarea id="comment" v-model="form.comment" placeholder="Commentaire" class="flex-1" />
                         </div>
 
-                        <div class="pb-2 mb-2 border-b border-gray-200">
+                        <div class="flex gap-2 pb-2 mb-2 border-b border-gray-200">
                             <p class="font-semibold">Détails des articles</p>
+
+                            <ListPlus class="text-blue-500 hover:cursor-pointer" @click="openCreateRowModal = true" />
+                            <CreateRowModal
+                                :show="openCreateRowModal"
+                                @close="openCreateRowModal = false"
+                                @create="createRow"
+                                :categories="category"
+                            />
                         </div>
 
                         <div class="space-y-2">
                             <div
-                                v-for="(row, index) in ticket.ticket_rows"
-                                :key="index"
+                                v-for="(row, index) in form.ticket_rows"
+                                :key="row.id"
                                 class="flex items-center justify-between p-2 bg-white rounded-md"
                             >
                                 <div class="flex items-center gap-2">
                                     <ShoppingBag class="w-4 h-4 text-primary-color" />
-                                    <!-- <span>{{ row.category.name || `Article #${index + 1}` }}</span> -->
-                                    <Select>
+                                    <Select v-model="row.category_id" class="w-48">
                                         <SelectTrigger class="w-48">
-                                            <SelectValue :placeholder="row.category.name || `Article #${index + 1}`" />
+                                            <SelectValue :placeholder="row.category?.name || `Article #${index + 1}`" />
                                         </SelectTrigger>
                                         <SelectContent>
                                             <SelectItem v-for="(category, i) in props.category" :key="i" :value="category.id">
@@ -191,19 +215,20 @@ console.log(props.category);
                                         </SelectContent>
                                     </Select>
                                     <span class="flex items-center gap-3 text-sm text-gray-500">
-                                        <Input type="text" class="w-28" :default-value="row.price" />
+                                        <Input type="text" class="w-28" v-model="row.price" />
                                         <p class="shrink-0">€ x</p>
-                                        <Input type="number" class="w-28" :default-value="row.quantity"
-                                    /></span>
+                                        <Input type="number" class="w-28" v-model="row.quantity" :min="1" />
+                                    </span>
                                 </div>
                                 <span class="font-medium">{{ (row.price * row.quantity).toFixed(2) }}€</span>
+                                <Trash class="text-red-500 hover:cursor-pointer" @click="deleteRow(index)" />
                             </div>
                         </div>
 
                         <div class="flex justify-end pt-4 mt-4 border-t border-gray-200">
                             <div class="text-right">
                                 <p class="text-sm text-gray-500">Total</p>
-                                <p class="text-lg font-bold">{{ getTicketPrice(ticket) }}€</p>
+                                <p class="text-lg font-bold">{{ getTicketPrice(form) }}€</p>
                             </div>
                         </div>
                     </CardContent>

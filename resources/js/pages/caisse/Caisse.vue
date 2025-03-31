@@ -54,6 +54,7 @@ const isTicketReductionModalOpen = ref(false);
 const isArticleReductionModalOpen = ref(false);
 const isCommentModalOpen = ref(false);
 const comment = ref('');
+const totalReduction = ref(0);
 
 const getNameCategory = (id: number) => {
     return props.categories.find((category) => category.id === id)?.name;
@@ -187,8 +188,18 @@ const hasSelectedClient = computed({
     },
 });
 
-const commentValidation = (c: string) => {
-    comment.value = c;
+const reductionTicketValidation = (value: number) => {
+    console.log(value);
+
+    totalReduction.value = value;
+    isTicketReductionModalOpen.value = false;
+};
+const reductionRowValidation = (value: string) => {
+    comment.value = value;
+    isArticleReductionModalOpen.value = false;
+};
+const commentValidation = (value: string) => {
+    comment.value = value;
     isCommentModalOpen.value = false;
 };
 
@@ -277,7 +288,8 @@ watch(tva, (newVal) => {
                 </div>
                 <footer class="flex items-center justify-between h-20 p-1 border-t">
                     <p class="text-center basis-1/2">
-                        Total : <span class="font-bold">{{ total }}€</span>
+                        Total : <span class="font-bold" :class="totalReduction !== 0 ? 'text-red-500 line-through' : ''">{{ total }}€ </span
+                        ><span v-if="totalReduction !== 0">- {{ totalReduction }}%</span>
                     </p>
 
                     <TicketReductionModal
@@ -287,7 +299,7 @@ watch(tva, (newVal) => {
                         :open="isTicketReductionModalOpen"
                         @close="isTicketReductionModalOpen = false"
                         @open="isTicketReductionModalOpen = true"
-                        @comment_validation="commentValidation"
+                        @validation="reductionTicketValidation"
                     />
                 </footer>
             </div>
@@ -402,7 +414,7 @@ watch(tva, (newVal) => {
                             :open="isArticleReductionModalOpen"
                             @close="isArticleReductionModalOpen = false"
                             @open="isArticleReductionModalOpen = true"
-                            @comment_validation="commentValidation"
+                            @validation="reductionRowValidation"
                         />
 
                         <div

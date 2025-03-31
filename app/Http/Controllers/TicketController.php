@@ -102,12 +102,9 @@ class TicketController extends Controller
      */
     public function store(Request $request)
     {
-        // dd($request->all());
+
         $reference = '';
 
-
-        //la ça devrait etre bon
-        // if ($request->client_id ? true : false) {
         if ($request->with_tva) {
             $lastNumber = DB::table('tickets')->where('with_tva', true)->max('reference');
 
@@ -137,10 +134,8 @@ class TicketController extends Controller
 
             $ticketRow->save();
         }
-        // dd($ticket = Ticket::with('ticketRows.category')->find($ticket->id));
 
         if ($ticket->client_id) {
-            // Send an email to the client
 
             $message = "La facture a été envoyé à " . $ticket->client->email;
 
@@ -163,13 +158,6 @@ class TicketController extends Controller
         return redirect()->route('caisse');
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Ticket $ticket)
-    {
-        //
-    }
 
     /**
      * Show the form for editing the specified resource.
@@ -191,9 +179,33 @@ class TicketController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Ticket $ticket)
+    public function update(Request $request, string $id)
     {
-        //
+        $ticket = Ticket::withTrashed()->findOrFail($id);
+        $ticket->update([
+            'client_id' => $request->client,
+            'with_tva' => $request->with_tva,
+            'comment' => $request->comment,
+            'reference' => $request->reference,
+            'created_at' => $request->date,
+            'is_paid' => $request->is_paid,
+        ]);
+
+        $ticketRows = $request->ticket_rows;
+        $ticket->ticketRows()->delete();
+
+        foreach ($ticketRows as $key => $row) {
+
+            $ticketRow = new Ticket_row();
+            $ticketRow->ticket_id = $ticket->id;
+            $ticketRow->price = $row['price'];
+            $ticketRow->quantity = $row['quantity'];
+            $ticketRow->category_id = $row['category_id'];
+
+            $ticketRow->save();
+        }
+
+        return redirect()->back()->with('success', 'Le ticket a été mis à jour avec succès');
     }
 
     /**
