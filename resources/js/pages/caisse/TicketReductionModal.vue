@@ -21,7 +21,7 @@ defineProps<{
         <DialogTrigger as-child>
             <div
                 @click="emit('open')"
-                class="flex items-center justify-center h-full font-extrabold text-center text-orange-100 bg-orange-500 basis-1/2 dark:bg-orange-950 dark:text-orange-400"
+                class="flex items-center justify-center h-full font-extrabold text-center text-blue-100 bg-blue-500 rounded-lg basis-1/2 dark:bg-orange-950 dark:text-orange-400"
             >
                 {{ trigger }}
             </div>

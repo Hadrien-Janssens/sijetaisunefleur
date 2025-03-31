@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import DeleteConfirmationModal from '@/components/DeleteConfirmationModal.vue';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import Card from '@/components/ui/card/Card.vue';
 import { Input } from '@/components/ui/input';
@@ -9,12 +10,13 @@ import Tabs from '@/components/ui/tabs/Tabs.vue';
 import TabsList from '@/components/ui/tabs/TabsList.vue';
 import TabsTrigger from '@/components/ui/tabs/TabsTrigger.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
-import { type BreadcrumbItem } from '@/types';
+import { Client, type BreadcrumbItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/vue3';
-import { Barcode, CalendarDays, ChevronDown, Clock, Flower, Printer, ShoppingBag, Ticket, User } from 'lucide-vue-next';
+import { Barcode, CalendarDays, ChevronDown, Clock, Flower, Pencil, Printer, Save, Send, ShoppingBag, Ticket, Trash, User } from 'lucide-vue-next';
 import { ref, watch } from 'vue';
 import { getHour } from '../lib/utils';
 import { Row } from '../types';
+
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'ventes',
@@ -32,11 +34,10 @@ interface Ticket {
     data: Array<{
         id: number;
         created_at: string;
-        client: {
-            id: number;
-            firstname: string;
-        };
+        deleted_at: string | null;
+        client: Client | null;
         ticket_rows: Row[];
+        is_paid: boolean;
     }>;
 }
 
@@ -124,21 +125,44 @@ const downloadFile = () => {
     window.location.href = route('ticket.export');
 };
 
-const showDeleteModal = ref(false);
+const showTicketDeleteModal = ref(false);
+const showConfirmDeleteModal = ref(false);
 const ticketToDelete = ref<number | null>(null);
 
 const openDeleteModal = (id: number) => {
     ticketToDelete.value = id;
-    showDeleteModal.value = true;
+    showTicketDeleteModal.value = true;
+};
+const openForceDeleteModal = (id: number) => {
+    ticketToDelete.value = id;
+    showConfirmDeleteModal.value = true;
 };
 
 const confirmDelete = () => {
     if (ticketToDelete.value !== null) {
         router.delete(route('ticket.destroy', ticketToDelete.value));
     }
-    showDeleteModal.value = false;
+    showTicketDeleteModal.value = false;
     ticketToDelete.value = null;
 };
+const forceDelete = () => {
+    if (ticketToDelete.value !== null) {
+        router.delete(route('ticket.forceDelete', ticketToDelete.value));
+    }
+    showConfirmDeleteModal.value = false;
+    ticketToDelete.value = null;
+};
+
+const sendMail = (ticketID: number) => {
+    router.post(route('ticket.sendMail', ticketID), {}, { preserveState: true, preserveScroll: true });
+};
+
+const loadTicket = (ticketId: number) => {
+    // router.get(route('ticket.print', ticketId), {}, { preserveState: true, preserveScroll: true });
+    window.open(route('ticket.print', { id: ticketId }), '_blank');
+};
+
+console.log(props.tickets.data);
 </script>
 <template>
     <Head title="Ventes" />
@@ -246,6 +270,8 @@ const confirmDelete = () => {
                                 <div>
                                     <p class="font-medium">Total : {{ getTicketPrice(ticket) }}€</p>
                                 </div>
+                                <Badge v-if="ticket.is_paid" class="bg-green-500">Aquitté</Badge>
+                                <Badge v-else class="bg-red-500">à régler</Badge>
                             </div>
                             <div class="flex items-center gap-5">
                                 <p class="flex items-center gap-1 text-sm text-gray-600">
@@ -262,15 +288,15 @@ const confirmDelete = () => {
                         <Transition name="expand">
                             <div v-show="expandedTicketId === ticket.id" class="mt-4 overflow-hidden transition-all duration-300 ease-in-out">
                                 <div class="p-4 rounded-md bg-gray-50">
-                                    <div class="grid grid-cols-2 gap-4 mb-4">
+                                    <div class="grid grid-cols-3 gap-4 mb-4">
                                         <div>
                                             <p class="flex items-start gap-1 text-sm text-gray-500">
-                                                <CalendarDays class="w-4 h-4" />Date de création
+                                                <CalendarDays class="w-4 h-4 text-orange-500" />Date de création
                                             </p>
                                             <p class="font-medium">{{ formatDate(ticket.created_at) }}</p>
                                         </div>
                                         <div>
-                                            <p class="flex items-start gap-1 text-sm text-gray-500"><User class="w-4 h-4" />Client</p>
+                                            <p class="flex items-start gap-1 text-sm text-gray-500"><User class="w-4 h-4 text-blue-500" />Client</p>
 
                                             <Link
                                                 v-if="ticket.client"
@@ -280,6 +306,13 @@ const confirmDelete = () => {
                                                 {{ ticket.client?.firstname }}
                                             </Link>
                                             <p v-else class="font-medium">Client non défini</p>
+                                        </div>
+                                        <div class="flex items-center justify-end gap-2">
+                                            <Link :href="route('ticket.edit', ticket.id)" class="flex items-center gap-2">
+                                                <Button variant="outline" class="text-yellow-900 duration-300 bg-yellow-300 hover:bg-yellow-400"
+                                                    ><Pencil />Modifier</Button
+                                                ></Link
+                                            >
                                         </div>
                                     </div>
 
@@ -294,7 +327,7 @@ const confirmDelete = () => {
                                             class="flex items-center justify-between p-2 bg-white rounded-md"
                                         >
                                             <div class="flex items-center gap-2">
-                                                <ShoppingBag class="w-4 h-4 text-gray-500" />
+                                                <ShoppingBag class="w-4 h-4 text-primary-color" />
                                                 <span>{{ row.category.name || `Article #${index + 1}` }}</span>
                                                 <span class="text-sm text-gray-500">{{ row.price }}€ x{{ row.quantity }}</span>
                                             </div>
@@ -311,14 +344,29 @@ const confirmDelete = () => {
                                 </div>
                                 <div class="flex items-center justify-between">
                                     <div class="space-x-2">
-                                        <Button class="mt-4" variant="outline">Imprimer le ticket</Button>
-                                        <Button class="mt-4" variant="outline">Envoyer par mail</Button>
+                                        <Link v-if="ticket.deleted_at" :href="route('ticket.restore', ticket.id)">
+                                            <Button variant="outline">Restaurer</Button></Link
+                                        >
+                                        <Button class="mt-4" variant="outline" @click="loadTicket(ticket.id)">
+                                            <Printer class="text-blue-500" />Imprimer le ticket</Button
+                                        >
+                                        <Button class="mt-4" variant="outline" @click="sendMail(ticket.id)" :disabled="!ticket.client?.email"
+                                            ><Send class="text-blue-500" />Envoyer par mail</Button
+                                        >
                                     </div>
-                                    <div class="space-x-2">
-                                        <DeleteConfirmationModal v-model:open="showDeleteModal" @delete="confirmDelete()" :hiddenbutton="true" />
 
-                                        <Button @click="openDeleteModal(ticket.id)" variant="outline"> Supprimer </Button>
-                                        <Button class="mt-4" variant="teal" @click="console.log(ticket.id)">Sauvegarder</Button>
+                                    <div class="flex items-center gap-2 mt-4">
+                                        <DeleteConfirmationModal v-model:open="showConfirmDeleteModal" @delete="forceDelete" :hiddenbutton="true" />
+                                        <Button v-if="ticket.deleted_at" @click="openForceDeleteModal(ticket.id)" variant="outline">
+                                            Supprimer définitivement
+                                        </Button>
+
+                                        <DeleteConfirmationModal v-model:open="showTicketDeleteModal" @delete="confirmDelete" :hiddenbutton="true" />
+
+                                        <Button v-if="!ticket.deleted_at" @click="openDeleteModal(ticket.id)" variant="outline"
+                                            ><Trash class="text-red-400" /> Supprimer
+                                        </Button>
+                                        <Button variant="teal"><Save />Sauvegarder</Button>
                                     </div>
                                 </div>
                             </div>

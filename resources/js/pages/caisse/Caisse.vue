@@ -275,7 +275,7 @@ watch(tva, (newVal) => {
                         </li>
                     </TransitionGroup>
                 </div>
-                <footer class="flex items-center justify-between h-20 border-t">
+                <footer class="flex items-center justify-between h-20 p-1 border-t">
                     <p class="text-center basis-1/2">
                         Total : <span class="font-bold">{{ total }}€</span>
                     </p>
@@ -332,64 +332,64 @@ watch(tva, (newVal) => {
                         <!-- <p v-if="setMultiplicatator && quantityRow">= {{ (priceRow * quantityRow).toFixed(2) }}€</p> -->
                         <p v-if="isInPaiyment">à rendre : {{ diff }}€</p>
                     </div>
-                    <div class="grid grid-cols-4 font-extrabold border-t border-b">
+                    <div class="grid grid-cols-4 gap-1 p-1 font-extrabold border-t border-b">
                         <div
-                            class="flex items-center justify-center h-20 text-4xl duration-300 border-b bg-sidebar hover:bg-slate-100"
+                            class="flex items-center justify-center h-20 text-4xl duration-300 border-b rounded-lg bg-sidebar hover:bg-slate-100"
                             @click="calculator(9)"
                         >
                             9
                         </div>
                         <div
-                            class="flex items-center justify-center h-20 text-4xl duration-300 border-b border-x bg-sidebar hover:bg-slate-100"
+                            class="flex items-center justify-center h-20 text-4xl duration-300 border-b rounded-lg border-x bg-sidebar hover:bg-slate-100"
                             @click="calculator(8)"
                         >
                             8
                         </div>
                         <div
-                            class="flex items-center justify-center h-20 text-4xl duration-300 border-b bg-sidebar hover:bg-slate-100"
+                            class="flex items-center justify-center h-20 text-4xl duration-300 border-b rounded-lg bg-sidebar hover:bg-slate-100"
                             @click="calculator(7)"
                         >
                             7
                         </div>
                         <div
-                            class="flex items-center justify-center h-full row-span-2 font-extrabold text-green-100 border-l bg-primary-color basis-2/3"
+                            class="flex items-center justify-center h-full row-span-2 font-extrabold text-green-100 border-l rounded-lg bg-primary-color basis-2/3"
                             @click="validation"
                         >
                             Valider
                         </div>
                         <div
-                            class="flex items-center justify-center h-20 text-4xl duration-300 border-b bg-sidebar hover:bg-slate-100"
+                            class="flex items-center justify-center h-20 text-4xl duration-300 border-b rounded-lg bg-sidebar hover:bg-slate-100"
                             @click="calculator(6)"
                         >
                             6
                         </div>
                         <div
-                            class="flex items-center justify-center h-20 text-4xl duration-300 border-b border-x bg-sidebar hover:bg-slate-100"
+                            class="flex items-center justify-center h-20 text-4xl duration-300 border-b rounded-lg border-x bg-sidebar hover:bg-slate-100"
                             @click="calculator(5)"
                         >
                             5
                         </div>
                         <div
-                            class="flex items-center justify-center h-20 text-4xl duration-300 border-b bg-sidebar hover:bg-slate-100"
+                            class="flex items-center justify-center h-20 text-4xl duration-300 border-b rounded-lg bg-sidebar hover:bg-slate-100"
                             @click="calculator(4)"
                         >
                             4
                         </div>
 
                         <div
-                            class="flex items-center justify-center h-20 text-4xl duration-300 border-b bg-sidebar hover:bg-slate-100"
+                            class="flex items-center justify-center h-20 text-4xl duration-300 border-b rounded-lg bg-sidebar hover:bg-slate-100"
                             @click="calculator(3)"
                         >
                             3
                         </div>
                         <div
-                            class="flex items-center justify-center h-20 text-4xl duration-300 border-b border-x bg-sidebar hover:bg-slate-100"
+                            class="flex items-center justify-center h-20 text-4xl duration-300 border-b rounded-lg border-x bg-sidebar hover:bg-slate-100"
                             @click="calculator(2)"
                         >
                             2
                         </div>
                         <div
-                            class="flex items-center justify-center h-20 text-4xl duration-300 border-b bg-sidebar hover:bg-slate-100"
+                            class="flex items-center justify-center h-20 text-4xl duration-300 border-b rounded-lg bg-sidebar hover:bg-slate-100"
                             @click="calculator(1)"
                         >
                             1
@@ -406,19 +406,19 @@ watch(tva, (newVal) => {
                         />
 
                         <div
-                            class="flex items-center justify-center h-20 text-4xl duration-300 bg-sidebar hover:bg-slate-100"
+                            class="flex items-center justify-center h-20 text-4xl duration-300 rounded-lg bg-sidebar hover:bg-slate-100"
                             @click="setMultiplicatator = true"
                         >
                             X
                         </div>
                         <div
-                            class="flex items-center justify-center h-20 text-4xl duration-300 border-x bg-sidebar hover:bg-slate-100"
+                            class="flex items-center justify-center h-20 text-4xl duration-300 rounded-lg border-x bg-sidebar hover:bg-slate-100"
                             @click="calculator(0)"
                         >
                             0
                         </div>
                         <div
-                            class="flex items-center justify-center h-20 text-4xl duration-300 bg-sidebar hover:bg-slate-100"
+                            class="flex items-center justify-center h-20 text-4xl duration-300 rounded-lg bg-sidebar hover:bg-slate-100"
                             @click="
                                 () => {
                                     if (priceRow) {
@@ -430,16 +430,16 @@ watch(tva, (newVal) => {
                             ,
                         </div>
                         <div
-                            class="flex items-center justify-center h-full font-extrabold text-gray-100 bg-gray-500 basis-1/3"
+                            class="flex items-center justify-center h-full text-4xl font-extrabold rounded-lg basis-1/3 bg-sidebar hover:bg-slate-100"
                             @click="deleteCurrentRow"
                         >
-                            Supprimer
+                            C
                         </div>
                     </div>
                 </div>
-                <footer class="flex items-center justify-between h-20 border-t">
+                <footer class="flex items-center justify-between h-20 p-1 border-t">
                     <div
-                        class="flex items-center justify-center w-full h-full font-extrabold text-center text-blue-100 bg-blue-500 dark:bg-orange-950 dark:text-orange-400"
+                        class="flex items-center justify-center w-full h-full font-extrabold text-center text-green-100 rounded-lg bg-primary-color dark:bg-orange-950 dark:text-orange-400"
                         @click="paid"
                     >
                         Payer

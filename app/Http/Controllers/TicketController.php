@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Exports\TicketExport;
 use App\Mail\InvoiceMail;
+use App\Models\Category;
 use App\Models\Client;
 use App\Models\Ticket;
 use App\Models\Ticket_row;
@@ -157,7 +158,6 @@ class TicketController extends Controller
 
             Mail::to($request->input('email'))->send(new InvoiceMail($pdf->output(), "facture.pdf"));
 
-
             return redirect()->route('caisse')->with('success', $message);
         }
         return redirect()->route('caisse');
@@ -174,9 +174,18 @@ class TicketController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Ticket $ticket)
+    public function edit($id)
     {
-        //
+        $ticket = Ticket::withTrashed()->with(['ticketRows.category', 'client'])->findOrFail($id);
+        $client = Client::all();
+        $category = Category::all();
+
+        return inertia('vente/Edit', [
+            'ticket' => $ticket,
+            'clients' => $client,
+            'category' => $category,
+
+        ]);
     }
 
     /**
@@ -201,6 +210,28 @@ class TicketController extends Controller
         return redirect()->back()->with('success', $message);
     }
 
+    public function forceDelete(string $id)
+    {
+        $ticket = Ticket::withTrashed()->findOrFail($id);
+
+        $message = "Le ticket a été supprimé définitivement";
+
+        $ticket->forceDelete();
+
+        return redirect()->back()->with('success', $message);
+    }
+
+    public function restore(string $id)
+    {
+        $ticket = Ticket::withTrashed()->findOrFail($id);
+
+        $message = "Le ticket a été restauré";
+
+        $ticket->restore();
+
+        return redirect()->back()->with('success', $message);
+    }
+
 
     public function export()
     {
@@ -210,18 +241,38 @@ class TicketController extends Controller
     public function generatePDF($ticketId)
     {
         // Récupérer les données du ticket
-        // $ticket = Ticket::findOrFail($ticketId);
+        $ticket = Ticket::findOrFail($ticketId);
 
         // Passer les données à la vue
         // $data = ['ticket' => $ticket];
 
         // Générer le PDF à partir de la vue Blade
         // $pdf = Pdf::loadView('pdf.invoice', $data);
-        $pdf = Pdf::loadView('facture');
-        return $pdf->stream();
+        $pdf = Pdf::loadView('facture', ['ticket' => $ticket, 'with_tva' => $ticket->with_tva]);
 
         // Retourner le PDF en téléchargement
-        // return $pdf->download("facture_{$ticket->id}.pdf");
+        // return $pdf->download('facture_' . ($ticket->id ?? 'inconnu') . '.pdf');
         // return $pdf->download("facture_.pdf");
+        try {
+            $pdf = Pdf::loadView('facture', ['ticket' => $ticket, 'with_tva' => $ticket->with_tva]);
+            return response($pdf->stream("facture_{$ticket->id}.pdf"))
+                ->header('Content-Type', 'application/pdf');
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function sendMail($id)
+    {
+        $ticket = Ticket::with(['ticketRows.category', 'client'])->find($id);
+
+        $pdf = Pdf::loadView('facture', ['ticket' => $ticket, 'with_tva' => $ticket->with_tva]);
+
+        $email = $ticket->client->email;
+
+        Mail::to($email)->send(new InvoiceMail($pdf->output(), "facture.pdf"));
+        // Mail::to("contact@sijetaisunefleur.com")->send(new InvoiceMail($pdf->output(), "facture.pdf"));
+
+        return redirect()->back()->with('success', 'Facture envoyée par email.');
     }
 }
