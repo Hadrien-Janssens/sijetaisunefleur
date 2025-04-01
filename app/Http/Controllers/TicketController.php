@@ -48,6 +48,9 @@ class TicketController extends Controller
             $query->where('reference', 'like', "%$search%")
                 ->orWhereHas('client', function ($q) use ($search) {
                     $q->where('firstname', 'like', "%$search%")
+                        ->orWhere('email', 'like', "%$search%")
+                        ->orWhere('phone', 'like', "%$search%")
+                        ->orWhere('company', 'like', "%$search%")
                         ->orWhere('lastname', 'like', "%$search%");
                 });
         }
@@ -59,6 +62,7 @@ class TicketController extends Controller
         // if ($request->date) {
         //     $query->whereDate('created_at', $request->date);
         // }
+
         if ($timeSlot !== null) {
 
             if ($timeSlot !== 'day') {
@@ -70,10 +74,10 @@ class TicketController extends Controller
                 ]);
             } else {
 
-                if ($request->start_date && $request->end_date) {
+                if ($request->start_date) {
                     $query->whereBetween('created_at', [
                         Carbon::parse($request->start_date)->startOfDay(),
-                        Carbon::parse($request->end_date)->endOfDay()
+                        Carbon::parse($request->start_date)->endOfDay()
                     ]);
                 }
             }

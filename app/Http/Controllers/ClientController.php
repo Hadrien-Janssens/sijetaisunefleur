@@ -25,6 +25,8 @@ class ClientController extends Controller
                 $q->where('firstname', 'like', "%$search%")
                     ->orWhere('lastname', 'like', "%$search%")
                     ->orWhere('company', 'like', "%$search%")
+                    ->orWhere('phone', 'like', "%$search%")
+                    ->orWhere('tva_number', 'like', "%$search%")
                     ->orWhere('email', 'like', "%$search%");
             });
         }

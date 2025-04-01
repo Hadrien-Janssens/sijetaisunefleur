@@ -26,9 +26,13 @@ Route::get('/', function () {
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('caisse', [CaisseController::class, 'index'])->name('caisse');
 
-    Route::get('numbre', function () {
-        return Inertia::render('Numbre');
-    })->name('numbre.index');
+    Route::get('dashboard', function () {
+        return Inertia::render('dashboard/Dashboard');
+    })->name('dashboard.index');
+
+    Route::get('chiffre', function () {
+        return Inertia::render('dashboard/Number');
+    })->name('number');
 
 
     Route::get('invoice', function () {

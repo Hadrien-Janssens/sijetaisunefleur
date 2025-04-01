@@ -267,7 +267,7 @@ watch(tva, (newVal) => {
         <div class="flex h-full">
             <!-- LEFTSIDE -->
             <div class="flex flex-col basis-1/3">
-                <div class="flex flex-col gap-2 p-3 border-b">
+                <div class="flex flex-col h-20 gap-2 p-3 border-b">
                     <div class="flex items-center justify-between">
                         <h2 class="flex items-center gap-2"><Ticket class="text-primary-color" />Ticket en cours</h2>
                         <CommentModal

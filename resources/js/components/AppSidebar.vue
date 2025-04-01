@@ -16,7 +16,7 @@ const mainNavItems: NavItem[] = [
     },
     {
         title: 'Chiffres',
-        href: '/numbre',
+        href: '/dashboard',
         icon: LineChart,
         color: 'text-red-500',
     },
