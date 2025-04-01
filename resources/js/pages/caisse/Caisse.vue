@@ -34,6 +34,7 @@ interface Ticket {
     price: number;
     quantity: number;
     tva: number;
+    reduction: number;
 }
 
 const ticket = ref<Array<Ticket>>([]);
@@ -54,7 +55,11 @@ const isTicketReductionModalOpen = ref(false);
 const isArticleReductionModalOpen = ref(false);
 const isCommentModalOpen = ref(false);
 const comment = ref('');
+// c'est la reduction exemaple 10%
 const totalReduction = ref(0);
+
+const reductionRow = ref(0);
+const credit = ref(false);
 
 const getNameCategory = (id: number) => {
     return props.categories.find((category) => category.id === id)?.name;
@@ -103,10 +108,12 @@ const validation = () => {
             id: ticket.value.length + 1,
             category_id: selectedCategoryId.value,
             price: priceRow.value,
+            reduction: reductionRow.value,
             quantity: quantityRow.value ? quantityRow.value : 1,
             tva: tva.value,
         });
         priceRow.value = null;
+        reductionRow.value = 0;
         quantityRow.value = null;
         setMultiplicatator.value = false;
     }
@@ -114,6 +121,7 @@ const validation = () => {
 
 const deleteCurrentRow = () => {
     priceRow.value = null;
+    reductionRow.value = 0;
     quantityRow.value = null;
     setMultiplicatator.value = false;
     isInPaiyment.value = false;
@@ -129,7 +137,27 @@ const total = computed(() => {
     if (ticket.value.length === 0) {
         return 0;
     }
-    return ticket.value.reduce((acc, row) => acc + row.price * row.quantity, 0);
+
+    return ticket.value.reduce((acc, row) => {
+        const price = row.reduction !== 0 ? row.price - (row.price * row.reduction) / 100 : row.price;
+        return acc + price * row.quantity;
+    }, 0);
+});
+
+const totalWithReduction = computed(() => {
+    if (ticket.value.length === 0) {
+        return 0;
+    }
+
+    return ticket.value.reduce((acc, row) => {
+        const price =
+            row.reduction !== 0
+                ? row.price - (row.price * row.reduction) / 100
+                : totalReduction.value !== 0
+                  ? row.price - (row.price * totalReduction.value) / 100
+                  : row.price;
+        return acc + price * row.quantity;
+    }, 0);
 });
 
 const paid = () => {
@@ -137,7 +165,8 @@ const paid = () => {
         priceRow.value = 0;
     }
     isInPaiyment.value = true;
-    diff.value = priceRow.value - total.value;
+
+    diff.value = priceRow.value - (totalReduction.value !== 0 ? totalWithReduction.value : total.value);
 };
 
 const sendTicket = () => {
@@ -146,7 +175,9 @@ const sendTicket = () => {
         client_id: selectedClient.value?.id || null,
         email: selectedEmail.value || null,
         with_tva: selectedTva.value,
+        remise: totalReduction.value,
         tva_number: TVANumber.value,
+        is_paid: !credit.value,
         comment: comment.value || null,
     };
     selectedClient.value = null;
@@ -154,6 +185,15 @@ const sendTicket = () => {
     selectedTva.value = false;
     ticket.value = [];
     TVANumber.value = '';
+    totalReduction.value = 0;
+    comment.value = '';
+    priceRow.value = null;
+    quantityRow.value = null;
+    setMultiplicatator.value = false;
+    decimal.value = false;
+    centimal.value = false;
+    isInPaiyment.value = false;
+    credit.value = false;
 
     router.post(route('ticket.store'), form);
 };
@@ -189,13 +229,11 @@ const hasSelectedClient = computed({
 });
 
 const reductionTicketValidation = (value: number) => {
-    console.log(value);
-
     totalReduction.value = value;
     isTicketReductionModalOpen.value = false;
 };
-const reductionRowValidation = (value: string) => {
-    comment.value = value;
+const reductionRowValidation = (value: number) => {
+    reductionRow.value = value;
     isArticleReductionModalOpen.value = false;
 };
 const commentValidation = (value: string) => {
@@ -271,26 +309,47 @@ watch(tva, (newVal) => {
                     <p v-else-if="selectedEmail" class="flex items-center gap-2"><Mail class="text-blue-500" /> {{ selectedEmail }}</p>
                     <p v-else class="flex items-center gap-2"><UserRoundX class="text-orange-500" /> Pas de client</p>
                 </div>
-                <div class="p-3 overflow-scroll overflow-y-auto grow">
+                <div class="overflow-scroll overflow-y-auto grow">
                     <p v-if="ticket.length === 0" class="mt-20 text-xl font-extrabold text-center text-gray-400">Aucun achat sur ce ticket</p>
                     <TransitionGroup tag="ul" name="v">
-                        <li v-for="article in ticket" :key="article.id" class="flex items-center justify-between h-20 border-b">
-                            <Trash class="w-5 text-red-400" @click="deleteRow(article.id)" />
-                            <p>
-                                <span class="mr-3"
-                                    >{{ getNameCategory(article.category_id) }} <span class="text-xs italic">({{ article.tva }}%)</span> :</span
+                        <li v-for="article in ticket" :key="article.id" class="flex flex-col p-3 border-b min-h-20">
+                            <div class="flex items-center justify-between">
+                                <Trash class="w-5 text-red-400" @click="deleteRow(article.id)" />
+                                <p>
+                                    <span class="mr-3"
+                                        >{{ getNameCategory(article.category_id) }} <span class="text-xs italic">({{ article.tva }}%)</span> :</span
+                                    >
+                                    {{ article.price.toFixed(2) }}€ X {{ article.quantity }} =
+                                    <span class="font-bold">{{ (article.price * article.quantity).toFixed(2) }} €</span>
+                                </p>
+                            </div>
+                            <p v-if="article.reduction !== 0" class="self-end">
+                                <span class="rounded-full border border-red-500 bg-red-100 p-0.5 px-1 text-xs text-red-500">
+                                    - {{ article.reduction }}%</span
                                 >
-                                {{ article.price.toFixed(2) }}€ X {{ article.quantity }} =
-                                <span class="font-bold">{{ (article.price * article.quantity).toFixed(2) }} €</span>
+                                <span class="ml-3 font-bold"
+                                    >{{
+                                        (article.price * article.quantity - (article.price * article.quantity * article.reduction) / 100).toFixed(2)
+                                    }}
+                                    €</span
+                                >
                             </p>
                         </li>
                     </TransitionGroup>
                 </div>
                 <footer class="flex items-center justify-between h-20 p-1 border-t">
-                    <p class="text-center basis-1/2">
-                        Total : <span class="font-bold" :class="totalReduction !== 0 ? 'text-red-500 line-through' : ''">{{ total }}€ </span
-                        ><span v-if="totalReduction !== 0">- {{ totalReduction }}%</span>
-                    </p>
+                    <div class="text-center basis-1/2">
+                        <p>
+                            Total :
+                            <span class="font-bold" :class="totalReduction !== 0 ? 'text-red-500 line-through' : ''">{{ total.toFixed(2) }}€ </span
+                            ><span
+                                class="relative -top-3 rounded-full border border-red-500 bg-red-100 p-0.5 px-1 text-xs text-red-500"
+                                v-if="totalReduction !== 0"
+                                >- {{ totalReduction }}%</span
+                            >
+                        </p>
+                        <p v-if="totalReduction !== 0" class="font-bold">{{ totalWithReduction.toFixed(2) }}€</p>
+                    </div>
 
                     <TicketReductionModal
                         title="Séléctionne la réduction"
@@ -312,6 +371,10 @@ watch(tva, (newVal) => {
                         <div class="flex items-center space-x-2">
                             <Switch id="invoice" v-model="hasSelectedClient" />
                             <Label for="invoice">Facture</Label>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <Switch id="credit" v-model="credit" />
+                            <Label for="credit">Crédit</Label>
                         </div>
 
                         <Select v-model="selectedCategoryId">
@@ -336,13 +399,15 @@ watch(tva, (newVal) => {
                     </div>
                 </div>
                 <div class="flex flex-col justify-end grow">
-                    <div class="w-full h-full pt-3 pr-3 text-4xl bg-slate-50 text-end">
+                    <div class="flex justify-end w-full h-full gap-10 px-5 pt-3 text-4xl bg-slate-50 text-end">
                         <p v-if="priceRow" class="text-4xl">
                             {{ priceRow.toFixed(2) }}€ <span class="text-4xl" v-if="setMultiplicatator">X</span>
                             <span v-if="quantityRow" class="text-4xl">{{ quantityRow }}</span>
                         </p>
+                        <span v-if="reductionRow !== 0" class="self-start text-4xl text-red-500">-{{ reductionRow }}%</span>
+
                         <!-- <p v-if="setMultiplicatator && quantityRow">= {{ (priceRow * quantityRow).toFixed(2) }}€</p> -->
-                        <p v-if="isInPaiyment">à rendre : {{ diff }}€</p>
+                        <p v-if="isInPaiyment">à rendre : {{ diff.toFixed(2) }}€</p>
                     </div>
                     <div class="grid grid-cols-4 gap-1 p-1 font-extrabold border-t border-b">
                         <div
@@ -442,7 +507,7 @@ watch(tva, (newVal) => {
                             ,
                         </div>
                         <div
-                            class="flex items-center justify-center h-full text-4xl font-extrabold rounded-lg basis-1/3 bg-sidebar hover:bg-slate-100"
+                            class="flex items-center justify-center h-full text-4xl font-extrabold text-red-100 bg-red-400 rounded-lg basis-1/3"
                             @click="deleteCurrentRow"
                         >
                             C

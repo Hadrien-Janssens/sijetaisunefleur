@@ -18,27 +18,29 @@ class ClientController extends Controller
         $search = request()->input('search');
         $actif = request()->input('actif');
 
-        if ($actif === 'active') {
-            return inertia('client/Index', [
-                'clients' => Client::paginate(10),
-                'filters' => request()->all(),
-            ]);
-        } else if ($actif === 'with_tva') {
-            return inertia('client/Index', [
-                'clients' => Client::whereNotNull('tva_number')->paginate(10),
-                'filters' => request()->all(),
-            ]);
-        } else if ($actif === 'without_tva') {
-            return inertia('client/Index', [
-                'clients' => Client::whereNull('tva_number')->paginate(10),
-                'filters' => request()->all(),
-            ]);
-        } else {
-            return inertia('client/Index', [
-                'clients' => Client::onlyTrashed()->paginate(10),
-                'filters' => request()->all(),
-            ]);
+        $query = Client::query();
+
+        if (!empty($search)) {
+            $query->where(function ($q) use ($search) {
+                $q->where('firstname', 'like', "%$search%")
+                    ->orWhere('lastname', 'like', "%$search%")
+                    ->orWhere('company', 'like', "%$search%")
+                    ->orWhere('email', 'like', "%$search%");
+            });
         }
+
+        if ($actif === 'with_tva') {
+            $query->whereNotNull('tva_number');
+        } elseif ($actif === 'without_tva') {
+            $query->whereNull('tva_number');
+        } elseif ($actif !== 'active') {
+            $query->onlyTrashed();
+        }
+
+        return inertia('client/Index', [
+            'clients' => $query->paginate(12),
+            'filters' => $request->all(),
+        ]);
     }
 
     /**

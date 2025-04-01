@@ -17,6 +17,7 @@ return new class extends Migration
             $table->foreignId('category_id')->nullable()->onDelete('set null');
             $table->integer('quantity')->default(1);
             $table->decimal('price', 10, 2);
+            $table->integer('reduction')->default(0);
             $table->foreignId('ticket_id')->constrained()->cascadeOnDelete();
         });
     }

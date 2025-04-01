@@ -10,7 +10,7 @@ class Ticket_row extends Model
     /** @use HasFactory<\Database\Factories\TicketRowFactory> */
     use HasFactory;
 
-    protected $fillable = ['category_id', 'quantity', 'price'];
+    protected $fillable = ['category_id', 'quantity', 'price', 'reduction'];
 
     public function ticket()
     {

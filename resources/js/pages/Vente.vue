@@ -38,6 +38,7 @@ interface Ticket {
         client: Client | null;
         ticket_rows: Row[];
         is_paid: boolean;
+        remise: number;
     }>;
 }
 
@@ -98,9 +99,21 @@ const visit = (url: string | null) => {
 const getTicketPrice = (ticket: any) => {
     let totalPrice = 0;
     ticket.ticket_rows.forEach((row: Row) => {
-        totalPrice += row.price * row.quantity;
+        totalPrice += (row.reduction === 0 ? row.price : row.price - (row.price * row.reduction) / 100) * row.quantity;
     });
     return totalPrice.toFixed(2);
+};
+const getTicketPriceWithRemise = (ticket: any) => {
+    let totalPriceWithRemise = 0;
+    ticket.ticket_rows.forEach((row: Row) => {
+        totalPriceWithRemise +=
+            (row.reduction === 0
+                ? ticket.remise === 0
+                    ? row.price
+                    : row.price - (row.price * ticket.remise) / 100
+                : row.price - (row.price * row.reduction) / 100) * row.quantity;
+    });
+    return totalPriceWithRemise.toFixed(2);
 };
 
 const expandedTicketId = ref<number | null>(null);
@@ -260,7 +273,7 @@ const loadTicket = (ticketId: number) => {
                             <div class="flex items-center gap-4">
                                 <div>
                                     <p class="flex items-center gap-2 font-medium">
-                                        <Barcode class="w-4 h-4 text-primary-color" /> N° {{ ticket.id }}
+                                        <Barcode class="w-4 h-4 text-primary-color" /> N° {{ ticket.reference }}
                                     </p>
                                 </div>
                                 <div class="text-gray-600">|</div>
@@ -307,7 +320,9 @@ const loadTicket = (ticketId: number) => {
                                         </div>
                                         <div class="flex items-center justify-end gap-2">
                                             <Link :href="route('ticket.edit', ticket.id)" class="flex items-center gap-2">
-                                                <Button variant="outline" class="text-yellow-900 duration-300 bg-yellow-300 hover:bg-yellow-400"
+                                                <Button
+                                                    variant="outline"
+                                                    class="duration-300 bg-cyan-500 text-cyan-100 hover:bg-cyan-600 hover:text-cyan-100"
                                                     ><Pencil />Modifier</Button
                                                 ></Link
                                             >
@@ -328,15 +343,34 @@ const loadTicket = (ticketId: number) => {
                                                 <ShoppingBag class="w-4 h-4 text-primary-color" />
                                                 <span>{{ row.category.name || `Article #${index + 1}` }}</span>
                                                 <span class="text-sm text-gray-500">{{ row.price }}€ x{{ row.quantity }}</span>
+                                                <span
+                                                    v-if="row.reduction !== 0"
+                                                    class="rounded-full border border-red-500 bg-red-100 px-1 py-0.5 text-xs text-red-500"
+                                                >
+                                                    -{{ row.reduction }}%
+                                                </span>
                                             </div>
-                                            <span class="font-medium">{{ (row.price * row.quantity).toFixed(2) }}€</span>
+                                            <span class="font-medium"
+                                                >{{
+                                                    (
+                                                        (row.reduction === 0 ? row.price : row.price - (row.price * row.reduction) / 100) *
+                                                        row.quantity
+                                                    ).toFixed(2)
+                                                }}€</span
+                                            >
                                         </div>
                                     </div>
 
                                     <div class="flex justify-end pt-4 mt-4 border-t border-gray-200">
                                         <div class="text-right">
                                             <p class="text-sm text-gray-500">Total</p>
-                                            <p class="text-lg font-bold">{{ getTicketPrice(ticket) }}€</p>
+                                            <p class="text-lg font-bold" v-if="ticket.remise === 0">{{ getTicketPrice(ticket) }}€</p>
+                                            <p v-else class="text-lg">
+                                                <span class="mr-2 rounded-full border border-red-500 bg-red-100 px-1 py-0.5 text-xs text-red-500">
+                                                    -{{ ticket.remise }}%
+                                                </span>
+                                                <span class="font-bold"> {{ getTicketPriceWithRemise(ticket) }}€ </span>
+                                            </p>
                                         </div>
                                     </div>
                                 </div>

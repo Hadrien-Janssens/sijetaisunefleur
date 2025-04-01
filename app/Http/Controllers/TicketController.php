@@ -118,8 +118,10 @@ class TicketController extends Controller
             'client_id' => $request->client_id,
             // 'with_tva' => $request->client_id ? true : false,
             'with_tva' =>  $request->with_tva,
+            'is_paid' => $request->is_paid,
             'reference' => $reference,
             'comment' => $request->comment,
+            'remise' => $request->remise,
         ]);
 
         $ticketRows = $request->ticket;
@@ -131,6 +133,7 @@ class TicketController extends Controller
             $ticketRow->price = $row['price'];
             $ticketRow->quantity = $row['quantity'];
             $ticketRow->category_id = $row['category_id'];
+            $ticketRow->reduction = $row['reduction'] ?? 0;
 
             $ticketRow->save();
         }
@@ -188,6 +191,7 @@ class TicketController extends Controller
             'comment' => $request->comment,
             'reference' => $request->reference,
             'created_at' => $request->date,
+            'remise' => $request->remise,
             'is_paid' => $request->is_paid,
         ]);
 
@@ -200,6 +204,7 @@ class TicketController extends Controller
             $ticketRow->ticket_id = $ticket->id;
             $ticketRow->price = $row['price'];
             $ticketRow->quantity = $row['quantity'];
+            $ticketRow->reduction = $row['reduction'] ?? 0;
             $ticketRow->category_id = $row['category_id'];
 
             $ticketRow->save();

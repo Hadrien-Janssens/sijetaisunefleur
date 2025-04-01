@@ -32,6 +32,18 @@ const errors = computed(() => usePage().props.errors || {});
 
 const handleSubmit = () => {
     router.post(route('client.store'), formData.value);
+    emit('close');
+    formData.value = {
+        firstname: '',
+        lastname: '',
+        company: '',
+        email: '',
+        phone: '',
+        tva_number: '',
+        address: '',
+        city: '',
+        country: 'Belgique',
+    };
 };
 </script>
 

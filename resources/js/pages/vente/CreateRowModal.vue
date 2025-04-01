@@ -18,8 +18,9 @@ const emit = defineEmits(['close', 'create']);
 
 const form = ref({
     category_id: '', // Fix typo in property name
-    price: 1,
+    price: 1.0,
     quantity: 1,
+    reduction: 0,
 });
 
 const handleSubmit = () => {
@@ -31,12 +32,14 @@ const handleSubmit = () => {
         category_id: form.value.category_id,
         price: Number(form.value.price),
         quantity: Number(form.value.quantity),
+        reduction: Number(form.value.reduction),
     });
 
     form.value = {
         category_id: '',
-        price: 1,
+        price: 1.0,
         quantity: 1,
+        reduction: 0,
     };
 };
 </script>
@@ -49,23 +52,29 @@ const handleSubmit = () => {
             </DialogHeader>
             <form @submit.prevent="handleSubmit" class="space-y-4">
                 <div class="space-y-4">
-                    <div class="space-y-2">
-                        <label>Catégorie</label>
-                        <Select v-model="form.category_id" class="w-48">
-                            <SelectTrigger class="w-48">
-                                <SelectValue placeholder="Sélectionner une catégorie" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem v-for="category in categories" :key="category.id" :value="category.id">
-                                    {{ category.name }}
-                                </SelectItem>
-                            </SelectContent>
-                        </Select>
+                    <div class="flex gap-3">
+                        <div class="space-y-2">
+                            <label>Catégorie</label>
+                            <Select v-model="form.category_id" class="w-64">
+                                <SelectTrigger class="w-64">
+                                    <SelectValue placeholder="Sélectionner une catégorie" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem v-for="category in categories" :key="category.id" :value="category.id">
+                                        {{ category.name }}
+                                    </SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div class="space-y-2">
+                            <label>Remise</label>
+                            <Input type="number" v-model="form.reduction" required />
+                        </div>
                     </div>
                     <div class="flex space-x-4">
                         <div class="space-y-2">
                             <label>Prix</label>
-                            <Input type="number" v-model="form.price" required />
+                            <Input type="number" v-model="form.price" required step="any" />
                         </div>
                         <div class="space-y-2">
                             <label>Quantité</label>

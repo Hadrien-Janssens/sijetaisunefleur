@@ -40,6 +40,7 @@ export interface Row {
     id: number;
     price: number;
     quantity: number;
+    reduction: number;
     category: {
         name: string;
     };
@@ -69,6 +70,14 @@ export interface Ticket {
     comment: string;
     client: number;
     deleted_at: string | null;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface Category {
+    id: number;
+    name: string;
+    tva: number;
     created_at: string;
     updated_at: string;
 }

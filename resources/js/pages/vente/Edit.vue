@@ -28,12 +28,14 @@ const props = defineProps<{
         comment: string;
         client: Client;
         created_at: string;
+        remise: number;
         deleted_at: string | null;
         ticket_rows: {
             id: number;
             price: number;
             quantity: number;
             category_id: number;
+            reduction: number;
         }[];
     };
     clients: Client[];
@@ -52,6 +54,7 @@ const form = useForm({
     date: new Date(props.ticket.created_at).toISOString().split('T')[0],
     client: props.ticket.client?.id || null,
     ticket_rows: props.ticket.ticket_rows,
+    remise: props.ticket.remise,
 });
 
 console.log(props.ticket.ticket_rows);
@@ -100,13 +103,34 @@ const clientName = computed(() => {
     return client ? `${client.firstname} ${client.lastname}` : 'Aucun client défini';
 });
 
+// const getTicketPrice = (ticket: any) => {
+//     let totalPrice = 0;
+
+//     ticket.ticket_rows.forEach((row: Row) => {
+//         totalPrice += row.price * row.quantity;
+//     });
+//     return totalPrice.toFixed(2);
+// };
+
 const getTicketPrice = (ticket: any) => {
     let totalPrice = 0;
-
     ticket.ticket_rows.forEach((row: Row) => {
-        totalPrice += row.price * row.quantity;
+        totalPrice += (row.reduction === 0 ? row.price : row.price - (row.price * row.reduction) / 100) * row.quantity;
     });
     return totalPrice.toFixed(2);
+};
+
+const getTicketPriceWithRemise = (ticket: any) => {
+    let totalPriceWithRemise = 0;
+    ticket.ticket_rows.forEach((row: Row) => {
+        totalPriceWithRemise +=
+            (row.reduction === 0
+                ? ticket.remise === 0
+                    ? row.price
+                    : row.price - (row.price * ticket.remise) / 100
+                : row.price - (row.price * row.reduction) / 100) * row.quantity;
+    });
+    return totalPriceWithRemise.toFixed(2);
 };
 
 const openCreateRowModal = ref(false);
@@ -117,6 +141,7 @@ const createRow = (rowData: any) => {
         category_id: rowData.category_id,
         price: rowData.price,
         quantity: rowData.quantity,
+        reduction: rowData.reduction,
     });
     openCreateRowModal.value = false;
 };
@@ -134,7 +159,7 @@ const deleteRow = (index: number) => {
             <Card class="w-full p-5 bg-gradient-to-br from-white to-gray-50/80">
                 <form @submit.prevent="submit">
                     <CardHeader class="w-full">
-                        <CardTitle class="flex items-center w-full gap-2 text-gray-600">
+                        <CardTitle class="flex items-center w-full gap-2">
                             <div class="flex items-center justify-between w-full gap-3 mb-4">
                                 <div class="flex items-center gap-3">
                                     <Ticket class="w-10 h-8 text-primary-color" />
@@ -143,7 +168,7 @@ const deleteRow = (index: number) => {
                                 </div>
                                 <div class="flex items-center gap-3">
                                     <Switch v-model="form.is_paid" />
-                                    <label class="shrink-0">Facture payée</label>
+                                    <label class="font-semibold shrink-0">Facture payée</label>
                                 </div>
                             </div>
                         </CardTitle>
@@ -152,17 +177,17 @@ const deleteRow = (index: number) => {
                         <div class="flex flex-col justify-between gap-3 mb-4 lg:flex-row lg:items-center">
                             <div class="flex items-center gap-4 basis-1/2">
                                 <div class="flex items-center gap-4">
-                                    <label>Référence</label>
+                                    <label class="font-semibold">Référence</label>
                                     <Input v-model="form.reference" type="text" placeholder="Référence" class="max-w-36" />
                                 </div>
                                 <div class="flex items-center gap-3">
                                     <Switch v-model="form.with_tva" />
-                                    <label class="shrink-0">Avec TVA</label>
+                                    <label class="font-semibold shrink-0">Avec TVA</label>
                                 </div>
                             </div>
 
                             <div class="flex items-center gap-3">
-                                <label for="client">Client</label>
+                                <label class="font-semibold" for="client">Client</label>
                                 <div
                                     class="px-2 py-1 font-bold duration-300 bg-gray-100 border rounded-sm shadow-sm hover:cursor-pointer hover:bg-gray-200"
                                     @click="isModalOpen = true"
@@ -180,7 +205,7 @@ const deleteRow = (index: number) => {
                             </div>
                         </div>
                         <div class="flex flex-col items-start gap-2">
-                            <label for="comment">Commentaire</label>
+                            <label for="comment" class="font-semibold">Commentaire</label>
                             <Textarea id="comment" v-model="form.comment" placeholder="Commentaire" class="flex-1" />
                         </div>
 
@@ -220,15 +245,34 @@ const deleteRow = (index: number) => {
                                         <Input type="number" class="w-28" v-model="row.quantity" :min="1" />
                                     </span>
                                 </div>
-                                <span class="font-medium">{{ (row.price * row.quantity).toFixed(2) }}€</span>
+                                <span class="font-medium"
+                                    >{{
+                                        ((row.reduction === 0 ? row.price : row.price - (row.price * row.reduction) / 100) * row.quantity).toFixed(2)
+                                    }}€</span
+                                >
+                                <div class="flex items-center gap-1">
+                                    <span>Réduction :</span>
+                                    <Input
+                                        type="number"
+                                        v-model="row.reduction"
+                                        placeholder="0"
+                                        class="w-16"
+                                        :disabled="form.ticket_rows.length === 0"
+                                    />%
+                                </div>
                                 <Trash class="text-red-500 hover:cursor-pointer" @click="deleteRow(index)" />
                             </div>
                         </div>
 
-                        <div class="flex justify-end pt-4 mt-4 border-t border-gray-200">
+                        <div class="flex items-end justify-between pt-4 mt-4 border-t border-gray-200">
+                            <div class="flex items-center gap-3">
+                                <p class="font-semibold">Remise</p>
+                                <Input type="number" v-model="form.remise" placeholder="0" class="w-28" :disabled="form.ticket_rows.length === 0" />%
+                            </div>
                             <div class="text-right">
                                 <p class="text-sm text-gray-500">Total</p>
-                                <p class="text-lg font-bold">{{ getTicketPrice(form) }}€</p>
+                                <p class="text-lg font-bold" v-if="ticket.remise !== 0">{{ getTicketPrice(form) }}€</p>
+                                <p class="text-lg font-bold" v-else>{{ getTicketPriceWithRemise(form) }}€</p>
                             </div>
                         </div>
                     </CardContent>
