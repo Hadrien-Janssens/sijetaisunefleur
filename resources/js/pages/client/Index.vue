@@ -27,6 +27,7 @@ const props = defineProps<{
         actif?: string;
     };
 }>();
+console.log(props);
 
 const searchQuery = ref(props.filters.search || '');
 const activeTab = ref(props.filters.actif || 'active');
@@ -67,7 +68,13 @@ const downloadFile = () => {
 
 const visit = (url: string | null) => {
     if (!url) return;
-    router.visit(url, {
+
+    // Ajouter les paramètres de filtre actuels à l'URL
+    const urlObj = new URL(url);
+    urlObj.searchParams.set('search', searchQuery.value);
+    urlObj.searchParams.set('actif', activeTab.value);
+
+    router.visit(urlObj.toString(), {
         preserveState: true,
         preserveScroll: true,
     });
