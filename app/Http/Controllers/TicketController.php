@@ -64,8 +64,12 @@ class TicketController extends Controller
         // }
 
         if ($timeSlot !== null) {
-
-            if ($timeSlot !== 'day') {
+            if ($timeSlot === 'crenaux') {
+                $query->whereBetween('created_at', [
+                    Carbon::parse($request->start_date)->startOfDay(),
+                    Carbon::parse($request->end_date)->endOfDay()
+                ]);
+            } else if ($timeSlot !== 'day') {
 
                 $dates = dateFilter($request->start_date, $timeSlot);
                 $query->whereBetween('created_at', [
@@ -254,9 +258,9 @@ class TicketController extends Controller
     }
 
 
-    public function export()
+    public function export(Request $request)
     {
-        return Excel::download(new TicketExport, 'tickets.xlsx');
+        return Excel::download(new TicketExport($request->all()), 'tickets.xlsx');
     }
 
     public function generatePDF($ticketId)

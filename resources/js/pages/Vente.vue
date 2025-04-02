@@ -3,7 +3,7 @@ import DeleteConfirmationModal from '@/components/DeleteConfirmationModal.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import Card from '@/components/ui/card/Card.vue';
-import { Input } from '@/components/ui/input';
+import Input from '@/components/ui/input/Input.vue';
 import Label from '@/components/ui/label/Label.vue';
 import Switch from '@/components/ui/switch/Switch.vue';
 import Tabs from '@/components/ui/tabs/Tabs.vue';
@@ -135,7 +135,14 @@ const formatDate = (dateString: string) => {
     });
 };
 const downloadFile = () => {
-    window.location.href = route('ticket.export');
+    window.location.href = route('ticket.export', {
+        search: searchQuery.value,
+        withInvoice: withInvoice.value,
+        start_date: selectedDate.value,
+        end_date: selectedEndDate.value,
+        actif: activeTab.value,
+        time_slot: timeSlot.value,
+    });
 };
 
 const showTicketDeleteModal = ref(false);
@@ -231,20 +238,40 @@ const loadTicket = (ticketId: number) => {
                     >
                         Année
                     </label>
+                    <input type="radio" name="timeSlot" id="crenaux" value="crenaux" v-model="timeSlot" class="hidden" />
+                    <label
+                        for="crenaux"
+                        :class="[
+                            'cursor-pointer rounded-lg px-4 py-2 font-medium',
+                            timeSlot === 'crenaux' ? 'bg-primary-color text-white' : 'hover:bg-gray-100',
+                        ]"
+                    >
+                        Crénaux
+                    </label>
                 </div>
             </div>
-            <!-- SEARCHBAR -->
-            <div class="flex items-center justify-between gap-2 mb-2">
+
+            <div class="flex items-center justify-between w-full gap-2 mb-2">
                 <Input
                     type="text"
                     v-model="searchQuery"
                     @input="performSearch"
                     placeholder="Recherche des tickets par client"
-                    class="p-2 border border-gray-300 rounded-md"
+                    class="p-2 border border-gray-300 rounded-md basis-1/2"
                 />
-                <div class="flex gap-2 items-cente grow">
+
+                <div class="flex items-center gap-2">
                     <Input type="date" lang="fr" v-model="selectedDate" class="p-2 border border-gray-300 rounded-md" />
-                    <Input type="date" lang="fr" v-model="selectedEndDate" class="p-2 border border-gray-300 rounded-md" />
+
+                    <transition name="fade-slide">
+                        <Input
+                            v-if="timeSlot === 'crenaux'"
+                            type="date"
+                            lang="fr"
+                            v-model="selectedEndDate"
+                            class="p-2 border border-gray-300 rounded-md"
+                        />
+                    </transition>
                 </div>
             </div>
             <div class="flex items-center justify-between">
@@ -439,5 +466,29 @@ const loadTicket = (ticketId: number) => {
 
 .scale-102 {
     transform: scale(1.02);
+}
+
+/* Animation de fondu avec décalage */
+.fade-slide-enter-active,
+.fade-slide-leave-active {
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.fade-slide-enter-from {
+    opacity: 0;
+    transform: translateX(-10px);
+}
+
+.fade-slide-leave-to {
+    opacity: 0;
+    transform: translateX(10px);
+}
+
+/* Optionnel : évite le débordement pendant l'animation */
+.fade-slide-enter-to,
+.fade-slide-leave-from {
+    transform: translateX(0);
+    opacity: 1;
 }
 </style>

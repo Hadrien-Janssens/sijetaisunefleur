@@ -27,6 +27,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('caisse', [CaisseController::class, 'index'])->name('caisse');
 
     Route::get('dashboard', function () {
+
         return Inertia::render('dashboard/Dashboard');
     })->name('dashboard.index');
 

@@ -96,7 +96,7 @@ const visit = (url: string | null) => {
                 <Button variant="teal" @click="isModalOpen = true">Ajouter un client</Button>
             </div>
 
-            <div class="flex items-center gap-2 mb-2 grow">
+            <div class="flex items-center w-1/2 gap-2 mb-2">
                 <Input v-model="searchQuery" placeholder="Rechercher un client..." />
             </div>
             <Tabs v-model="activeTab" class="mb-6">
