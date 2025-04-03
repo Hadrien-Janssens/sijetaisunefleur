@@ -79,19 +79,27 @@
                 <tr>
                     <th>{{ $row->category->name }}</th>
                     <th>{{ $row->quantity }}</th>
-                    <th>€ {{ number_format($row->price / (1 + $row->category->tva / 100), 2) }}</th>
+                    <th>{{ number_format($row->price / (1 + $row->category->tva / 100), 2) }} €</th>
                     <th>0%</th>
-                    <th>€ {{ number_format($row->price / (1 + $row->category->tva / 100), 2) * $row->quantity }}</th>
+                    <th>{{ number_format($row->price / (1 + $row->category->tva / 100), 2) * $row->quantity }} €</th>
                 </tr>
             @endforeach
+            @if ($ticket->remiseAmount)
+                <tr>
+                    <th>Remise</th>
+                    <th></th>
+                    <th></th>
+                    <th style="font-weigth: bold ;"> -{{ $ticket->remiseAmount }}€</th>
+                    <th></th>
+                </tr>
+            @endif
+
         </tbody>
     </table>
 
     {{-- COMMENTAIRE --}}
     @if ($ticket->comment)
         <p style="margin-top: 50px">Commentaire : {{ $ticket->comment }}</p>
-    @else
-        <p style="margin-top: 50px">Commentaire : /</p>
     @endif
 
     {{-- footer --}}
@@ -152,7 +160,8 @@
             </tbody>
             <tfoot>
                 <tr>
-                    <th colspan="5">Echéance : Acquitté</th>
+                    <th colspan="5">
+                        {{ !$ticket->is_paid && $ticket->echeance ? $ticket->echeance : 'Echéance : Acquitté' }}</th>
                     <th> A PAYER <br> € {{ number_format($base + $tva6 + $tva21, 2) }}</th>
                 </tr>
         </table>

@@ -20,7 +20,9 @@ class Ticket extends Model
         'reference',
         'with_tva',
         'comment',
+        'echeance',
         'remise',
+        'remiseAmount',
     ];
 
     public function client()

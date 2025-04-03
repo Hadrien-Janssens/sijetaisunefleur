@@ -61,7 +61,7 @@ const handleCreateClient = (clientData: any) => {
         <!-- <DialogTrigger> Edit Profile </DialogTrigger> -->
         <DialogContent class="h-[600px]">
             <DialogHeader>
-                <DialogTitle class="flex items-center gap-3 mb-5">
+                <DialogTitle class="mb-5 flex items-center gap-3">
                     <ClipboardList class="text-primary-color" />
                     <div>Facture client</div>
                 </DialogTitle>
@@ -129,12 +129,12 @@ const handleCreateClient = (clientData: any) => {
                             <div
                                 v-for="client in filteredClients"
                                 :key="client.id"
-                                class="p-2 duration-300 rounded cursor-pointer hover:bg-gray-100"
+                                class="cursor-pointer rounded p-2 duration-300 hover:bg-gray-100"
                                 :class="{ 'bg-primary-color hover:bg-primary-color text-white': selectedClient === client }"
                                 @click="selectedClient = client"
                             >
                                 <div class="flex justify-between font-medium">
-                                    <div class="flex gap-2 font-medium">
+                                    <div class="flex flex-col gap-2 font-medium">
                                         <div>{{ client.lastname }}</div>
                                         <div>{{ client.firstname }}</div>
                                     </div>
@@ -143,7 +143,7 @@ const handleCreateClient = (clientData: any) => {
                                 </div>
                             </div>
                         </div>
-                        <div v-else class="flex items-center justify-center h-full text-gray-500">Aucun client trouvé</div>
+                        <div v-else class="flex h-full items-center justify-center text-gray-500">Aucun client trouvé</div>
                     </Card>
                 </DialogDescription>
             </DialogHeader>

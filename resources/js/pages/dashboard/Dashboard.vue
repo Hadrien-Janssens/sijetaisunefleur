@@ -84,11 +84,11 @@ const timeSlot = ref('day');
 <template>
     <Head title="Chiffres" />
     <AppLayout :breadcrumbs="breadcrumbs">
-        <Flower class="fixed w-full h-screen mt-10 text-primary-color opacity-10" />
-        <div class="container p-6 mx-auto space-y-10">
-            <div class="flex items-center justify-between mb-8">
+        <Flower class="text-primary-color fixed mt-10 h-screen w-full opacity-10" />
+        <div class="container mx-auto space-y-10 p-6">
+            <div class="mb-8 flex items-center justify-between">
                 <h1 class="text-3xl font-bold">Tableau de bord</h1>
-                <div class="flex items-center gap-2">
+                <div class="z-50 flex items-center gap-2">
                     <input type="radio" name="timeSlot" id="day" value="day" v-model="timeSlot" class="hidden" />
                     <label
                         for="day"
@@ -164,7 +164,7 @@ const timeSlot = ref('day');
                     v-for="stat in stats"
                     :key="stat.title"
                     @click="expended(stat.title)"
-                    class="w-full transition-all duration-300 ease-in-out bg-transparent from-white to-gray-50/80 backdrop-blur-md hover:-translate-y-1 hover:shadow-lg"
+                    class="w-full bg-transparent from-white to-gray-50/80 backdrop-blur-md transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-lg"
                     :class="{
                         '': !stat.expended,
                         'col-span-3 col-start-1 row-span-5 row-start-1': stat.expended,
@@ -177,11 +177,11 @@ const timeSlot = ref('day');
                                     <p class="text-sm text-gray-500">{{ stat.title }}</p>
                                     <p class="text-2xl font-bold">{{ stat.value }}</p>
                                     <div v-if="stat.change" class="flex items-center space-x-1">
-                                        <span class="text-sm text-primary-color">{{ stat.change }}</span>
+                                        <span class="text-primary-color text-sm">{{ stat.change }}</span>
                                     </div>
                                     <p v-if="stat.secondary" class="text-sm text-gray-500">{{ stat.secondary }}</p>
                                 </div>
-                                <component :is="stat.icon" class="w-8 h-8 text-primary-color" />
+                                <component :is="stat.icon" class="text-primary-color h-8 w-8" />
                             </div>
                         </CardContent>
                     </Card>

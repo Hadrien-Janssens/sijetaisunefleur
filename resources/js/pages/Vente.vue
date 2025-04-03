@@ -12,7 +12,7 @@ import TabsTrigger from '@/components/ui/tabs/TabsTrigger.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Client, type BreadcrumbItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/vue3';
-import { Barcode, CalendarDays, ChevronDown, Clock, Flower, Pencil, Printer, Save, Send, ShoppingBag, Ticket, Trash, User } from 'lucide-vue-next';
+import { Barcode, CalendarDays, ChevronDown, Clock, Flower, Pencil, Printer, Send, ShoppingBag, Ticket, Trash, User } from 'lucide-vue-next';
 import { ref, watch } from 'vue';
 import { getHour } from '../lib/utils';
 import { Row } from '../types';
@@ -101,7 +101,8 @@ const getTicketPrice = (ticket: any) => {
     ticket.ticket_rows.forEach((row: Row) => {
         totalPrice += (row.reduction === 0 ? row.price : row.price - (row.price * row.reduction) / 100) * row.quantity;
     });
-    return totalPrice.toFixed(2);
+    // return (totalPrice - (ticket.remiseAmount ? ticket.remiseAmount : 0)).toFixed(2);
+    return totalPrice;
 };
 const getTicketPriceWithRemise = (ticket: any) => {
     let totalPriceWithRemise = 0;
@@ -113,7 +114,8 @@ const getTicketPriceWithRemise = (ticket: any) => {
                     : row.price - (row.price * ticket.remise) / 100
                 : row.price - (row.price * row.reduction) / 100) * row.quantity;
     });
-    return totalPriceWithRemise.toFixed(2);
+    // return (totalPriceWithRemise - (ticket.remiseAmount ? ticket.remiseAmount : 0)).toFixed(2);
+    return totalPriceWithRemise;
 };
 
 const expandedTicketId = ref<number | null>(null);
@@ -185,13 +187,13 @@ const loadTicket = (ticketId: number) => {
 <template>
     <Head title="Ventes" />
     <AppLayout :breadcrumbs="breadcrumbs">
-        <Flower class="fixed w-full h-screen mt-10 text-primary-color opacity-10" />
-        <div class="container z-10 p-6 mx-auto">
-            <div class="flex items-center justify-between mb-6">
+        <Flower class="text-primary-color fixed mt-10 h-screen w-full opacity-10" />
+        <div class="container z-10 mx-auto p-6">
+            <div class="mb-6 flex items-center justify-between">
                 <h1 class="flex items-center gap-3 text-3xl font-bold">
                     Ventes
 
-                    <button @click="downloadFile" class="text-primary-color hover:text-hover-primary-color"><Printer class="w-6 h-6" /></button>
+                    <button @click="downloadFile" class="text-primary-color hover:text-hover-primary-color"><Printer class="h-6 w-6" /></button>
                 </h1>
 
                 <div class="flex items-center gap-2">
@@ -251,17 +253,17 @@ const loadTicket = (ticketId: number) => {
                 </div>
             </div>
 
-            <div class="flex items-center justify-between w-full gap-2 mb-2">
+            <div class="mb-2 flex w-full items-center justify-between gap-2">
                 <Input
                     type="text"
                     v-model="searchQuery"
                     @input="performSearch"
                     placeholder="Recherche des tickets par client"
-                    class="p-2 border border-gray-300 rounded-md basis-1/2"
+                    class="basis-1/2 rounded-md border border-gray-300 p-2"
                 />
 
                 <div class="flex items-center gap-2">
-                    <Input type="date" lang="fr" v-model="selectedDate" class="p-2 border border-gray-300 rounded-md" />
+                    <Input type="date" lang="fr" v-model="selectedDate" class="rounded-md border border-gray-300 p-2" />
 
                     <transition name="fade-slide">
                         <Input
@@ -269,7 +271,7 @@ const loadTicket = (ticketId: number) => {
                             type="date"
                             lang="fr"
                             v-model="selectedEndDate"
-                            class="p-2 border border-gray-300 rounded-md"
+                            class="rounded-md border border-gray-300 p-2"
                         />
                     </transition>
                 </div>
@@ -296,50 +298,58 @@ const loadTicket = (ticketId: number) => {
                         ]"
                         @click="toggleTicket(ticket.id)"
                     >
-                        <div class="flex items-center justify-between cursor-pointer">
+                        <div class="flex cursor-pointer items-center justify-between">
                             <div class="flex items-center gap-4">
                                 <div>
                                     <p class="flex items-center gap-2 font-medium">
-                                        <Barcode class="w-4 h-4 text-primary-color" /> N° {{ ticket.reference }}
+                                        <Barcode class="text-primary-color h-4 w-4" /> N° de ticket {{ ticket.id }}
+                                    </p>
+                                </div>
+                                <div class="text-gray-600">|</div>
+                                <div>
+                                    <p class="flex items-center gap-2 font-medium">
+                                        N° Facture {{ new Date(ticket.created_at).getFullYear() }}-{{ ticket.reference
+                                        }}{{ ticket.with_tva ? 'A' : '' }}
                                     </p>
                                 </div>
                                 <div class="text-gray-600">|</div>
 
                                 <div>
-                                    <p class="font-medium">Total : {{ getTicketPrice(ticket) }}€</p>
+                                    <p v-if="ticket.remise === 0" class="font-medium">Total : {{ getTicketPrice(ticket) }}€</p>
+                                    <p v-else class="font-medium">Total : {{ getTicketPriceWithRemise(ticket) }}€</p>
                                 </div>
                                 <Badge v-if="ticket.is_paid" class="bg-green-500">Aquitté</Badge>
                                 <Badge v-else class="bg-red-500">à régler</Badge>
                             </div>
                             <div class="flex items-center gap-5">
                                 <p class="flex items-center gap-1 text-sm text-gray-600">
-                                    <Clock class="w-4 h-4" /> {{ getHour(ticket.created_at) }}
+                                    <Clock class="h-4 w-4" /> {{ getHour(ticket.created_at) }}
                                 </p>
                                 <div
-                                    class="p-1 transition-transform duration-300 bg-gray-100 rounded-full"
+                                    class="rounded-full bg-gray-100 p-1 transition-transform duration-300"
                                     :class="{ 'rotate-180': expandedTicketId === ticket.id }"
                                 >
-                                    <ChevronDown class="w-4 h-4" />
+                                    <ChevronDown class="h-4 w-4" />
                                 </div>
                             </div>
                         </div>
                         <Transition name="expand">
                             <div v-show="expandedTicketId === ticket.id" class="mt-4 overflow-hidden transition-all duration-300 ease-in-out">
-                                <div class="p-4 rounded-md bg-gray-50">
-                                    <div class="grid grid-cols-3 gap-4 mb-4">
+                                <div class="rounded-md bg-gray-50 p-4">
+                                    <div class="mb-4 grid grid-cols-3 gap-4">
                                         <div>
                                             <p class="flex items-start gap-1 text-sm text-gray-500">
-                                                <CalendarDays class="w-4 h-4 text-orange-500" />Date de création
+                                                <CalendarDays class="h-4 w-4 text-orange-500" />Date de création
                                             </p>
                                             <p class="font-medium">{{ formatDate(ticket.created_at) }}</p>
                                         </div>
                                         <div>
-                                            <p class="flex items-start gap-1 text-sm text-gray-500"><User class="w-4 h-4 text-blue-500" />Client</p>
+                                            <p class="flex items-start gap-1 text-sm text-gray-500"><User class="h-4 w-4 text-blue-500" />Client</p>
 
                                             <Link
                                                 v-if="ticket.client"
                                                 :href="route('client.edit', ticket.client.id)"
-                                                class="font-medium duration-200 hover:text-primary-color hover:cursor-pointer"
+                                                class="hover:text-primary-color font-medium duration-200 hover:cursor-pointer"
                                             >
                                                 {{ ticket.client?.firstname }}
                                             </Link>
@@ -349,14 +359,14 @@ const loadTicket = (ticketId: number) => {
                                             <Link :href="route('ticket.edit', ticket.id)" class="flex items-center gap-2">
                                                 <Button
                                                     variant="outline"
-                                                    class="duration-300 bg-cyan-500 text-cyan-100 hover:bg-cyan-600 hover:text-cyan-100"
+                                                    class="bg-cyan-500 text-cyan-100 duration-300 hover:bg-cyan-600 hover:text-cyan-100"
                                                     ><Pencil />Modifier</Button
                                                 ></Link
                                             >
                                         </div>
                                     </div>
 
-                                    <div class="pb-2 mb-2 border-b border-gray-200">
+                                    <div class="mb-2 border-b border-gray-200 pb-2">
                                         <p class="font-semibold">Détails des articles</p>
                                     </div>
 
@@ -364,10 +374,10 @@ const loadTicket = (ticketId: number) => {
                                         <div
                                             v-for="(row, index) in ticket.ticket_rows"
                                             :key="index"
-                                            class="flex items-center justify-between p-2 bg-white rounded-md"
+                                            class="flex items-center justify-between rounded-md bg-white p-2"
                                         >
                                             <div class="flex items-center gap-2">
-                                                <ShoppingBag class="w-4 h-4 text-primary-color" />
+                                                <ShoppingBag class="text-primary-color h-4 w-4" />
                                                 <span>{{ row.category.name || `Article #${index + 1}` }}</span>
                                                 <span class="text-sm text-gray-500">{{ row.price }}€ x{{ row.quantity }}</span>
                                                 <span
@@ -388,16 +398,27 @@ const loadTicket = (ticketId: number) => {
                                         </div>
                                     </div>
 
-                                    <div class="flex justify-end pt-4 mt-4 border-t border-gray-200">
+                                    <div class="mt-4 flex justify-end border-t border-gray-200 pt-4">
                                         <div class="text-right">
                                             <p class="text-sm text-gray-500">Total</p>
-                                            <p class="text-lg font-bold" v-if="ticket.remise === 0">{{ getTicketPrice(ticket) }}€</p>
+                                            <p class="text-lg font-bold">{{ getTicketPrice(ticket) }}€</p>
+                                            <p class="text-lg font-bold" v-if="ticket.remise === 0">{{ getTicketPrice(ticket).toFixed(2) }}€</p>
+                                            <!-- <p v-if="ticket.remiseAmount !== 0">-{{ ticket.remiseAmount }}€</p> -->
                                             <p v-else class="text-lg">
                                                 <span class="mr-2 rounded-full border border-red-500 bg-red-100 px-1 py-0.5 text-xs text-red-500">
                                                     -{{ ticket.remise }}%
                                                 </span>
-                                                <span class="font-bold"> {{ getTicketPriceWithRemise(ticket) }}€ </span>
+                                                <span class="font-bold"> {{ getTicketPriceWithRemise(ticket).toFixed(2) }}€ </span>
                                             </p>
+                                            <span class="text-red-500" v-if="ticket.remiseAmount !== 0">
+                                                - {{ ticket.remiseAmount.toFixed(2) }} € de remise
+                                                <span v-if="ticket.remise === 0" class="font-bold text-black">
+                                                    {{ (getTicketPrice(ticket) - ticket.remiseAmount).toFixed(2) }}€</span
+                                                >
+                                                <span v-else class="font-bold text-black"
+                                                    >{{ (getTicketPriceWithRemise(ticket) - ticket.remiseAmount).toFixed(2) }}€</span
+                                                >
+                                            </span>
                                         </div>
                                     </div>
                                 </div>
@@ -414,7 +435,7 @@ const loadTicket = (ticketId: number) => {
                                         >
                                     </div>
 
-                                    <div class="flex items-center gap-2 mt-4">
+                                    <div class="mt-4 flex items-center gap-2">
                                         <DeleteConfirmationModal v-model:open="showConfirmDeleteModal" @delete="forceDelete" :hiddenbutton="true" />
                                         <Button v-if="ticket.deleted_at" @click="openForceDeleteModal(ticket.id)" variant="outline">
                                             Supprimer définitivement
@@ -425,7 +446,7 @@ const loadTicket = (ticketId: number) => {
                                         <Button v-if="!ticket.deleted_at" @click="openDeleteModal(ticket.id)" variant="outline"
                                             ><Trash class="text-red-400" /> Supprimer
                                         </Button>
-                                        <Button variant="teal"><Save />Sauvegarder</Button>
+                                        <!-- <Button variant="teal"><Save />Sauvegarder</Button> -->
                                     </div>
                                 </div>
                             </div>

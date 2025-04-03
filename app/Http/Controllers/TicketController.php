@@ -56,7 +56,7 @@ class TicketController extends Controller
         }
 
         if ($withInvoice === 'true') {
-            $query->where('client_id', '!=', null);
+            $query->where('with_tva', '=', true);
         }
 
         // if ($request->date) {
@@ -112,16 +112,18 @@ class TicketController extends Controller
     {
 
         $reference = '';
+        $currentYear = now()->year;
 
         if ($request->with_tva) {
-            $lastNumber = DB::table('tickets')->where('with_tva', true)->max('reference');
+            $lastNumber = DB::table('tickets')->where('with_tva', true)->whereYear('created_at', $currentYear)->max('reference');
 
             $reference =  ($lastNumber ? $lastNumber + 1 : 1);
         } else {
-            $lastNumber = DB::table('tickets')->where('with_tva', false)->max('reference');
+            $lastNumber = DB::table('tickets')->where('with_tva', false)->whereYear('created_at', $currentYear)->max('reference');
 
             $reference =  $lastNumber ? $lastNumber + 1 : 1;
         };
+
         $ticket = Ticket::create([
             'client_id' => $request->client_id,
             // 'with_tva' => $request->client_id ? true : false,
@@ -129,7 +131,9 @@ class TicketController extends Controller
             'is_paid' => $request->is_paid,
             'reference' => $reference,
             'comment' => $request->comment,
+            'echeance' => $request->echeance,
             'remise' => $request->remise,
+            'remiseAmount' => $request->remiseAmount,
         ]);
 
         $ticketRows = $request->ticket;

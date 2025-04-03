@@ -9,6 +9,7 @@ import { Head, Link, router } from '@inertiajs/vue3';
 import { Building, Hash, Mail, MapPin, Phone, Ticket, Trash, UserCheck, UserRoundX } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 import CommentModal from './CommentModal.vue';
+import EcheanceModal from './EcheanceModal.vue';
 import SearchClientModal from './SearchClientModal.vue';
 import TicketReductionModal from './TicketReductionModal.vue';
 
@@ -57,9 +58,10 @@ const isCommentModalOpen = ref(false);
 const comment = ref('');
 // c'est la reduction exemaple 10%
 const totalReduction = ref(0);
-
 const reductionRow = ref(0);
-const credit = ref(false);
+const echeance = ref('');
+const isEcheanceModalOpen = ref(false);
+const AmountReduction = ref(0);
 
 const getNameCategory = (id: number) => {
     return props.categories.find((category) => category.id === id)?.name;
@@ -149,7 +151,7 @@ const totalWithReduction = computed(() => {
         return 0;
     }
 
-    return ticket.value.reduce((acc, row) => {
+    const ticketWithPourcentReduction = ticket.value.reduce((acc, row) => {
         const price =
             row.reduction !== 0
                 ? row.price - (row.price * row.reduction) / 100
@@ -158,6 +160,11 @@ const totalWithReduction = computed(() => {
                   : row.price;
         return acc + price * row.quantity;
     }, 0);
+
+    if (AmountReduction.value !== 0) {
+        return ticketWithPourcentReduction - AmountReduction.value;
+    }
+    return ticketWithPourcentReduction;
 });
 
 const paid = () => {
@@ -166,7 +173,7 @@ const paid = () => {
     }
     isInPaiyment.value = true;
 
-    diff.value = priceRow.value - (totalReduction.value !== 0 ? totalWithReduction.value : total.value);
+    diff.value = priceRow.value - (totalReduction.value !== 0 ? totalWithReduction.value : total.value) - AmountReduction.value;
 };
 
 const sendTicket = () => {
@@ -176,9 +183,11 @@ const sendTicket = () => {
         email: selectedEmail.value || null,
         with_tva: selectedTva.value,
         remise: totalReduction.value,
+        remiseAmount: AmountReduction.value,
         tva_number: TVANumber.value,
-        is_paid: !credit.value,
+        is_paid: !echeance.value,
         comment: comment.value || null,
+        echeance: echeance.value || null,
     };
     selectedClient.value = null;
     selectedEmail.value = '';
@@ -193,7 +202,7 @@ const sendTicket = () => {
     decimal.value = false;
     centimal.value = false;
     isInPaiyment.value = false;
-    credit.value = false;
+    echeance.value = '';
 
     router.post(route('ticket.store'), form);
 };
@@ -201,8 +210,6 @@ const sendTicket = () => {
 const isModalOpen = ref(false);
 
 const setSelectedClient = (client: any, tva: boolean, tvaNumber = '') => {
-    console.log(client, tva);
-
     if (typeof client === 'string') {
         selectedEmail.value = client;
         isModalOpen.value = false;
@@ -228,8 +235,12 @@ const hasSelectedClient = computed({
     },
 });
 
-const reductionTicketValidation = (value: number) => {
+const reductionTicketPourcentValidation = (value: number) => {
     totalReduction.value = value;
+    isTicketReductionModalOpen.value = false;
+};
+const reductionTicketAmountValidation = (value: number) => {
+    AmountReduction.value = value;
     isTicketReductionModalOpen.value = false;
 };
 const reductionRowValidation = (value: number) => {
@@ -239,6 +250,10 @@ const reductionRowValidation = (value: number) => {
 const commentValidation = (value: string) => {
     comment.value = value;
     isCommentModalOpen.value = false;
+};
+const echeanceValidation = (value: string) => {
+    echeance.value = value;
+    isEcheanceModalOpen.value = false;
 };
 
 const tva = ref(6);
@@ -258,6 +273,16 @@ watch(tva, (newVal) => {
         selectedCategoryId.value = newCategories[0].id;
     }
 });
+const isCreditChecked = computed({
+    get: () => echeance.value !== '',
+    set: (value) => {
+        if (value) {
+            isEcheanceModalOpen.value = true; // Ouvre la modal si activé
+        } else {
+            echeance.value = ''; // Si décoché, on vide l'échéance
+        }
+    },
+});
 </script>
 
 <template>
@@ -266,8 +291,8 @@ watch(tva, (newVal) => {
     <AppLayout :breadcrumbs="breadcrumbs" class="h-screen">
         <div class="flex h-full">
             <!-- LEFTSIDE -->
-            <div class="flex flex-col basis-1/3">
-                <div class="flex flex-col h-20 gap-2 p-3 border-b">
+            <div class="flex basis-1/3 flex-col">
+                <div class="flex h-20 flex-col gap-2 border-b p-3">
                     <div class="flex items-center justify-between">
                         <h2 class="flex items-center gap-2"><Ticket class="text-primary-color" />Ticket en cours</h2>
                         <CommentModal
@@ -286,17 +311,17 @@ watch(tva, (newVal) => {
                                 </p>
                             </Link>
                         </HoverCardTrigger>
-                        <HoverCardContent class="space-y-3 w-80">
+                        <HoverCardContent class="w-80 space-y-3">
                             <p class="flex items-center gap-2">
                                 <UserCheck class="text-blue-500" /> {{ selectedClient.lastname }} {{ selectedClient.firstname }}
                             </p>
 
-                            <p class="flex items-center gap-2"><Mail class="text-blue-500 shrink-0" /> {{ selectedClient.email }}</p>
-                            <p class="flex items-center gap-2"><Phone class="text-blue-500 shrink-0" /> {{ selectedClient.phone }}</p>
-                            <p class="flex items-center gap-2"><Building class="text-blue-500 shrink-0" /> {{ selectedClient.company }}</p>
-                            <p class="flex items-center gap-2"><Hash class="text-blue-500 shrink-0" /> {{ selectedClient.tva_number }}</p>
+                            <p class="flex items-center gap-2"><Mail class="shrink-0 text-blue-500" /> {{ selectedClient.email }}</p>
+                            <p class="flex items-center gap-2"><Phone class="shrink-0 text-blue-500" /> {{ selectedClient.phone }}</p>
+                            <p class="flex items-center gap-2"><Building class="shrink-0 text-blue-500" /> {{ selectedClient.company }}</p>
+                            <p class="flex items-center gap-2"><Hash class="shrink-0 text-blue-500" /> {{ selectedClient.tva_number }}</p>
                             <p class="flex items-center gap-2">
-                                <MapPin class="text-blue-500 shrink-0" /> {{ selectedClient.address }} {{ selectedClient.city }}
+                                <MapPin class="shrink-0 text-blue-500" /> {{ selectedClient.address }} {{ selectedClient.city }}
                                 {{ selectedClient.country }}
                             </p>
                             <div v-if="comment">
@@ -309,10 +334,10 @@ watch(tva, (newVal) => {
                     <p v-else-if="selectedEmail" class="flex items-center gap-2"><Mail class="text-blue-500" /> {{ selectedEmail }}</p>
                     <p v-else class="flex items-center gap-2"><UserRoundX class="text-orange-500" /> Pas de client</p>
                 </div>
-                <div class="overflow-scroll overflow-y-auto grow">
-                    <p v-if="ticket.length === 0" class="mt-20 text-xl font-extrabold text-center text-gray-400">Aucun achat sur ce ticket</p>
+                <div class="grow overflow-scroll overflow-y-auto">
+                    <p v-if="ticket.length === 0" class="mt-20 text-center text-xl font-extrabold text-gray-400">Aucun achat sur ce ticket</p>
                     <TransitionGroup tag="ul" name="v">
-                        <li v-for="article in ticket" :key="article.id" class="flex flex-col p-3 border-b min-h-20">
+                        <li v-for="article in ticket" :key="article.id" class="flex min-h-20 flex-col border-b p-3">
                             <div class="flex items-center justify-between">
                                 <Trash class="w-5 text-red-400" @click="deleteRow(article.id)" />
                                 <p>
@@ -335,20 +360,28 @@ watch(tva, (newVal) => {
                                 >
                             </p>
                         </li>
+                        <li
+                            v-if="AmountReduction !== 0"
+                            class="flex min-h-20 items-center justify-between border-b p-3 text-right font-bold text-red-500"
+                        >
+                            <Trash class="w-5 text-red-400" @click="AmountReduction = 0" />
+                            <p>Réduction : -{{ AmountReduction }}€</p>
+                        </li>
                     </TransitionGroup>
                 </div>
-                <footer class="flex items-center justify-between h-20 p-1 border-t">
-                    <div class="text-center basis-1/2">
+                <footer class="flex h-20 items-center justify-between border-t p-1">
+                    <div class="basis-1/2 text-center">
                         <p>
                             Total :
-                            <span class="font-bold" :class="totalReduction !== 0 ? 'text-red-500 line-through' : ''">{{ total.toFixed(2) }}€ </span
+                            <span class="font-bold" :class="totalReduction !== 0 || AmountReduction !== 0 ? 'text-red-500 line-through' : ''"
+                                >{{ total.toFixed(2) }}€ </span
                             ><span
                                 class="relative -top-3 rounded-full border border-red-500 bg-red-100 p-0.5 px-1 text-xs text-red-500"
                                 v-if="totalReduction !== 0"
                                 >- {{ totalReduction }}%</span
                             >
                         </p>
-                        <p v-if="totalReduction !== 0" class="font-bold">{{ totalWithReduction.toFixed(2) }}€</p>
+                        <p v-if="totalReduction !== 0 || AmountReduction !== 0" class="font-bold">{{ totalWithReduction.toFixed(2) }}€</p>
                     </div>
 
                     <TicketReductionModal
@@ -358,14 +391,15 @@ watch(tva, (newVal) => {
                         :open="isTicketReductionModalOpen"
                         @close="isTicketReductionModalOpen = false"
                         @open="isTicketReductionModalOpen = true"
-                        @validation="reductionTicketValidation"
+                        @pourcent_validation="reductionTicketPourcentValidation"
+                        @amount_validation="reductionTicketAmountValidation"
                     />
                 </footer>
             </div>
             <!-- RightSide -->
-            <div class="flex flex-col border-l basis-2/3">
-                <div class="flex items-center w-full h-20 border-b">
-                    <div class="flex items-center justify-between w-full p-3">
+            <div class="flex basis-2/3 flex-col border-l">
+                <div class="flex h-20 w-full items-center border-b">
+                    <div class="flex w-full items-center justify-between p-3">
                         <SearchClientModal :show="isModalOpen" :clients="clients" @close="isModalOpen = false" @validation="setSelectedClient" />
 
                         <div class="flex items-center space-x-2">
@@ -373,9 +407,15 @@ watch(tva, (newVal) => {
                             <Label for="invoice">Facture</Label>
                         </div>
                         <div class="flex items-center space-x-2">
-                            <Switch id="credit" v-model="credit" />
-                            <Label for="credit">Crédit</Label>
+                            <Switch id="credit" v-model="isCreditChecked" />
+                            <Label for="credit">Echéance</Label>
                         </div>
+                        <EcheanceModal
+                            :open="isEcheanceModalOpen"
+                            @close="isEcheanceModalOpen = false"
+                            @open="isEcheanceModalOpen = true"
+                            @validation="echeanceValidation"
+                        />
 
                         <Select v-model="selectedCategoryId">
                             <SelectTrigger class="w-[180px]">
@@ -398,8 +438,8 @@ watch(tva, (newVal) => {
                         </div>
                     </div>
                 </div>
-                <div class="flex flex-col justify-end grow">
-                    <div class="flex justify-end w-full h-full gap-10 px-5 pt-3 text-4xl bg-slate-50 text-end">
+                <div class="flex grow flex-col justify-end">
+                    <div class="flex h-full w-full justify-end gap-10 bg-slate-50 px-5 pt-3 text-end text-4xl">
                         <p v-if="priceRow" class="text-4xl">
                             {{ priceRow.toFixed(2) }}€ <span class="text-4xl" v-if="setMultiplicatator">X</span>
                             <span v-if="quantityRow" class="text-4xl">{{ quantityRow }}</span>
@@ -409,64 +449,64 @@ watch(tva, (newVal) => {
                         <!-- <p v-if="setMultiplicatator && quantityRow">= {{ (priceRow * quantityRow).toFixed(2) }}€</p> -->
                         <p v-if="isInPaiyment">à rendre : {{ diff.toFixed(2) }}€</p>
                     </div>
-                    <div class="grid grid-cols-4 gap-1 p-1 font-extrabold border-t border-b">
+                    <div class="grid grid-cols-4 gap-1 border-b border-t p-1 font-extrabold">
                         <div
-                            class="flex items-center justify-center h-20 text-4xl duration-300 border-b rounded-lg bg-sidebar hover:bg-slate-100"
+                            class="flex h-20 items-center justify-center rounded-lg border-b bg-sidebar text-4xl duration-300 hover:bg-slate-100"
                             @click="calculator(9)"
                         >
                             9
                         </div>
                         <div
-                            class="flex items-center justify-center h-20 text-4xl duration-300 border-b rounded-lg border-x bg-sidebar hover:bg-slate-100"
+                            class="flex h-20 items-center justify-center rounded-lg border-x border-b bg-sidebar text-4xl duration-300 hover:bg-slate-100"
                             @click="calculator(8)"
                         >
                             8
                         </div>
                         <div
-                            class="flex items-center justify-center h-20 text-4xl duration-300 border-b rounded-lg bg-sidebar hover:bg-slate-100"
+                            class="flex h-20 items-center justify-center rounded-lg border-b bg-sidebar text-4xl duration-300 hover:bg-slate-100"
                             @click="calculator(7)"
                         >
                             7
                         </div>
                         <div
-                            class="flex items-center justify-center h-full row-span-2 font-extrabold text-green-100 border-l rounded-lg bg-primary-color basis-2/3"
+                            class="bg-primary-color row-span-2 flex h-full basis-2/3 items-center justify-center rounded-lg border-l font-extrabold text-green-100"
                             @click="validation"
                         >
                             Valider
                         </div>
                         <div
-                            class="flex items-center justify-center h-20 text-4xl duration-300 border-b rounded-lg bg-sidebar hover:bg-slate-100"
+                            class="flex h-20 items-center justify-center rounded-lg border-b bg-sidebar text-4xl duration-300 hover:bg-slate-100"
                             @click="calculator(6)"
                         >
                             6
                         </div>
                         <div
-                            class="flex items-center justify-center h-20 text-4xl duration-300 border-b rounded-lg border-x bg-sidebar hover:bg-slate-100"
+                            class="flex h-20 items-center justify-center rounded-lg border-x border-b bg-sidebar text-4xl duration-300 hover:bg-slate-100"
                             @click="calculator(5)"
                         >
                             5
                         </div>
                         <div
-                            class="flex items-center justify-center h-20 text-4xl duration-300 border-b rounded-lg bg-sidebar hover:bg-slate-100"
+                            class="flex h-20 items-center justify-center rounded-lg border-b bg-sidebar text-4xl duration-300 hover:bg-slate-100"
                             @click="calculator(4)"
                         >
                             4
                         </div>
 
                         <div
-                            class="flex items-center justify-center h-20 text-4xl duration-300 border-b rounded-lg bg-sidebar hover:bg-slate-100"
+                            class="flex h-20 items-center justify-center rounded-lg border-b bg-sidebar text-4xl duration-300 hover:bg-slate-100"
                             @click="calculator(3)"
                         >
                             3
                         </div>
                         <div
-                            class="flex items-center justify-center h-20 text-4xl duration-300 border-b rounded-lg border-x bg-sidebar hover:bg-slate-100"
+                            class="flex h-20 items-center justify-center rounded-lg border-x border-b bg-sidebar text-4xl duration-300 hover:bg-slate-100"
                             @click="calculator(2)"
                         >
                             2
                         </div>
                         <div
-                            class="flex items-center justify-center h-20 text-4xl duration-300 border-b rounded-lg bg-sidebar hover:bg-slate-100"
+                            class="flex h-20 items-center justify-center rounded-lg border-b bg-sidebar text-4xl duration-300 hover:bg-slate-100"
                             @click="calculator(1)"
                         >
                             1
@@ -483,19 +523,19 @@ watch(tva, (newVal) => {
                         />
 
                         <div
-                            class="flex items-center justify-center h-20 text-4xl duration-300 rounded-lg bg-sidebar hover:bg-slate-100"
+                            class="flex h-20 items-center justify-center rounded-lg bg-sidebar text-4xl duration-300 hover:bg-slate-100"
                             @click="setMultiplicatator = true"
                         >
                             X
                         </div>
                         <div
-                            class="flex items-center justify-center h-20 text-4xl duration-300 rounded-lg border-x bg-sidebar hover:bg-slate-100"
+                            class="flex h-20 items-center justify-center rounded-lg border-x bg-sidebar text-4xl duration-300 hover:bg-slate-100"
                             @click="calculator(0)"
                         >
                             0
                         </div>
                         <div
-                            class="flex items-center justify-center h-20 text-4xl duration-300 rounded-lg bg-sidebar hover:bg-slate-100"
+                            class="flex h-20 items-center justify-center rounded-lg bg-sidebar text-4xl duration-300 hover:bg-slate-100"
                             @click="
                                 () => {
                                     if (priceRow) {
@@ -507,16 +547,16 @@ watch(tva, (newVal) => {
                             ,
                         </div>
                         <div
-                            class="flex items-center justify-center h-full text-4xl font-extrabold text-red-100 bg-red-400 rounded-lg basis-1/3"
+                            class="flex h-full basis-1/3 items-center justify-center rounded-lg bg-red-400 text-4xl font-extrabold text-red-100"
                             @click="deleteCurrentRow"
                         >
                             C
                         </div>
                     </div>
                 </div>
-                <footer class="flex items-center justify-between h-20 p-1 border-t">
+                <footer class="flex h-20 items-center justify-between border-t p-1">
                     <div
-                        class="flex items-center justify-center w-full h-full font-extrabold text-center text-green-100 rounded-lg bg-primary-color dark:bg-orange-950 dark:text-orange-400"
+                        class="bg-primary-color flex h-full w-full items-center justify-center rounded-lg text-center font-extrabold text-green-100 dark:bg-orange-950 dark:text-orange-400"
                         @click="paid"
                     >
                         Payer

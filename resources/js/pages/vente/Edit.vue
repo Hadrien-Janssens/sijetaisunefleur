@@ -29,6 +29,7 @@ const props = defineProps<{
         client: Client;
         created_at: string;
         remise: number;
+        remiseAmount: number;
         deleted_at: string | null;
         ticket_rows: {
             id: number;
@@ -55,6 +56,7 @@ const form = useForm({
     client: props.ticket.client?.id || null,
     ticket_rows: props.ticket.ticket_rows,
     remise: props.ticket.remise,
+    remiseAmount: props.ticket.remiseAmount,
 });
 
 console.log(props.ticket.ticket_rows);
@@ -117,7 +119,7 @@ const getTicketPrice = (ticket: any) => {
     ticket.ticket_rows.forEach((row: Row) => {
         totalPrice += (row.reduction === 0 ? row.price : row.price - (row.price * row.reduction) / 100) * row.quantity;
     });
-    return totalPrice.toFixed(2);
+    return (totalPrice - (ticket.remiseAmount ? ticket.remiseAmount : 0)).toFixed(2);
 };
 
 const getTicketPriceWithRemise = (ticket: any) => {
@@ -130,7 +132,7 @@ const getTicketPriceWithRemise = (ticket: any) => {
                     : row.price - (row.price * ticket.remise) / 100
                 : row.price - (row.price * row.reduction) / 100) * row.quantity;
     });
-    return totalPriceWithRemise.toFixed(2);
+    return (totalPriceWithRemise - (ticket.remiseAmount ? ticket.remiseAmount : 0)).toFixed(2);
 };
 
 const openCreateRowModal = ref(false);
@@ -154,42 +156,42 @@ const deleteRow = (index: number) => {
 <template>
     <Head title="Modification d'un ticket" />
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="container z-10 p-6 mx-auto">
+        <div class="container z-10 mx-auto p-6">
             <Button @click="goBack" variant="teal" class="mb-3"><ArrowLeft /> Retour</Button>
-            <Card class="w-full p-5 bg-gradient-to-br from-white to-gray-50/80">
+            <Card class="w-full bg-gradient-to-br from-white to-gray-50/80 p-5">
                 <form @submit.prevent="submit">
                     <CardHeader class="w-full">
-                        <CardTitle class="flex items-center w-full gap-2">
-                            <div class="flex items-center justify-between w-full gap-3 mb-4">
+                        <CardTitle class="flex w-full items-center gap-2">
+                            <div class="mb-4 flex w-full items-center justify-between gap-3">
                                 <div class="flex items-center gap-3">
-                                    <Ticket class="w-10 h-8 text-primary-color" />
+                                    <Ticket class="text-primary-color h-8 w-10" />
                                     <p class="text-lg">Modification ticket du</p>
                                     <Input v-model="form.date" type="date" class="max-w-36" />
                                 </div>
                                 <div class="flex items-center gap-3">
                                     <Switch v-model="form.is_paid" />
-                                    <label class="font-semibold shrink-0">Facture payée</label>
+                                    <label class="shrink-0 font-semibold">Facture payée</label>
                                 </div>
                             </div>
                         </CardTitle>
                     </CardHeader>
                     <CardContent class="space-y-5">
-                        <div class="flex flex-col justify-between gap-3 mb-4 lg:flex-row lg:items-center">
-                            <div class="flex items-center gap-4 basis-1/2">
+                        <div class="mb-4 flex flex-col justify-between gap-3 lg:flex-row lg:items-center">
+                            <div class="flex basis-1/2 items-center gap-4">
                                 <div class="flex items-center gap-4">
                                     <label class="font-semibold">Référence</label>
                                     <Input v-model="form.reference" type="text" placeholder="Référence" class="max-w-36" />
                                 </div>
                                 <div class="flex items-center gap-3">
                                     <Switch v-model="form.with_tva" />
-                                    <label class="font-semibold shrink-0">Avec TVA</label>
+                                    <label class="shrink-0 font-semibold">Avec TVA</label>
                                 </div>
                             </div>
 
                             <div class="flex items-center gap-3">
                                 <label class="font-semibold" for="client">Client</label>
                                 <div
-                                    class="px-2 py-1 font-bold duration-300 bg-gray-100 border rounded-sm shadow-sm hover:cursor-pointer hover:bg-gray-200"
+                                    class="rounded-sm border bg-gray-100 px-2 py-1 font-bold shadow-sm duration-300 hover:cursor-pointer hover:bg-gray-200"
                                     @click="isModalOpen = true"
                                 >
                                     <p :class="{ 'text-gray-500': !form.client }">
@@ -209,7 +211,7 @@ const deleteRow = (index: number) => {
                             <Textarea id="comment" v-model="form.comment" placeholder="Commentaire" class="flex-1" />
                         </div>
 
-                        <div class="flex gap-2 pb-2 mb-2 border-b border-gray-200">
+                        <div class="mb-2 flex gap-2 border-b border-gray-200 pb-2">
                             <p class="font-semibold">Détails des articles</p>
 
                             <ListPlus class="text-blue-500 hover:cursor-pointer" @click="openCreateRowModal = true" />
@@ -225,10 +227,10 @@ const deleteRow = (index: number) => {
                             <div
                                 v-for="(row, index) in form.ticket_rows"
                                 :key="row.id"
-                                class="flex items-center justify-between p-2 bg-white rounded-md"
+                                class="flex items-center justify-between rounded-md bg-white p-2"
                             >
                                 <div class="flex items-center gap-2">
-                                    <ShoppingBag class="w-4 h-4 text-primary-color" />
+                                    <ShoppingBag class="text-primary-color h-4 w-4" />
                                     <Select v-model="row.category_id" class="w-48">
                                         <SelectTrigger class="w-48">
                                             <SelectValue :placeholder="row.category?.name || `Article #${index + 1}`" />
@@ -264,19 +266,38 @@ const deleteRow = (index: number) => {
                             </div>
                         </div>
 
-                        <div class="flex items-end justify-between pt-4 mt-4 border-t border-gray-200">
-                            <div class="flex items-center gap-3">
-                                <p class="font-semibold">Remise</p>
-                                <Input type="number" v-model="form.remise" placeholder="0" class="w-28" :disabled="form.ticket_rows.length === 0" />%
+                        <div class="mt-4 flex items-end justify-between border-t border-gray-200 pt-4">
+                            <div class="flex flex-col gap-3">
+                                <div class="flex items-center gap-3">
+                                    <p class="font-semibold">Remise</p>
+                                    <Input
+                                        type="number"
+                                        v-model="form.remise"
+                                        placeholder="0"
+                                        class="w-28"
+                                        :disabled="form.ticket_rows.length === 0"
+                                    />%
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <p class="font-semibold">Remise</p>
+                                    <Input
+                                        type="number"
+                                        v-model="form.remiseAmount"
+                                        placeholder="0"
+                                        class="w-28"
+                                        :disabled="form.ticket_rows.length === 0"
+                                    />€
+                                </div>
                             </div>
+
                             <div class="text-right">
                                 <p class="text-sm text-gray-500">Total</p>
-                                <p class="text-lg font-bold" v-if="ticket.remise !== 0">{{ getTicketPrice(form) }}€</p>
+                                <p class="text-lg font-bold" v-if="ticket.remise === 0">{{ getTicketPrice(form) }}€</p>
                                 <p class="text-lg font-bold" v-else>{{ getTicketPriceWithRemise(form) }}€</p>
                             </div>
                         </div>
                     </CardContent>
-                    <CardFooter class="flex items-center justify-between gap-3 m-3" :class="{ 'justify-end': !ticket.deleted_at }">
+                    <CardFooter class="m-3 flex items-center justify-between gap-3" :class="{ 'justify-end': !ticket.deleted_at }">
                         <Link v-if="ticket.deleted_at" :href="route('ticket.restore', ticket.id)">
                             <Button variant="outline">Restaurer</Button>
                         </Link>

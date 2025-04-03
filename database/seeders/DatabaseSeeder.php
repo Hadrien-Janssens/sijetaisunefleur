@@ -46,6 +46,6 @@ class DatabaseSeeder extends Seeder
             'tva_number' => 'BE0123456789',
         ]);
 
-        Ticket::factory(30)->create();
+        // Ticket::factory(30)->create();
     }
 }
