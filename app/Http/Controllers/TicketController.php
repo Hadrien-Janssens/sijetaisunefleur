@@ -272,16 +272,7 @@ class TicketController extends Controller
         // Récupérer les données du ticket
         $ticket = Ticket::findOrFail($ticketId);
 
-        // Passer les données à la vue
-        // $data = ['ticket' => $ticket];
 
-        // Générer le PDF à partir de la vue Blade
-        // $pdf = Pdf::loadView('pdf.invoice', $data);
-        $pdf = Pdf::loadView('facture', ['ticket' => $ticket, 'with_tva' => $ticket->with_tva]);
-
-        // Retourner le PDF en téléchargement
-        // return $pdf->download('facture_' . ($ticket->id ?? 'inconnu') . '.pdf');
-        // return $pdf->download("facture_.pdf");
         try {
             $pdf = Pdf::loadView('facture', ['ticket' => $ticket, 'with_tva' => $ticket->with_tva]);
             return response($pdf->stream("facture_{$ticket->id}.pdf"))

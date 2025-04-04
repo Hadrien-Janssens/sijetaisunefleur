@@ -315,8 +315,12 @@ const loadTicket = (ticketId: number) => {
                                 <div class="text-gray-600">|</div>
 
                                 <div>
-                                    <p v-if="ticket.remise === 0" class="font-medium">Total : {{ getTicketPrice(ticket) }}€</p>
-                                    <p v-else class="font-medium">Total : {{ getTicketPriceWithRemise(ticket) }}€</p>
+                                    <p v-if="ticket.remise === 0" class="font-medium">
+                                        Total : {{ (getTicketPrice(ticket) - ticket.remiseAmount).toFixed(2) }}€
+                                    </p>
+                                    <p v-else class="font-medium">
+                                        Total : {{ (getTicketPriceWithRemise(ticket) - ticket.remiseAmount).toFixed(2) }}€
+                                    </p>
                                 </div>
                                 <Badge v-if="ticket.is_paid" class="bg-green-500">Aquitté</Badge>
                                 <Badge v-else class="bg-red-500">à régler</Badge>

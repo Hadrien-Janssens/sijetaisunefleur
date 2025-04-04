@@ -15,8 +15,7 @@
             <div style="float: left;">
 
 
-                {{-- <img style="margin-bottom : 30px;" src="{{ asset('/public/logo.jpg') }}" alt="si j'étais une fleur"
-                    width="200"> --}}
+
                 <p style="margin-bottom : 30px; font-weight:bold ">SI J'ETAIS UNE FLEUR</p>
                 <p>Rue de l'Espinette</p>
                 <p>7160 Godarville</p>
@@ -33,7 +32,7 @@
                 <br><br>
                 @if ($ticket->client)
                     <div style="width: 300px; word-wrap: break-word; line-height: 1.1em;">
-                        <p>Client : {{ $ticket->client->company }} c/o {{ $ticket->client->firstname }}
+                        <p>Client : {{ $ticket->client->company }} {{ $ticket->client->firstname }}
                             {{ $ticket->client->lastname }}</p>
                         <p>Adresse : {{ $ticket->client->address }}</p>
                         <p>{{ $ticket->client->city }}</p>
@@ -80,17 +79,32 @@
                     <th>{{ $row->category->name }}</th>
                     <th>{{ $row->quantity }}</th>
                     <th>{{ number_format($row->price / (1 + $row->category->tva / 100), 2) }} €</th>
-                    <th>0%</th>
-                    <th>{{ number_format($row->price / (1 + $row->category->tva / 100), 2) * $row->quantity }} €</th>
+                    @if ($row->reduction)
+                        <th> -{{ $row->reduction }}%</th>
+                    @else
+                        <th>0%</th>
+                    @endif
+
+                    <th>{{ number_format(($row->price / (1 + $row->category->tva / 100)) * $row->quantity * (1 - $row->reduction / 100), 2) }}€
+                    </th>
                 </tr>
             @endforeach
-            @if ($ticket->remiseAmount)
+            @if ($ticket->remiseAmount != 0)
                 <tr>
-                    <th>Remise</th>
-                    <th></th>
-                    <th></th>
-                    <th style="font-weigth: bold ;"> -{{ $ticket->remiseAmount }}€</th>
-                    <th></th>
+                    <th>Remise ticket (€)</th>
+                    <th>/</th>
+                    <th> -{{ $ticket->remiseAmount }}€</th>
+                    <th>0%</th>
+                    <th>/</th>
+                </tr>
+            @endif
+            @if ($ticket->remise && $ticket->remise !== 0)
+                <tr>
+                    <th>Remise ticket (%)</th>
+                    <th>/</th>
+                    <th>/</th>
+                    <th> -{{ $ticket->remise }}%</th>
+                    <th>/</th>
                 </tr>
             @endif
 
@@ -108,25 +122,60 @@
             $base = 0;
             $base21 = 0;
             $base6 = 0;
-            // $tvaTotal = 0;
-            $tva21 = 0;
-            $tva6 = 0;
+            $baseSansRemise = 0; // Nouvelle variable pour les montants sans réduction
+            $base21SansRemise = 0;
+            $base6SansRemise = 0;
 
             foreach ($ticket->ticketRows as $row) {
-                $base += number_format($row->price / (1 + $row->category->tva / 100), 2) * $row->quantity;
-                // $tvaTotal +=
-                //     $row->price - number_format($row->price / (1 + $row->category->tva / 100), 2) * $row->quantity;
-                if ($row->category->tva == 21) {
-                    $base21 += number_format($row->price / (1 + $row->category->tva / 100), 2) * $row->quantity;
-                }
-                if ($row->category->tva == 6) {
-                    $base6 += number_format($row->price / (1 + $row->category->tva / 100), 2) * $row->quantity;
+                $htvaLigne = ($row->price / (1 + $row->category->tva / 100)) * $row->quantity;
+
+                if ($row->reduction) {
+                    // Application de la remise ligne
+                    $montantRemiseLigne = $htvaLigne * ($row->reduction / 100);
+                    $totalLigne = $htvaLigne - $montantRemiseLigne;
+
+                    $base += $totalLigne;
+                    if ($row->category->tva == 21) {
+                        $base21 += $totalLigne;
+                    } elseif ($row->category->tva == 6) {
+                        $base6 += $totalLigne;
+                    }
+                } else {
+                    // Stockage pour remise globale
+                    $baseSansRemise += $htvaLigne;
+                    if ($row->category->tva == 21) {
+                        $base21SansRemise += $htvaLigne;
+                    } elseif ($row->category->tva == 6) {
+                        $base6SansRemise += $htvaLigne;
+                    }
                 }
             }
+
+            // Application de la remise globale uniquement sur les lignes sans réduction
+            if ($ticket->remise) {
+                $remiseGlobale = $baseSansRemise * ($ticket->remise / 100);
+                $baseSansRemise -= $remiseGlobale;
+
+                $remiseGlobale21 = $base21SansRemise * ($ticket->remise / 100);
+                $base21SansRemise -= $remiseGlobale21;
+
+                $remiseGlobale6 = $base6SansRemise * ($ticket->remise / 100);
+                $base6SansRemise -= $remiseGlobale6;
+            }
+
+            // Fusion des totaux
+            $base += $baseSansRemise;
+            $base21 += $base21SansRemise;
+            $base6 += $base6SansRemise;
+
+            // Calcul TVA
             $tva6 = $base6 * 0.06;
             $tva21 = $base21 * 0.21;
+
+            // Total TTC après remise fixe
+            $total_apayer = $base + $tva6 + $tva21 - $ticket->remiseAmount;
         @endphp
-        <p style="font-weight: bold; ">TOTAL € {{ $base }} hTVA</p>
+        <p style="font-weight: bold; ">TOTAL € {{ number_format($base, 2) }} hTVA</p>
         <p>Pour acquis : (cash/banconact)</p>
 
         <table style="margin-top: 50px; border: 1px solid black; width: 100%;">
@@ -144,10 +193,10 @@
                 <tr>
                     <th>Base</th>
                     <th>€ -</th>
-                    <th>€ {{ $base6 }} </th>
+                    <th>€ {{ number_format($base6) }} </th>
                     <th>€ -</th>
-                    <th>€ {{ $base21 }}</th>
-                    <th>€ {{ $base }}</th>
+                    <th>€ {{ number_format($base21) }}</th>
+                    <th>€ {{ number_format($base, 2) }}</th>
                 </tr>
                 <tr>
                     <th>TVA</th>
@@ -162,7 +211,7 @@
                 <tr>
                     <th colspan="5">
                         {{ !$ticket->is_paid && $ticket->echeance ? $ticket->echeance : 'Echéance : Acquitté' }}</th>
-                    <th> A PAYER <br> € {{ number_format($base + $tva6 + $tva21, 2) }}</th>
+                    <th> A PAYER <br> € {{ number_format($total_apayer, 2) }}</th>
                 </tr>
         </table>
         <p style="text-align: right">Exemplaire client</p>

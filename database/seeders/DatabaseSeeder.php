@@ -24,11 +24,31 @@ class DatabaseSeeder extends Seeder
         ]);
 
         Category::factory()->create([
-            'name' => 'Décoration',
+            'name' => 'Déco',
+            'tva' => 21,
+        ]);
+        Category::factory()->create([
+            'name' => 'Déco Noël',
+            'tva' => 21,
+        ]);
+        Category::factory()->create([
+            'name' => 'Déco Pâques',
             'tva' => 21,
         ]);
         Category::factory()->create([
             'name' => 'Fleurs',
+            'tva' => 6,
+        ]);
+        Category::factory()->create([
+            'name' => 'Plante',
+            'tva' => 6,
+        ]);
+        Category::factory()->create([
+            'name' => 'Bouquet saint-valentin',
+            'tva' => 6,
+        ]);
+        Category::factory()->create([
+            'name' => 'Gerbe mortuaires',
             'tva' => 6,
         ]);
 
@@ -38,7 +58,7 @@ class DatabaseSeeder extends Seeder
             'firstname' => 'Hadrien',
             'lastname' => 'Janssens',
             'email' => 'hadrien.janssens7@gmail.com',
-            'company' => 'BlackPigCompany',
+            'company' => 'MyCompany',
             'city' => 'Morlanwelz',
             'country' => 'Belgique',
             'address' => 'Rue joseph Wauters 81',

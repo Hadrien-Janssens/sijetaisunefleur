@@ -8,6 +8,7 @@ import { type BreadcrumbItem, type Client } from '@/types';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { Building, Hash, Mail, MapPin, Phone, Ticket, Trash, UserCheck, UserRoundX } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
+import ArticleReductionModal from './ArticleReductionModal.vue';
 import CommentModal from './CommentModal.vue';
 import EcheanceModal from './EcheanceModal.vue';
 import SearchClientModal from './SearchClientModal.vue';
@@ -173,7 +174,7 @@ const paid = () => {
     }
     isInPaiyment.value = true;
 
-    diff.value = priceRow.value - (totalReduction.value !== 0 ? totalWithReduction.value : total.value) - AmountReduction.value;
+    diff.value = priceRow.value - (totalReduction.value !== 0 || AmountReduction.value !== 0 ? totalWithReduction.value : total.value);
 };
 
 const sendTicket = () => {
@@ -203,6 +204,7 @@ const sendTicket = () => {
     centimal.value = false;
     isInPaiyment.value = false;
     echeance.value = '';
+    AmountReduction.value = 0;
 
     router.post(route('ticket.store'), form);
 };
@@ -452,9 +454,9 @@ const isCreditChecked = computed({
                     <div class="grid grid-cols-4 gap-1 border-b border-t p-1 font-extrabold">
                         <div
                             class="flex h-20 items-center justify-center rounded-lg border-b bg-sidebar text-4xl duration-300 hover:bg-slate-100"
-                            @click="calculator(9)"
+                            @click="calculator(7)"
                         >
-                            9
+                            7
                         </div>
                         <div
                             class="flex h-20 items-center justify-center rounded-lg border-x border-b bg-sidebar text-4xl duration-300 hover:bg-slate-100"
@@ -464,9 +466,9 @@ const isCreditChecked = computed({
                         </div>
                         <div
                             class="flex h-20 items-center justify-center rounded-lg border-b bg-sidebar text-4xl duration-300 hover:bg-slate-100"
-                            @click="calculator(7)"
+                            @click="calculator(9)"
                         >
-                            7
+                            9
                         </div>
                         <div
                             class="bg-primary-color row-span-2 flex h-full basis-2/3 items-center justify-center rounded-lg border-l font-extrabold text-green-100"
@@ -476,9 +478,9 @@ const isCreditChecked = computed({
                         </div>
                         <div
                             class="flex h-20 items-center justify-center rounded-lg border-b bg-sidebar text-4xl duration-300 hover:bg-slate-100"
-                            @click="calculator(6)"
+                            @click="calculator(4)"
                         >
-                            6
+                            4
                         </div>
                         <div
                             class="flex h-20 items-center justify-center rounded-lg border-x border-b bg-sidebar text-4xl duration-300 hover:bg-slate-100"
@@ -488,16 +490,16 @@ const isCreditChecked = computed({
                         </div>
                         <div
                             class="flex h-20 items-center justify-center rounded-lg border-b bg-sidebar text-4xl duration-300 hover:bg-slate-100"
-                            @click="calculator(4)"
+                            @click="calculator(6)"
                         >
-                            4
+                            6
                         </div>
 
                         <div
                             class="flex h-20 items-center justify-center rounded-lg border-b bg-sidebar text-4xl duration-300 hover:bg-slate-100"
-                            @click="calculator(3)"
+                            @click="calculator(1)"
                         >
-                            3
+                            1
                         </div>
                         <div
                             class="flex h-20 items-center justify-center rounded-lg border-x border-b bg-sidebar text-4xl duration-300 hover:bg-slate-100"
@@ -507,12 +509,12 @@ const isCreditChecked = computed({
                         </div>
                         <div
                             class="flex h-20 items-center justify-center rounded-lg border-b bg-sidebar text-4xl duration-300 hover:bg-slate-100"
-                            @click="calculator(1)"
+                            @click="calculator(3)"
                         >
-                            1
+                            3
                         </div>
 
-                        <TicketReductionModal
+                        <ArticleReductionModal
                             title="Séléctionne la réduction"
                             trigger="Réduction article"
                             description="Cette réduction sera appliquée sur l'article"
