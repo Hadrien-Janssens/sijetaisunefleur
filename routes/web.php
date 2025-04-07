@@ -63,8 +63,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('article', [CategoryController::class, 'store'])->name('article.store');
     Route::delete('article/{category}', [CategoryController::class, 'destroy'])->name('article.destroy');
 
-    Route::get('export/ticket', [TicketController::class, 'export'])->name('ticket.export');
+    Route::get('export/ticket', [TicketController::class, 'exportArticles'])->name('ticket.export');
+    Route::get('export/number', [TicketController::class, 'exportNumber'])->name('number.export');
 
+    Route::get('/facture/all', [TicketController::class, 'downloadInvoice'])->name('tickets.download');
     Route::get('/facture/{ticketId}', [TicketController::class, 'generatePDF'])->name('ticket.print');
 });
 

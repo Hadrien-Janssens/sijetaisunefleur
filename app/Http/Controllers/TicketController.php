@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\NumberExport;
 use App\Exports\TicketExport;
 use App\Mail\InvoiceMail;
 use App\Models\Category;
@@ -14,6 +15,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Maatwebsite\Excel\Facades\Excel;
+use ZipArchive;
 
 require_once __DIR__ . '/../lib/helper.php';
 
@@ -30,7 +32,6 @@ class TicketController extends Controller
         $actif = $request->input('actif');
         $timeSlot = $request->input('time_slot');
 
-
         if ($actif === 'active') {
             // Construire la requête des tickets
             $query = Ticket::with(['ticketRows.category', 'client'])
@@ -40,8 +41,6 @@ class TicketController extends Controller
             $query = Ticket::onlyTrashed()->with(['ticketRows.category', 'client'])
                 ->orderBy('created_at', 'desc');
         }
-
-
 
         // Appliquer la recherche si un terme est présent
         if (!empty($search)) {
@@ -58,10 +57,6 @@ class TicketController extends Controller
         if ($withInvoice === 'true') {
             $query->where('with_tva', '=', true);
         }
-
-        // if ($request->date) {
-        //     $query->whereDate('created_at', $request->date);
-        // }
 
         if ($timeSlot !== null) {
             if ($timeSlot === 'crenaux') {
@@ -262,11 +257,23 @@ class TicketController extends Controller
     }
 
 
-    public function export(Request $request)
+    public function exportArticles(Request $request)
     {
         return Excel::download(new TicketExport($request->all()), 'tickets.xlsx');
     }
 
+    public function exportNumber(Request $request)
+    {
+        return Excel::download(new NumberExport($request->all()), 'chiffres_journaliers.xlsx');
+    }
+
+
+    /**
+     * Generate a PDF for the specified ticket.
+     *
+     * @param  int  $ticketId
+     * @return \Illuminate\Http\Response
+     */
     public function generatePDF($ticketId)
     {
         // Récupérer les données du ticket
@@ -294,5 +301,92 @@ class TicketController extends Controller
         // Mail::to("contact@sijetaisunefleur.com")->send(new InvoiceMail($pdf->output(), "facture.pdf"));
 
         return redirect()->back()->with('success', 'Facture envoyée par email.');
+    }
+    public function downloadInvoice(Request $request)
+    {
+        // Récupérer la requête de recherche
+        $search = $request->input('search');
+        $withInvoice = $request->input('withInvoice');
+        $actif = $request->input('actif');
+        $timeSlot = $request->input('time_slot');
+
+        if ($actif === 'active') {
+            // Construire la requête des tickets
+            $query = Ticket::with(['ticketRows.category', 'client'])
+                ->orderBy('created_at', 'desc');
+        } else {
+
+            $query = Ticket::onlyTrashed()->with(['ticketRows.category', 'client'])
+                ->orderBy('created_at', 'desc');
+        }
+
+        // Appliquer la recherche si un terme est présent
+        if (!empty($search)) {
+            $query->where('reference', 'like', "%$search%")
+                ->orWhereHas('client', function ($q) use ($search) {
+                    $q->where('firstname', 'like', "%$search%")
+                        ->orWhere('email', 'like', "%$search%")
+                        ->orWhere('phone', 'like', "%$search%")
+                        ->orWhere('company', 'like', "%$search%")
+                        ->orWhere('lastname', 'like', "%$search%");
+                });
+        }
+
+        if ($withInvoice == 1) {
+            $query->where('with_tva', '=', true);
+        }
+
+        if ($timeSlot !== null) {
+            if ($timeSlot === 'crenaux') {
+                $query->whereBetween('created_at', [
+                    Carbon::parse($request->start_date)->startOfDay(),
+                    Carbon::parse($request->end_date)->endOfDay()
+                ]);
+            } else if ($timeSlot !== 'day') {
+
+                $dates = dateFilter($request->start_date, $timeSlot);
+                $query->whereBetween('created_at', [
+                    Carbon::parse($dates['start'])->startOfDay(),
+                    Carbon::parse($dates['end'])->endOfDay()
+                ]);
+            } else {
+
+                if ($request->start_date) {
+                    $query->whereBetween('created_at', [
+                        Carbon::parse($request->start_date)->startOfDay(),
+                        Carbon::parse($request->start_date)->endOfDay()
+                    ]);
+                }
+            }
+        } else {
+            $query->whereDate('created_at', Carbon::today());
+        }
+
+
+        // $ticket = Ticket::with(['ticketRows.category', 'client'])->find($id);
+        $tickets = $query->get();
+
+        // Créer un fichier zip
+        $zip = new ZipArchive();
+        $zipFileName = "factures.zip";
+        $zip->open(public_path($zipFileName), ZipArchive::CREATE | ZipArchive::OVERWRITE);
+
+
+        foreach ($tickets as $ticket) {
+            // Générer le PDF pour chaque ticket
+            $pdf = Pdf::loadView('facture', ['ticket' => $ticket, 'with_tva' => $ticket->with_tva]);
+
+            // Ajouter le PDF dans le zip
+            $year = Carbon::parse($ticket->created_at)->year;
+            $suffix = $ticket->with_tva ? 'A' : '';
+
+            $zip->addFromString("factures/facture_{$year}_{$ticket->reference}_{$suffix}.pdf", $pdf->output());
+        }
+
+
+        // Fermer le zip
+        $zip->close();
+
+        return response()->download(public_path($zipFileName))->deleteFileAfterSend(true);
     }
 }

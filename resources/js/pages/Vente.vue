@@ -12,7 +12,21 @@ import TabsTrigger from '@/components/ui/tabs/TabsTrigger.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Client, type BreadcrumbItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/vue3';
-import { Barcode, CalendarDays, ChevronDown, Clock, Flower, Pencil, Printer, Send, ShoppingBag, Ticket, Trash, User } from 'lucide-vue-next';
+import {
+    Barcode,
+    CalendarDays,
+    ChevronDown,
+    Clock,
+    Download,
+    Flower,
+    Pencil,
+    Printer,
+    Send,
+    ShoppingBag,
+    Ticket,
+    Trash,
+    User,
+} from 'lucide-vue-next';
 import { ref, watch } from 'vue';
 import { getHour } from '../lib/utils';
 import { Row } from '../types';
@@ -136,7 +150,7 @@ const formatDate = (dateString: string) => {
         day: 'numeric',
     });
 };
-const downloadFile = () => {
+const downloadFileArticles = () => {
     window.location.href = route('ticket.export', {
         search: searchQuery.value,
         withInvoice: withInvoice.value,
@@ -183,6 +197,27 @@ const loadTicket = (ticketId: number) => {
     // router.get(route('ticket.print', ticketId), {}, { preserveState: true, preserveScroll: true });
     window.open(route('ticket.print', { id: ticketId }), '_blank');
 };
+const printInvoice = () => {
+    window.location.href = route('tickets.download', {
+        search: searchQuery.value,
+        withInvoice: withInvoice.value,
+        start_date: selectedDate.value,
+        end_date: selectedEndDate.value,
+        actif: activeTab.value,
+        time_slot: timeSlot.value,
+    });
+};
+
+const downloadFilNumber = () => {
+    window.location.href = route('number.export', {
+        search: searchQuery.value,
+        withInvoice: withInvoice.value,
+        start_date: selectedDate.value,
+        end_date: selectedEndDate.value,
+        actif: activeTab.value,
+        time_slot: timeSlot.value,
+    });
+};
 </script>
 <template>
     <Head title="Ventes" />
@@ -190,11 +225,7 @@ const loadTicket = (ticketId: number) => {
         <Flower class="text-primary-color fixed mt-10 h-screen w-full opacity-10" />
         <div class="container z-10 mx-auto p-6">
             <div class="mb-6 flex items-center justify-between">
-                <h1 class="flex items-center gap-3 text-3xl font-bold">
-                    Ventes
-
-                    <button @click="downloadFile" class="text-primary-color hover:text-hover-primary-color"><Printer class="h-6 w-6" /></button>
-                </h1>
+                <h1 class="flex items-center gap-3 text-3xl font-bold">Ventes</h1>
 
                 <div class="flex items-center gap-2">
                     <input type="radio" name="timeSlot" id="day" value="day" v-model="timeSlot" class="hidden" />
@@ -252,6 +283,17 @@ const loadTicket = (ticketId: number) => {
                     </label>
                 </div>
             </div>
+            <div class="mb-2 flex gap-2">
+                <Button class="bg-green-500 duration-300 hover:bg-green-600" @click="downloadFileArticles">
+                    <Download class="h-6 w-6" /> Export détails Excel
+                </Button>
+                <Button class="bg-zinc-500 duration-300 hover:bg-zinc-600" @click="downloadFilNumber">
+                    <Download class="h-6 w-6" /> Export recettes Excel
+                </Button>
+                <Button class="bg-blue-500 duration-300 hover:bg-blue-600" @click="printInvoice">
+                    <Download class="h-6 w-6" /> Export factures PDF
+                </Button>
+            </div>
 
             <div class="mb-2 flex w-full items-center justify-between gap-2">
                 <Input
@@ -278,7 +320,7 @@ const loadTicket = (ticketId: number) => {
             </div>
             <div class="flex items-center justify-between">
                 <Tabs v-model="activeTab">
-                    <TabsList class="grid w-full max-w-[400px] grid-cols-2">
+                    <TabsList class="grid w-full max-w-[500px] grid-cols-2">
                         <TabsTrigger value="active">Tickets actifs</TabsTrigger>
                         <TabsTrigger value="deleted">Tickets supprimés</TabsTrigger>
                     </TabsList>
