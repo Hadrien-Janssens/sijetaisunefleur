@@ -2,23 +2,20 @@
 import Breadcrumbs from '@/components/Breadcrumbs.vue';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import type { BreadcrumbItemType } from '@/types';
-import { usePage } from '@inertiajs/vue3';
 
 defineProps<{
     breadcrumbs?: BreadcrumbItemType[];
 }>();
-
-const page = usePage();
 </script>
 
 <template>
     <header
-        class="flex h-16 shrink-0 items-center gap-2 border-b border-sidebar-border/70 px-6 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12 md:px-4"
+        class="flex shrink-0 items-center gap-2 border-b border-sidebar-border/70 px-6 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12 md:px-4"
     >
         <div class="flex w-full items-center gap-2">
             <SidebarTrigger class="-ml-1" />
             <template v-if="breadcrumbs.length > 0">
-                <div class="flex w-full items-center justify-between">
+                <div class="flex h-12 w-full items-center justify-between">
                     <div>
                         <Breadcrumbs :breadcrumbs="breadcrumbs" />
                     </div>

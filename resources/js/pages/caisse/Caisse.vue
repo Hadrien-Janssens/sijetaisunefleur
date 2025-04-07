@@ -293,8 +293,8 @@ const isCreditChecked = computed({
     <AppLayout :breadcrumbs="breadcrumbs" class="h-screen">
         <div class="flex h-full">
             <!-- LEFTSIDE -->
-            <div class="flex basis-1/3 flex-col">
-                <div class="flex h-20 flex-col gap-2 border-b p-3">
+            <div class="flex h-full shrink-0 basis-1/3 flex-col justify-between">
+                <div class="flex h-16 flex-col border-b px-3 py-1">
                     <div class="flex items-center justify-between">
                         <h2 class="flex items-center gap-2"><Ticket class="text-primary-color" />Ticket en cours</h2>
                         <CommentModal
@@ -336,17 +336,16 @@ const isCreditChecked = computed({
                     <p v-else-if="selectedEmail" class="flex items-center gap-2"><Mail class="text-blue-500" /> {{ selectedEmail }}</p>
                     <p v-else class="flex items-center gap-2"><UserRoundX class="text-orange-500" /> Pas de client</p>
                 </div>
-                <div class="grow overflow-scroll overflow-y-auto">
+                <div class="h-[calc(100vh-13rem)] overflow-scroll overflow-x-auto overflow-y-auto">
                     <p v-if="ticket.length === 0" class="mt-20 text-center text-xl font-extrabold text-gray-400">Aucun achat sur ce ticket</p>
                     <TransitionGroup tag="ul" name="v">
                         <li v-for="article in ticket" :key="article.id" class="flex min-h-20 flex-col border-b p-3">
                             <div class="flex items-center justify-between">
                                 <Trash class="w-5 text-red-400" @click="deleteRow(article.id)" />
-                                <p>
-                                    <span class="mr-3"
-                                        >{{ getNameCategory(article.category_id) }} <span class="text-xs italic">({{ article.tva }}%)</span> :</span
-                                    >
-                                    {{ article.price.toFixed(2) }}€ X {{ article.quantity }} =
+                                <p class="text-right">
+                                    <span class="mr-3">{{ getNameCategory(article.category_id) }} :</span>
+                                    {{ article.price.toFixed(2) }}€ X {{ article.quantity }} <br />
+                                    =
                                     <span class="font-bold">{{ (article.price * article.quantity).toFixed(2) }} €</span>
                                 </p>
                             </div>
@@ -354,8 +353,10 @@ const isCreditChecked = computed({
                                 <span class="rounded-full border border-red-500 bg-red-100 p-0.5 px-1 text-xs text-red-500">
                                     - {{ article.reduction }}%</span
                                 >
+
                                 <span class="ml-3 font-bold"
-                                    >{{
+                                    >=
+                                    {{
                                         (article.price * article.quantity - (article.price * article.quantity * article.reduction) / 100).toFixed(2)
                                     }}
                                     €</span
@@ -371,7 +372,7 @@ const isCreditChecked = computed({
                         </li>
                     </TransitionGroup>
                 </div>
-                <footer class="flex h-20 items-center justify-between border-t p-1">
+                <footer class="flex h-20 shrink-0 items-center justify-between border-t p-1">
                     <div class="basis-1/2 text-center">
                         <p>
                             Total :
@@ -388,7 +389,7 @@ const isCreditChecked = computed({
 
                     <TicketReductionModal
                         title="Séléctionne la réduction"
-                        trigger="Réduction ticket"
+                        trigger="Réduc ticket"
                         description="Cette réduction sera appliquée sur l'ensemble du ticket"
                         :open="isTicketReductionModalOpen"
                         @close="isTicketReductionModalOpen = false"
@@ -400,7 +401,7 @@ const isCreditChecked = computed({
             </div>
             <!-- RightSide -->
             <div class="flex basis-2/3 flex-col border-l">
-                <div class="flex h-20 w-full items-center border-b">
+                <div class="flex h-16 w-full items-center border-b">
                     <div class="flex w-full items-center justify-between p-3">
                         <SearchClientModal :show="isModalOpen" :clients="clients" @close="isModalOpen = false" @validation="setSelectedClient" />
 
@@ -453,19 +454,19 @@ const isCreditChecked = computed({
                     </div>
                     <div class="grid grid-cols-4 gap-1 border-b border-t p-1 font-extrabold">
                         <div
-                            class="flex h-20 items-center justify-center rounded-lg border-b bg-sidebar text-4xl duration-300 hover:bg-slate-100"
+                            class="flex h-[80px] items-center justify-center rounded-lg border-b bg-sidebar text-4xl duration-300 hover:bg-slate-100"
                             @click="calculator(7)"
                         >
                             7
                         </div>
                         <div
-                            class="flex h-20 items-center justify-center rounded-lg border-x border-b bg-sidebar text-4xl duration-300 hover:bg-slate-100"
+                            class="flex h-[80px] items-center justify-center rounded-lg border-x border-b bg-sidebar text-4xl duration-300 hover:bg-slate-100"
                             @click="calculator(8)"
                         >
                             8
                         </div>
                         <div
-                            class="flex h-20 items-center justify-center rounded-lg border-b bg-sidebar text-4xl duration-300 hover:bg-slate-100"
+                            class="flex h-[80px] items-center justify-center rounded-lg border-b bg-sidebar text-4xl duration-300 hover:bg-slate-100"
                             @click="calculator(9)"
                         >
                             9
@@ -477,38 +478,38 @@ const isCreditChecked = computed({
                             Valider
                         </div>
                         <div
-                            class="flex h-20 items-center justify-center rounded-lg border-b bg-sidebar text-4xl duration-300 hover:bg-slate-100"
+                            class="flex h-[80px] items-center justify-center rounded-lg border-b bg-sidebar text-4xl duration-300 hover:bg-slate-100"
                             @click="calculator(4)"
                         >
                             4
                         </div>
                         <div
-                            class="flex h-20 items-center justify-center rounded-lg border-x border-b bg-sidebar text-4xl duration-300 hover:bg-slate-100"
+                            class="flex h-[80px] items-center justify-center rounded-lg border-x border-b bg-sidebar text-4xl duration-300 hover:bg-slate-100"
                             @click="calculator(5)"
                         >
                             5
                         </div>
                         <div
-                            class="flex h-20 items-center justify-center rounded-lg border-b bg-sidebar text-4xl duration-300 hover:bg-slate-100"
+                            class="flex h-[80px] items-center justify-center rounded-lg border-b bg-sidebar text-4xl duration-300 hover:bg-slate-100"
                             @click="calculator(6)"
                         >
                             6
                         </div>
 
                         <div
-                            class="flex h-20 items-center justify-center rounded-lg border-b bg-sidebar text-4xl duration-300 hover:bg-slate-100"
+                            class="flex h-[80px] items-center justify-center rounded-lg border-b bg-sidebar text-4xl duration-300 hover:bg-slate-100"
                             @click="calculator(1)"
                         >
                             1
                         </div>
                         <div
-                            class="flex h-20 items-center justify-center rounded-lg border-x border-b bg-sidebar text-4xl duration-300 hover:bg-slate-100"
+                            class="flex h-[80px] items-center justify-center rounded-lg border-x border-b bg-sidebar text-4xl duration-300 hover:bg-slate-100"
                             @click="calculator(2)"
                         >
                             2
                         </div>
                         <div
-                            class="flex h-20 items-center justify-center rounded-lg border-b bg-sidebar text-4xl duration-300 hover:bg-slate-100"
+                            class="flex h-[80px] items-center justify-center rounded-lg border-b bg-sidebar text-4xl duration-300 hover:bg-slate-100"
                             @click="calculator(3)"
                         >
                             3
@@ -516,7 +517,7 @@ const isCreditChecked = computed({
 
                         <ArticleReductionModal
                             title="Séléctionne la réduction"
-                            trigger="Réduction article"
+                            trigger="Réduc article"
                             description="Cette réduction sera appliquée sur l'article"
                             :open="isArticleReductionModalOpen"
                             @close="isArticleReductionModalOpen = false"
@@ -525,19 +526,19 @@ const isCreditChecked = computed({
                         />
 
                         <div
-                            class="flex h-20 items-center justify-center rounded-lg bg-sidebar text-4xl duration-300 hover:bg-slate-100"
+                            class="flex h-[80px] items-center justify-center rounded-lg bg-sidebar text-4xl duration-300 hover:bg-slate-100"
                             @click="setMultiplicatator = true"
                         >
                             X
                         </div>
                         <div
-                            class="flex h-20 items-center justify-center rounded-lg border-x bg-sidebar text-4xl duration-300 hover:bg-slate-100"
+                            class="flex h-[80px] items-center justify-center rounded-lg border-x bg-sidebar text-4xl duration-300 hover:bg-slate-100"
                             @click="calculator(0)"
                         >
                             0
                         </div>
                         <div
-                            class="flex h-20 items-center justify-center rounded-lg bg-sidebar text-4xl duration-300 hover:bg-slate-100"
+                            class="flex h-[80px] items-center justify-center rounded-lg bg-sidebar text-4xl duration-300 hover:bg-slate-100"
                             @click="
                                 () => {
                                     if (priceRow) {

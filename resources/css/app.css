@@ -92,7 +92,7 @@ html {
 @layer base {
     * {
         @apply border-border;
-        font-size: 1.12rem;
+        font-size: 1.13rem;
     }
 
     body {

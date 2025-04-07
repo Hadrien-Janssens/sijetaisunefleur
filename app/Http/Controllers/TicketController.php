@@ -121,7 +121,6 @@ class TicketController extends Controller
 
         $ticket = Ticket::create([
             'client_id' => $request->client_id,
-            // 'with_tva' => $request->client_id ? true : false,
             'with_tva' =>  $request->with_tva,
             'is_paid' => $request->is_paid,
             'reference' => $reference,
@@ -130,6 +129,8 @@ class TicketController extends Controller
             'remise' => $request->remise,
             'remiseAmount' => $request->remiseAmount,
         ]);
+
+
 
         $ticketRows = $request->ticket;
 
