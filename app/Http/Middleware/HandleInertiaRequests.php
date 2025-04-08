@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Ticket;
 use App\Models\Ticket_row;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Http\Request;
@@ -41,10 +42,31 @@ class HandleInertiaRequests extends Middleware
         [$message, $author] = str(Inspiring::quotes()->random())->explode('-');
 
         $dailyAmount = 0;
-        $ticket_rows = Ticket_row::whereDate('created_at', today())->get();
-        foreach ($ticket_rows as $key => $row) {
-            $dailyAmount += $row->price * $row->quantity;
+
+        $tickets = Ticket::with('ticketRows')->whereDate('created_at', today())->get();
+
+        foreach ($tickets as $key => $ticket) {
+            foreach ($ticket->ticketRows as $key => $row) {
+                if ($ticket->remise > 0) {
+                    if ($row->reduction > 0) {
+                        $dailyAmount += $row->price - ($row->price * $row->reduction) / 100 * $row->quantity;
+                    } else {
+                        $dailyAmount += $row->price - ($row->price * $ticket->remise) / 100 * $row->quantity;
+                    }
+                } else {
+                    if ($row->reduction > 0) {
+                        $dailyAmount += $row->price - ($row->price * $row->reduction) / 100 * $row->quantity;
+                    } else {
+                        $dailyAmount += $row->price * $row->quantity;
+                    }
+                }
+            }
+            if ($ticket->remiseAmount > 0) {
+                $dailyAmount -= $ticket->remiseAmount;
+            }
         }
+
+
 
         return [
             ...parent::share($request),

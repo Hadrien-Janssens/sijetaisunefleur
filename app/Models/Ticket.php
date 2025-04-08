@@ -23,6 +23,7 @@ class Ticket extends Model
         'echeance',
         'remise',
         'remiseAmount',
+        'created_at'
     ];
 
     public function client()

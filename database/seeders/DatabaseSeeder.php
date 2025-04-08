@@ -19,8 +19,8 @@ class DatabaseSeeder extends Seeder
         // User::factory(10)->create();
 
         User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+            'name' => 'Virginie Wautié',
+            'email' => 'contact@sijetaisunefleur.com',
         ]);
 
         Category::factory()->create([
@@ -52,18 +52,18 @@ class DatabaseSeeder extends Seeder
             'tva' => 6,
         ]);
 
-        Client::factory(10)->create();
+        // Client::factory(10)->create();
 
         Client::factory()->create([
             'firstname' => 'Hadrien',
             'lastname' => 'Janssens',
             'email' => 'hadrien.janssens7@gmail.com',
-            'company' => 'MyCompany',
+            'company' => '',
             'city' => 'Morlanwelz',
             'country' => 'Belgique',
             'address' => 'Rue joseph Wauters 81',
-            'phone' => '0499/12.34.56',
-            'tva_number' => 'BE0123456789',
+            'phone' => '0496/816993',
+            'tva_number' => '',
         ]);
 
         // Ticket::factory(30)->create();
