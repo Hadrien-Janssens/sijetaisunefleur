@@ -282,6 +282,7 @@ const deleteRow = (index: number) => {
                                     <p class="font-semibold">Remise</p>
                                     <Input
                                         type="number"
+                                        step="0.01"
                                         v-model="form.remiseAmount"
                                         placeholder="0"
                                         class="w-28"

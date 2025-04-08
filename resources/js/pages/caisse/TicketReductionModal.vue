@@ -42,8 +42,11 @@ const activeTab = ref('pourcent');
                     <TabsTrigger value="amount">€</TabsTrigger>
                 </TabsList>
             </Tabs>
-
-            <RadioGroup :default-value="value" :orientation="'vertical'" class="grow space-y-4" v-model="value" v-if="activeTab === 'pourcent'">
+            <div v-if="activeTab === 'pourcent'">
+                <Label for="customredcu">Pourcentage personnalisé</Label>
+                <Input id="customredcu" type="number" v-model="value" />
+            </div>
+            <RadioGroup :default-value="value" :orientation="'vertical'" class="grow" v-model="value" v-if="activeTab === 'pourcent'">
                 <div class="flex items-center space-x-2">
                     <RadioGroupItem id="reduc0" :value="0" />
                     <Label for="reduc0" class="text-lg">Aucune</Label>

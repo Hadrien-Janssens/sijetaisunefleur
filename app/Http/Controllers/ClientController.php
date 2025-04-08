@@ -32,9 +32,9 @@ class ClientController extends Controller
         }
 
         if ($actif === 'with_tva') {
-            $query->whereNotNull('tva_number');
+            $query->where('tva_number', '!=', '')->where('tva_number', '!=', 'N/A');
         } elseif ($actif === 'without_tva') {
-            $query->whereNull('tva_number');
+            $query->whereNull('tva_number')->orWhere('tva_number', '=', '')->orWhere('tva_number', '=', 'N/A');
         } elseif ($actif !== 'active') {
             $query->onlyTrashed();
         }
@@ -63,7 +63,7 @@ class ClientController extends Controller
             'lastname' => 'required',
             'company' => 'nullable',
             'email' => 'required | email ',
-            'phone' => 'required',
+            'phone' => 'nullable',
             'tva_number' => 'nullable',
             'address' => 'nullable',
             'city' => 'nullable',

@@ -18,3 +18,7 @@ export function capitalizeFirstLetter(str: string) {
 export function getHour(datetime: string) {
     return new Date(datetime).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', hour12: false });
 }
+
+export function getDate(datetime: string) {
+    return new Date(datetime).toLocaleDateString('fr-FR', { year: 'numeric', month: '2-digit', day: '2-digit' });
+}

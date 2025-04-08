@@ -110,11 +110,11 @@ class TicketController extends Controller
         $currentYear = now()->year;
 
         if ($request->with_tva) {
-            $lastNumber = DB::table('tickets')->where('with_tva', true)->whereYear('created_at', $currentYear)->max('reference');
+            $lastNumber = DB::table('tickets')->where('deleted_at', null)->where('with_tva', true)->whereYear('created_at', $currentYear)->max('reference');
 
             $reference =  ($lastNumber ? $lastNumber + 1 : 1);
         } else {
-            $lastNumber = DB::table('tickets')->where('with_tva', false)->whereYear('created_at', $currentYear)->max('reference');
+            $lastNumber = DB::table('tickets')->where('deleted_at', '!=', null)->where('with_tva', false)->whereYear('created_at', $currentYear)->max('reference');
 
             $reference =  $lastNumber ? $lastNumber + 1 : 1;
         };
@@ -193,13 +193,27 @@ class TicketController extends Controller
     public function update(Request $request, string $id)
     {
         $ticket = Ticket::withTrashed()->findOrFail($id);
+
+        $reference = '';
+        $currentYear = now()->year;
+
+        if ($request->with_tva) {
+            $lastNumber = DB::table('tickets')->where('with_tva', true)->whereYear('created_at', $currentYear)->max('reference');
+
+            $reference =  ($lastNumber ? $lastNumber + 1 : 1);
+        } else {
+            $lastNumber = DB::table('tickets')->where('with_tva', false)->whereYear('created_at', $currentYear)->max('reference');
+
+            $reference =  $lastNumber ? $lastNumber + 1 : 1;
+        };
         $ticket->update([
             'client_id' => $request->client,
             'with_tva' => $request->with_tva,
             'comment' => $request->comment,
-            'reference' => $request->reference,
+            'reference' => $reference,
             'created_at' => $request->date,
             'remise' => $request->remise,
+            'remiseAmount' => $request->remiseAmount,
             'is_paid' => $request->is_paid,
         ]);
 

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import Input from '@/components/ui/input/Input.vue';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { ref } from 'vue';
@@ -30,6 +31,11 @@ const value = ref(0);
                 <DialogTitle>{{ title }}</DialogTitle>
                 <DialogDescription>{{ description }}</DialogDescription>
             </DialogHeader>
+
+            <div>
+                <Label for="customredcu">Pourcentage personnalisé</Label>
+                <Input id="customredcu" type="number" v-model="value" />
+            </div>
 
             <RadioGroup :default-value="value" :orientation="'vertical'" class="grow space-y-4" v-model="value">
                 <div class="flex items-center space-x-2">

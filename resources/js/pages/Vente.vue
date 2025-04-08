@@ -12,23 +12,9 @@ import TabsTrigger from '@/components/ui/tabs/TabsTrigger.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Client, type BreadcrumbItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/vue3';
-import {
-    Barcode,
-    CalendarDays,
-    ChevronDown,
-    Clock,
-    Download,
-    Flower,
-    Pencil,
-    Printer,
-    Send,
-    ShoppingBag,
-    Ticket,
-    Trash,
-    User,
-} from 'lucide-vue-next';
+import { Barcode, CalendarDays, ChevronDown, Download, Flower, Pencil, Printer, Send, ShoppingBag, Ticket, Trash, User } from 'lucide-vue-next';
 import { ref, watch } from 'vue';
-import { getHour } from '../lib/utils';
+import { getDate } from '../lib/utils';
 import { Row } from '../types';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -364,13 +350,21 @@ const downloadFilNumber = () => {
                                         Total : {{ (getTicketPriceWithRemise(ticket) - ticket.remiseAmount).toFixed(2) }}€
                                     </p>
                                 </div>
-                                <Badge v-if="ticket.is_paid" class="bg-green-500">Aquitté</Badge>
-                                <Badge v-else class="bg-red-500">à régler</Badge>
+                                <div v-if="ticket.client" class="text-gray-600">|</div>
+                                <div>
+                                    <div class="flex items-center gap-2 font-medium">
+                                        <span v-if="ticket.client?.firstname">{{ ticket.client.firstname }}</span>
+                                        <span v-if="ticket.client?.lastname">{{ ticket.client.lastname }} </span>
+                                    </div>
+                                </div>
                             </div>
                             <div class="flex items-center gap-5">
-                                <p class="flex items-center gap-1 text-sm text-gray-600">
-                                    <Clock class="h-4 w-4" /> {{ getHour(ticket.created_at) }}
+                                <p class="flex items-center gap-2 text-sm text-gray-600">
+                                    <CalendarDays class="h-4 w-4" />
+                                    {{ getDate(ticket.created_at) }}
                                 </p>
+                                <Badge v-if="ticket.is_paid" class="bg-green-500">Aquitté</Badge>
+                                <Badge v-else class="bg-red-500">à régler</Badge>
                                 <div
                                     class="rounded-full bg-gray-100 p-1 transition-transform duration-300"
                                     :class="{ 'rotate-180': expandedTicketId === ticket.id }"
