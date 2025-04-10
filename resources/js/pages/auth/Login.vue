@@ -28,10 +28,10 @@ const submit = () => {
 </script>
 
 <template>
-    <div class="flex flex-col gap-1 min-h-svh">
+    <div class="flex min-h-svh flex-col gap-1">
         <img src="/logo.avif" alt="logo" class="w-full" />
         <AuthBase title="Si j'étais une fleur 🌼 " description="Salut 👋, entre tes identifiants de fleuriste en herbe 🪴">
-            <Head title="Log in" />
+            <Head title="Se connecter" />
 
             <!-- <div v-if="status" class="mb-4 text-sm font-medium text-center text-green-600">
             {{ status }}
@@ -81,7 +81,7 @@ const submit = () => {
                     </div>
 
                     <Button type="submit" variant="teal" :tabindex="4" :disabled="form.processing">
-                        <LoaderCircle v-if="form.processing" class="w-4 h-4 animate-spin" />
+                        <LoaderCircle v-if="form.processing" class="h-4 w-4 animate-spin" />
                         Me connecter
                     </Button>
                 </div>

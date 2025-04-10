@@ -152,7 +152,7 @@ class TicketController extends Controller
 
             $pdf = Pdf::loadView('facture', ['ticket' => $ticket, 'with_tva' => $request->with_tva]);
 
-            Mail::to($ticket->client->email)->send(new InvoiceMail($pdf->output(), "facture.pdf"));
+            Mail::to($ticket->client->email)->send(new InvoiceMail($pdf->output(), "facture.pdf", $ticket));
             // Mail::to("contact@sijetaisunefleur.com")->send(new InvoiceMail($pdf->output(), "facture.pdf"));
 
             return redirect()->route('caisse')->with('success', $message);
@@ -162,7 +162,7 @@ class TicketController extends Controller
 
             $pdf = Pdf::loadView('facture', ['ticket' => $ticket, 'with_tva' => $request->with_tva, 'tva_number' => $request->tva_number]);
 
-            Mail::to($request->input('email'))->send(new InvoiceMail($pdf->output(), "facture.pdf"));
+            Mail::to($request->input('email'))->send(new InvoiceMail($pdf->output(), "facture.pdf", $ticket));
 
             return redirect()->route('caisse')->with('success', $message);
         }
@@ -206,12 +206,17 @@ class TicketController extends Controller
 
             $reference =  $lastNumber ? $lastNumber + 1 : 1;
         };
+
+        // modifier la date mais pas l'heure
+        $createdAt = Carbon::parse($ticket->created_at);
+        $newDate = Carbon::parse($request->date)->setTimeFrom($createdAt);
+
         $ticket->update([
             'client_id' => $request->client,
             'with_tva' => $request->with_tva,
             'comment' => $request->comment,
             'reference' => $reference,
-            'created_at' => $request->date,
+            'created_at' => $newDate,
             'remise' => $request->remise,
             'remiseAmount' => $request->remiseAmount,
             'is_paid' => $request->is_paid,
@@ -295,8 +300,34 @@ class TicketController extends Controller
         $ticket = Ticket::findOrFail($ticketId);
 
 
+        $path = public_path('logo.jpeg');
+        if (!file_exists($path)) {
+            abort(404, 'Logo introuvable');
+        }
+
+        // Récupération du type MIME correct
+        $type = 'image/jpeg';
+        $data = file_get_contents($path);
+        $base64 = base64_encode($data);
+
+
+
         try {
-            $pdf = Pdf::loadView('facture', ['ticket' => $ticket, 'with_tva' => $ticket->with_tva]);
+            $pdf = Pdf::loadView('facture', [
+                'ticket' => $ticket,
+                'with_tva' => $ticket->with_tva,
+                'image' => $base64,
+                'image_type' => $type
+            ])
+                ->setPaper('a4', 'portrait')
+                ->setOptions([
+                    'isHtml5ParserEnabled' => true,
+                    'isRemoteEnabled' => true,
+                    'isPhpEnabled' => true,
+                    'defaultFont' => 'sans-serif',
+                    'dpi' => 96,
+                    'isFontSubsettingEnabled' => true,
+                ]);
             return response($pdf->stream("facture_{$ticket->id}.pdf"))
                 ->header('Content-Type', 'application/pdf');
         } catch (\Exception $e) {
@@ -403,5 +434,16 @@ class TicketController extends Controller
         $zip->close();
 
         return response()->download(public_path($zipFileName))->deleteFileAfterSend(true);
+    }
+
+    public function deleteHoldTickets()
+    {
+        $date = now()->subYears(5);
+
+        Ticket::withTrashed()
+            ->where('created_at', '<', $date)
+            ->forceDelete();
+
+        return redirect()->back()->with('success', 'Tous les tickets de plus de 5 ans ont été supprimés.');
     }
 }

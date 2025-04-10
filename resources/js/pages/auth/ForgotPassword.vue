@@ -41,7 +41,7 @@ const submit = () => {
                 </div>
 
                 <div class="my-6 flex items-center justify-start">
-                    <Button class="w-full bg-teal-600 text-white" :disabled="form.processing">
+                    <Button variant="teal" class="w-full" :disabled="form.processing">
                         <LoaderCircle v-if="form.processing" class="h-4 w-4 animate-spin" />
                         Lien de réinitialisation
                     </Button>

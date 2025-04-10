@@ -20,9 +20,9 @@ watch(
     () => page.props.flash?.success,
     (message) => {
         if (message) {
+            message = message + '  ✅ ';
             nextTick(() => {
                 toast({
-                    title: 'Génial !    🥳 ',
                     description: message,
                 });
             });

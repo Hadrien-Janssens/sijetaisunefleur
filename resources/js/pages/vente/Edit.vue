@@ -269,7 +269,7 @@ const deleteRow = (index: number) => {
                         <div class="mt-4 flex items-end justify-between border-t border-gray-200 pt-4">
                             <div class="flex flex-col gap-3">
                                 <div class="flex items-center gap-3">
-                                    <p class="font-semibold">Remise</p>
+                                    <p class="font-semibold">Remise ticket <span class="text-sm italic text-gray-500">(pourcentage)</span></p>
                                     <Input
                                         type="number"
                                         v-model="form.remise"
@@ -279,7 +279,7 @@ const deleteRow = (index: number) => {
                                     />%
                                 </div>
                                 <div class="flex items-center gap-3">
-                                    <p class="font-semibold">Remise</p>
+                                    <p class="font-semibold">Remise ticket <span class="text-sm italic text-gray-500">(euros)</span></p>
                                     <Input
                                         type="number"
                                         step="0.01"
@@ -292,7 +292,7 @@ const deleteRow = (index: number) => {
                             </div>
 
                             <div class="text-right">
-                                <p class="text-sm text-gray-500">Total</p>
+                                <p class="font-semibold">Total</p>
                                 <p class="text-lg font-bold" v-if="ticket.remise === 0">{{ getTicketPrice(form) }}€</p>
                                 <p class="text-lg font-bold" v-else>{{ getTicketPriceWithRemise(form) }}€</p>
                             </div>

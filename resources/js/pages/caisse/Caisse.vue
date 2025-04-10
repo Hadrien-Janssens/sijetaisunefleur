@@ -39,7 +39,7 @@ interface Ticket {
     reduction: number;
 }
 
-const ticket = ref<Array<Ticket>>([]);
+const ticket = ref<Array<Ticket>>(JSON.parse(localStorage.getItem('ticket') || '[]'));
 
 const priceRow = ref<null | number>(null);
 const quantityRow = ref<number | null>(null);
@@ -49,20 +49,21 @@ const decimal = ref(false);
 const centimal = ref(false);
 const diff = ref(0);
 const isInPaiyment = ref(false);
-const selectedClient = ref<null | Client>(null);
-const selectedEmail = ref('');
-const selectedTva = ref(false);
-const TVANumber = ref('');
+const selectedClient = ref<null | Client>(JSON.parse(localStorage.getItem('selectedClient') || 'null'));
+const selectedEmail = ref(localStorage.getItem('selectedEmail') || '');
+const selectedTva = ref(localStorage.getItem('selectedTva') === 'true');
+const TVANumber = ref(localStorage.getItem('TVANumber') || '');
 const isTicketReductionModalOpen = ref(false);
 const isArticleReductionModalOpen = ref(false);
 const isCommentModalOpen = ref(false);
-const comment = ref('');
+const comment = ref(localStorage.getItem('comment') || '');
 // c'est la reduction exemaple 10%
-const totalReduction = ref(0);
+const totalReduction = ref(Number(localStorage.getItem('totalReduction')) || 0);
 const reductionRow = ref(0);
-const echeance = ref('');
+const echeance = ref(localStorage.getItem('echeance') || '');
 const isEcheanceModalOpen = ref(false);
-const AmountReduction = ref(0);
+const AmountReduction = ref(Number(localStorage.getItem('AmountReduction')) || 0);
+const tva = ref(Number(localStorage.getItem('totalReduction')) || 6);
 
 const getNameCategory = (id: number) => {
     return props.categories.find((category) => category.id === id)?.name;
@@ -207,6 +208,17 @@ const sendTicket = () => {
     AmountReduction.value = 0;
 
     router.post(route('ticket.store'), form);
+
+    // Nettoyer le localStorage après l'envoi
+    localStorage.removeItem('ticket');
+    localStorage.removeItem('selectedClient');
+    localStorage.removeItem('selectedEmail');
+    localStorage.removeItem('selectedTva');
+    localStorage.removeItem('TVANumber');
+    localStorage.removeItem('totalReduction');
+    localStorage.removeItem('AmountReduction');
+    localStorage.removeItem('comment');
+    localStorage.removeItem('echeance');
 };
 
 const isModalOpen = ref(false);
@@ -258,15 +270,18 @@ const echeanceValidation = (value: string) => {
     isEcheanceModalOpen.value = false;
 };
 
-const tva = ref(6);
 const filterCategories = computed(() => {
     return props.categories.filter((category) => category.tva === tva.value);
 });
 
 const selectedCategoryId = ref(filterCategories.value[0].id);
 
-const toggleTva = (value: number) => {
-    tva.value = value;
+const toggleTva = () => {
+    if (tva.value === 6) {
+        tva.value = 21;
+    } else {
+        tva.value = 6;
+    }
 };
 
 watch(tva, (newVal) => {
@@ -277,14 +292,52 @@ watch(tva, (newVal) => {
 });
 const isCreditChecked = computed({
     get: () => echeance.value !== '',
-    set: (value) => {
-        if (value) {
-            isEcheanceModalOpen.value = true; // Ouvre la modal si activé
-        } else {
-            echeance.value = ''; // Si décoché, on vide l'échéance
-        }
+    set: () => {
+        // if (value) {
+        //     isEcheanceModalOpen.value = true; // Ouvre la modal si activé
+        // } else {
+        //     echeance.value = ''; // Si décoché, on vide l'échéance
+        // }
+        isEcheanceModalOpen.value = true;
     },
 });
+const isCommentChecked = computed({
+    get: () => comment.value !== '',
+    set: () => {
+        // if (value) {
+        //     isCommentModalOpen.value = true; // Ouvre la modal si activé
+        // } else {
+        //     comment.value = ''; // Si décoché, on vide l'échéance
+        // }
+        isCommentModalOpen.value = true;
+    },
+});
+
+watch(
+    [ticket, selectedClient, selectedEmail, selectedTva, TVANumber, totalReduction, AmountReduction, comment, echeance],
+    ([
+        newTicket,
+        newSelectedClient,
+        newSelectedEmail,
+        newSelectedTva,
+        newTVANumber,
+        newTotalReduction,
+        newAmountReduction,
+        newComment,
+        newEcheance,
+    ]) => {
+        localStorage.setItem('ticket', JSON.stringify(newTicket));
+        localStorage.setItem('selectedClient', JSON.stringify(newSelectedClient));
+        localStorage.setItem('selectedEmail', newSelectedEmail);
+        localStorage.setItem('selectedTva', String(newSelectedTva));
+        localStorage.setItem('TVANumber', newTVANumber);
+        localStorage.setItem('totalReduction', String(newTotalReduction));
+        localStorage.setItem('AmountReduction', String(newAmountReduction));
+        localStorage.setItem('comment', newComment);
+        localStorage.setItem('echeance', newEcheance);
+    },
+    { deep: true },
+);
 </script>
 
 <template>
@@ -297,44 +350,44 @@ const isCreditChecked = computed({
                 <div class="flex h-16 flex-col border-b px-3 py-1">
                     <div class="flex items-center justify-between">
                         <h2 class="flex items-center gap-2"><Ticket class="text-primary-color" />Ticket en cours</h2>
-                        <CommentModal
-                            v-if="selectedClient || selectedEmail"
-                            :open="isCommentModalOpen"
-                            @close="isCommentModalOpen = false"
-                            @open="isCommentModalOpen = true"
-                            @comment_validation="commentValidation"
-                        />
                     </div>
-                    <HoverCard v-if="selectedClient">
-                        <HoverCardTrigger as-child>
-                            <Link :href="route('client.edit', selectedClient.id)">
+                    <div class="flex items-center justify-between">
+                        <HoverCard v-if="selectedClient">
+                            <HoverCardTrigger as-child>
+                                <Link :href="route('client.edit', selectedClient.id)">
+                                    <p class="flex items-center gap-2">
+                                        <UserCheck class="text-blue-500" /> {{ selectedClient.lastname }} {{ selectedClient.firstname }}
+                                    </p>
+                                </Link>
+                            </HoverCardTrigger>
+                            <HoverCardContent class="w-80 space-y-3">
                                 <p class="flex items-center gap-2">
                                     <UserCheck class="text-blue-500" /> {{ selectedClient.lastname }} {{ selectedClient.firstname }}
                                 </p>
-                            </Link>
-                        </HoverCardTrigger>
-                        <HoverCardContent class="w-80 space-y-3">
-                            <p class="flex items-center gap-2">
-                                <UserCheck class="text-blue-500" /> {{ selectedClient.lastname }} {{ selectedClient.firstname }}
-                            </p>
 
-                            <p class="flex items-center gap-2"><Mail class="shrink-0 text-blue-500" /> {{ selectedClient.email }}</p>
-                            <p class="flex items-center gap-2"><Phone class="shrink-0 text-blue-500" /> {{ selectedClient.phone }}</p>
-                            <p class="flex items-center gap-2"><Building class="shrink-0 text-blue-500" /> {{ selectedClient.company }}</p>
-                            <p class="flex items-center gap-2"><Hash class="shrink-0 text-blue-500" /> {{ selectedClient.tva_number }}</p>
-                            <p class="flex items-center gap-2">
-                                <MapPin class="shrink-0 text-blue-500" /> {{ selectedClient.address }} {{ selectedClient.city }}
-                                {{ selectedClient.country }}
-                            </p>
-                            <div v-if="comment">
-                                <p class="font-bold">Commentaire :</p>
-                                <p>{{ comment }}</p>
-                            </div>
-                        </HoverCardContent>
-                    </HoverCard>
+                                <p class="flex items-center gap-2"><Mail class="shrink-0 text-blue-500" /> {{ selectedClient.email }}</p>
+                                <p class="flex items-center gap-2"><Phone class="shrink-0 text-blue-500" /> {{ selectedClient.phone }}</p>
+                                <p class="flex items-center gap-2"><Building class="shrink-0 text-blue-500" /> {{ selectedClient.company }}</p>
+                                <p class="flex items-center gap-2"><Hash class="shrink-0 text-blue-500" /> {{ selectedClient.tva_number }}</p>
+                                <p class="flex items-center gap-2">
+                                    <MapPin class="shrink-0 text-blue-500" /> {{ selectedClient.address }} {{ selectedClient.city }}
+                                    {{ selectedClient.country }}
+                                </p>
+                                <div v-if="comment">
+                                    <p class="font-bold">Commentaire :</p>
+                                    <p>{{ comment }}</p>
+                                </div>
 
-                    <p v-else-if="selectedEmail" class="flex items-center gap-2"><Mail class="text-blue-500" /> {{ selectedEmail }}</p>
-                    <p v-else class="flex items-center gap-2"><UserRoundX class="text-orange-500" /> Pas de client</p>
+                                <div v-if="echeance">
+                                    <p class="font-bold">échéance :</p>
+                                    <p>{{ echeance }}</p>
+                                </div>
+                            </HoverCardContent>
+                        </HoverCard>
+
+                        <p v-else-if="selectedEmail" class="flex items-center gap-2"><Mail class="text-blue-500" /> {{ selectedEmail }}</p>
+                        <p v-else class="flex items-center gap-2"><UserRoundX class="text-orange-500" /> Pas de client</p>
+                    </div>
                 </div>
                 <div class="h-[calc(100vh-13rem)] overflow-scroll overflow-x-auto overflow-y-auto">
                     <p v-if="ticket.length === 0" class="mt-20 text-center text-xl font-extrabold text-gray-400">Aucun achat sur ce ticket</p>
@@ -356,9 +409,7 @@ const isCreditChecked = computed({
 
                                 <span class="ml-3 font-bold"
                                     >=
-                                    {{
-                                        (article.price * article.quantity - (article.price * article.quantity * article.reduction) / 100).toFixed(2)
-                                    }}
+                                    {{ (article.price * article.quantity - (article.price * article.quantity * article.reduction) / 100).toFixed(2) }}
                                     €</span
                                 >
                             </p>
@@ -409,35 +460,63 @@ const isCreditChecked = computed({
                             <Switch id="invoice" v-model="hasSelectedClient" />
                             <Label for="invoice">Facture</Label>
                         </div>
-                        <div class="flex items-center space-x-2">
+                        <div class="flex items-center space-x-2" v-if="hasSelectedClient">
+                            <Switch id="comment" v-model="isCommentChecked" />
+                            <Label for="comment">Message</Label>
+                        </div>
+                        <CommentModal
+                            v-if="selectedClient || selectedEmail"
+                            :open="isCommentModalOpen"
+                            @close="isCommentModalOpen = false"
+                            @remove_comment="
+                                () => {
+                                    comment = '';
+                                    isCommentModalOpen = false;
+                                }
+                            "
+                            @open="isCommentModalOpen = true"
+                            @comment_validation="commentValidation"
+                        />
+                        <div class="flex items-center space-x-2" v-if="hasSelectedClient">
                             <Switch id="credit" v-model="isCreditChecked" />
                             <Label for="credit">Echéance</Label>
                         </div>
                         <EcheanceModal
                             :open="isEcheanceModalOpen"
                             @close="isEcheanceModalOpen = false"
+                            @remove_comment="
+                                () => {
+                                    echeance = '';
+                                    isEcheanceModalOpen = false;
+                                }
+                            "
                             @open="isEcheanceModalOpen = true"
                             @validation="echeanceValidation"
                         />
 
-                        <Select v-model="selectedCategoryId">
-                            <SelectTrigger class="w-[180px]">
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectGroup>
-                                    <SelectItem v-for="category in filterCategories" :value="category.id" :key="category.id">
-                                        {{ category.name }}
-                                    </SelectItem>
-                                </SelectGroup>
-                            </SelectContent>
-                        </Select>
+                        <div class="flex items-center space-x-5">
+                            <Select v-model="selectedCategoryId">
+                                <SelectTrigger class="w-[140px]">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectGroup>
+                                        <SelectItem v-for="category in filterCategories" :value="category.id" :key="category.id">
+                                            {{ category.name }}
+                                        </SelectItem>
+                                    </SelectGroup>
+                                </SelectContent>
+                            </Select>
 
-                        <div class="flex items-center space-x-2">
-                            <Switch id="r1" @click="toggleTva(6)" :model-value="tva == 6" />
+                            <div class="flex items-center space-x-2">
+                                <!-- <Switch id="r1" @click="toggleTva(6)" :model-value="tva == 6" class="data-[state=unchecked]:bg-primary-color" />
                             <Label for="r1">6%</Label>
                             <Switch id="r2" @click="toggleTva(21)" :model-value="tva == 21" />
-                            <Label for="r2">21%</Label>
+                            <Label for="r2">21%</Label> -->
+                                <Label for="r1">6%</Label>
+                                <Switch id="r1" @click="toggleTva" :value="tva" class="data-[state=unchecked]:bg-primary-color" />
+                                <Label for="r1">21%</Label>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -450,7 +529,8 @@ const isCreditChecked = computed({
                         <span v-if="reductionRow !== 0" class="self-start text-4xl text-red-500">-{{ reductionRow }}%</span>
 
                         <!-- <p v-if="setMultiplicatator && quantityRow">= {{ (priceRow * quantityRow).toFixed(2) }}€</p> -->
-                        <p v-if="isInPaiyment">à rendre : {{ diff.toFixed(2) }}€</p>
+                        <p v-if="isInPaiyment && priceRow">à rendre : {{ diff.toFixed(2) }}€</p>
+                        <p v-if="isInPaiyment && !priceRow">à rendre : 0.00€</p>
                     </div>
                     <div class="grid grid-cols-4 gap-1 border-b border-t p-1 font-extrabold">
                         <div
@@ -559,10 +639,10 @@ const isCreditChecked = computed({
                 </div>
                 <footer class="flex h-20 items-center justify-between border-t p-1">
                     <div
-                        class="bg-primary-color flex h-full w-full items-center justify-center rounded-lg text-center font-extrabold text-green-100 dark:bg-orange-950 dark:text-orange-400"
+                        class="bg-primary-color flex h-full w-full items-center justify-center gap-2 rounded-lg text-center font-extrabold text-green-100"
                         @click="paid"
                     >
-                        Payer
+                        Payer <span v-if="echeance"> plus tard</span>
                     </div>
                 </footer>
             </div>

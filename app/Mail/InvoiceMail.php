@@ -2,6 +2,7 @@
 
 namespace App\Mail;
 
+use App\Models\Ticket;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
@@ -15,20 +16,25 @@ class InvoiceMail extends Mailable
 
     public $pdf;
     public $filename;
+    public $ticket;
 
     /**
      * Create a new message instance.
      */
-    public function __construct($pdf, $filename)
+    public function __construct($pdf, $filename, $ticket)
     {
         $this->pdf = $pdf;
         $this->filename = $filename;
+        $this->ticket = $ticket;
     }
 
     public function build()
     {
+
         return $this->subject('Votre facture')
-            ->view('invoice') // Vue de l'email
+            ->view('invoice')->with([
+                'ticket' => $this->ticket,
+            ])
             ->attachData($this->pdf, $this->filename, [
                 'mime' => 'application/pdf',
             ]);

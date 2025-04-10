@@ -32,6 +32,8 @@ const errors = computed(() => usePage().props.errors || {});
 
 const handleSubmit = () => {
     router.post(route('client.store'), formData.value);
+    console.log('test');
+
     emit('close');
     formData.value = {
         firstname: '',
@@ -51,7 +53,7 @@ const handleSubmit = () => {
     <Dialog :open="show" @update:open="emit('close')">
         <DialogContent class="sm:max-w-[500px]">
             <DialogHeader>
-                <div class="flex items-baseline gap-1 mb-2">
+                <div class="mb-2 flex items-baseline gap-1">
                     <User class="text-blue-500" />
                     <DialogTitle>Ajouter un client</DialogTitle>
                 </div>
@@ -84,7 +86,7 @@ const handleSubmit = () => {
                 <div class="flex items-start gap-5">
                     <div>
                         <label>Email</label>
-                        <Input type="email" v-model="formData.email" :class="{ 'border-red-500': errors?.email }" required />
+                        <Input type="email" v-model="formData.email" :class="{ 'border-red-500': errors?.email }" />
                         <p v-if="errors?.email" class="text-sm text-red-500">{{ errors.email }}</p>
                     </div>
                     <div>

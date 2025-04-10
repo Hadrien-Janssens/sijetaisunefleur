@@ -12,7 +12,7 @@ import TabsTrigger from '@/components/ui/tabs/TabsTrigger.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Client, type BreadcrumbItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/vue3';
-import { Barcode, CalendarDays, ChevronDown, Download, Flower, Pencil, Printer, Send, ShoppingBag, Ticket, Trash, User } from 'lucide-vue-next';
+import { Barcode, Calendar, ChevronDown, Download, Flower, Pencil, Printer, Send, ShoppingBag, Ticket, Trash, User } from 'lucide-vue-next';
 import { ref, watch } from 'vue';
 import { getDate } from '../lib/utils';
 import { Row } from '../types';
@@ -291,7 +291,7 @@ const downloadFilNumber = () => {
                 />
 
                 <div class="flex items-center gap-2">
-                    <Input type="date" lang="fr" v-model="selectedDate" class="rounded-md border border-gray-300 p-2" />
+                    <Input type="date" lang="fr" v-model="selectedDate" class="rounded-md border border-gray-300 p-2" pattern="\d{2}-\d{2}-\d{4}" />
 
                     <transition name="fade-slide">
                         <Input
@@ -360,7 +360,7 @@ const downloadFilNumber = () => {
                             </div>
                             <div class="flex items-center gap-5">
                                 <p class="flex items-center gap-2 text-sm text-gray-600">
-                                    <CalendarDays class="h-4 w-4" />
+                                    <Calendar class="h-4 w-4" />
                                     {{ getDate(ticket.created_at) }}
                                 </p>
                                 <Badge v-if="ticket.is_paid" class="bg-green-500">Aquitté</Badge>
@@ -379,7 +379,7 @@ const downloadFilNumber = () => {
                                     <div class="mb-4 grid grid-cols-3 gap-4">
                                         <div>
                                             <p class="flex items-start gap-1 text-sm text-gray-500">
-                                                <CalendarDays class="h-4 w-4 text-orange-500" />Date de création
+                                                <Calendar class="h-4 w-4 text-orange-500" />Date de création
                                             </p>
                                             <p class="font-medium">{{ formatDate(ticket.created_at) }}</p>
                                         </div>
@@ -419,35 +419,49 @@ const downloadFilNumber = () => {
                                             <div class="flex items-center gap-2">
                                                 <ShoppingBag class="text-primary-color h-4 w-4" />
                                                 <span>{{ row.category.name || `Article #${index + 1}` }}</span>
-                                                <span class="text-sm text-gray-500">{{ row.price }}€ x{{ row.quantity }}</span>
+                                                <span class="text-sm text-gray-500">{{ row.price.toFixed(2) }}€ x {{ row.quantity }}</span>
+                                            </div>
+                                            <div class="flex items-center gap-2">
+                                                <span class="text-red-500 line-through" v-if="row.reduction !== 0">
+                                                    {{ (row.price * row.quantity).toFixed(2) }}€</span
+                                                >
+                                                <span class="text-red-500 line-through" v-if="ticket.remise !== 0 && row.reduction === 0">
+                                                    {{ (row.price * row.quantity).toFixed(2) }}€</span
+                                                >
                                                 <span
                                                     v-if="row.reduction !== 0"
                                                     class="rounded-full border border-red-500 bg-red-100 px-1 py-0.5 text-xs text-red-500"
                                                 >
-                                                    -{{ row.reduction }}%
+                                                    -{{ row.reduction }}% réduc article
                                                 </span>
+                                                <span
+                                                    v-if="ticket.remise !== 0 && row.reduction === 0"
+                                                    class="rounded-full border border-red-500 bg-red-100 px-1 py-0.5 text-xs text-red-500"
+                                                >
+                                                    -{{ ticket.remise }}% réduc ticket
+                                                </span>
+                                                <span class="font-medium" v-if="row.reduction !== 0"
+                                                    >{{
+                                                        (
+                                                            (row.reduction === 0 ? row.price : row.price - (row.price * row.reduction) / 100) *
+                                                            row.quantity
+                                                        ).toFixed(2)
+                                                    }}€</span
+                                                >
+                                                <span class="font-medium" v-else
+                                                    >{{ ((row.price - (row.price * ticket.remise) / 100) * row.quantity).toFixed(2) }}€</span
+                                                >
                                             </div>
-                                            <span class="font-medium"
-                                                >{{
-                                                    (
-                                                        (row.reduction === 0 ? row.price : row.price - (row.price * row.reduction) / 100) *
-                                                        row.quantity
-                                                    ).toFixed(2)
-                                                }}€</span
-                                            >
                                         </div>
                                     </div>
 
                                     <div class="mt-4 flex justify-end border-t border-gray-200 pt-4">
                                         <div class="text-right">
                                             <p class="text-sm text-gray-500">Total</p>
-                                            <p class="text-lg font-bold">{{ getTicketPrice(ticket) }}€</p>
+                                            <!-- <p class="text-lg font-bold">{{ getTicketPrice(ticket).toFixed(2) }}€</p> -->
                                             <p class="text-lg font-bold" v-if="ticket.remise === 0">{{ getTicketPrice(ticket).toFixed(2) }}€</p>
                                             <!-- <p v-if="ticket.remiseAmount !== 0">-{{ ticket.remiseAmount }}€</p> -->
                                             <p v-else class="text-lg">
-                                                <span class="mr-2 rounded-full border border-red-500 bg-red-100 px-1 py-0.5 text-xs text-red-500">
-                                                    -{{ ticket.remise }}%
-                                                </span>
                                                 <span class="font-bold"> {{ getTicketPriceWithRemise(ticket).toFixed(2) }}€ </span>
                                             </p>
                                             <span class="text-red-500" v-if="ticket.remiseAmount !== 0">

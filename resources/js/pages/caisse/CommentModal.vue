@@ -1,20 +1,19 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
-import { FilePenLine } from 'lucide-vue-next';
 import { ref } from 'vue';
 
-const emit = defineEmits(['close', 'open', 'comment_validation']);
+const emit = defineEmits(['close', 'open', 'comment_validation', 'remove_comment']);
 
 const comment = ref('');
 </script>
 
 <template>
     <Dialog @update:open="emit('close')">
-        <DialogTrigger as-child>
+        <!-- <DialogTrigger as-child>
             <FilePenLine class="text-primary-color" @click="emit('open')" />
-        </DialogTrigger>
+        </DialogTrigger> -->
         <DialogContent class="sm:max-w-[425px]">
             <DialogHeader>
                 <DialogTitle>Ajoute un commentaire</DialogTitle>
@@ -22,8 +21,27 @@ const comment = ref('');
             </DialogHeader>
             <Textarea v-model="comment" />
             <DialogFooter>
-                <Button @click="emit('close')" variant="outline">Annuler</Button>
-                <Button variant="teal" @click="emit('comment_validation', comment)">Valider</Button>
+                <div class="flex w-full items-center justify-between">
+                    <Transition>
+                        <Button
+                            @click="
+                                () => {
+                                    comment = '';
+                                    emit('remove_comment');
+                                }
+                            "
+                            variant="outline"
+                            v-show="comment"
+                            >Retirer</Button
+                        >
+                    </Transition>
+                    <div v-show="!comment"></div>
+
+                    <div class="flex gap-2">
+                        <Button @click="emit('close')" variant="outline">Annuler</Button>
+                        <Button variant="teal" @click="emit('comment_validation', comment)">Valider</Button>
+                    </div>
+                </div>
             </DialogFooter>
         </DialogContent>
     </Dialog>

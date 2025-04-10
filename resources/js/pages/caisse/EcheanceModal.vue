@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Textarea } from '@/components/ui/textarea';
 import { ref } from 'vue';
 
-const emit = defineEmits(['close', 'open', 'validation']);
+const emit = defineEmits(['close', 'open', 'validation', 'remove_comment']);
 
 const comment = ref('');
 </script>
@@ -16,13 +16,32 @@ const comment = ref('');
         </DialogTrigger> -->
         <DialogContent class="sm:max-w-[425px]">
             <DialogHeader>
-                <DialogTitle>Ajoute un message</DialogTitle>
-                <DialogDescription>Ce message apparaîtra sur la facture</DialogDescription>
+                <DialogTitle>Ajoute une échéance</DialogTitle>
+                <DialogDescription>Cette échéance apparaîtra sur la facture à la place de "Acquitté"</DialogDescription>
             </DialogHeader>
             <Textarea v-model="comment" />
             <DialogFooter>
-                <Button @click="emit('close')" variant="outline">Annuler</Button>
-                <Button variant="teal" @click="emit('validation', comment)">Valider</Button>
+                <div class="flex w-full items-center justify-between">
+                    <Transition>
+                        <Button
+                            @click="
+                                () => {
+                                    comment = '';
+                                    emit('remove_comment');
+                                }
+                            "
+                            variant="outline"
+                            v-show="comment"
+                            >Retirer</Button
+                        >
+                    </Transition>
+                    <div v-show="!comment"></div>
+
+                    <div class="flex gap-2">
+                        <Button @click="emit('close')" variant="outline">Annuler</Button>
+                        <Button variant="teal" @click="emit('validation', comment)">Valider</Button>
+                    </div>
+                </div>
             </DialogFooter>
         </DialogContent>
     </Dialog>
