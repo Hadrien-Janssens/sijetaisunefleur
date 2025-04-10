@@ -6,7 +6,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/vue3';
-import { Building, ContactRound, Download, Flower, Hash, Mail, MapPin, Phone } from 'lucide-vue-next';
+import { Building, ContactRound, Download, Flower, Grid, Hash, List, Mail, MapPin, Phone } from 'lucide-vue-next';
 import { reactive, ref, watch } from 'vue';
 import CreateClientModal from '../../components/CreateClientModal.vue';
 
@@ -31,6 +31,7 @@ console.log(props);
 
 const searchQuery = ref(props.filters.search || '');
 const activeTab = ref(props.filters.actif || 'active');
+const viewType = ref('grid');
 
 const performSearch = () => {
     router.get(
@@ -93,12 +94,31 @@ const visit = (url: string | null) => {
             </div>
             <div class="mb-2 flex gap-2"></div>
 
-            <div class="mb-2 flex w-1/2 items-center gap-2">
-                <Input v-model="searchQuery" placeholder="Rechercher un client..." />
-                <Button class="bg-blue-500 duration-300 hover:bg-blue-600" @click="downloadFile">
-                    <Download class="h-6 w-6" /> Export clients Excel
-                </Button>
+            <div class="mb-2 flex w-full items-center justify-between">
+                <div class="flex w-1/2 items-center gap-2">
+                    <Input v-model="searchQuery" placeholder="Rechercher un client..." />
+                    <Button class="bg-blue-500 duration-300 hover:bg-blue-600" @click="downloadFile">
+                        <Download class="h-6 w-6" /> Export clients Excel
+                    </Button>
+                </div>
+                <Tabs v-model="viewType" class="ml-2">
+                    <TabsList>
+                        <TabsTrigger value="grid">
+                            <div class="flex items-center">
+                                <div><Grid class="mr-2 h-4 w-4" /></div>
+                                <div>Grille</div>
+                            </div>
+                        </TabsTrigger>
+                        <TabsTrigger value="list">
+                            <div class="flex items-center">
+                                <div><List class="mr-2 h-4 w-4" /></div>
+                                <div>Liste</div>
+                            </div>
+                        </TabsTrigger>
+                    </TabsList>
+                </Tabs>
             </div>
+
             <Tabs v-model="activeTab" class="mb-6">
                 <TabsList class="grid w-full grid-cols-4">
                     <TabsTrigger value="active">Clients actifs</TabsTrigger>
@@ -108,23 +128,25 @@ const visit = (url: string | null) => {
                 </TabsList>
             </Tabs>
 
-            <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <div :class="viewType === 'grid' ? 'grid gap-6 md:grid-cols-2 lg:grid-cols-3' : 'space-y-4'">
                 <Card
                     v-for="client in clients.data"
                     :key="client.id"
-                    class="w-full bg-transparent from-white to-gray-50/80 backdrop-blur-md transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-lg"
+                    :class="[
+                        'w-full bg-transparent from-white to-gray-50/80 backdrop-blur-md transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-lg',
+                        viewType === 'list' ? 'flex flex-row items-center' : '',
+                    ]"
                 >
-                    <Link :href="route('client.edit', client.id)">
+                    <Link :href="route('client.edit', client.id)" :class="viewType === 'list' ? 'flex w-full' : ''">
                         <CardHeader>
                             <CardTitle class="flex items-start gap-2 text-gray-600">
                                 <ContactRound class="h-5 w-5" />
                                 <div>
-                                    <p>{{ client.firstname }}</p>
-                                    <p>{{ client.lastname }}</p>
+                                    <p>{{ client.firstname }} {{ client.lastname }}</p>
                                 </div>
                             </CardTitle>
                         </CardHeader>
-                        <CardContent class="space-y-4">
+                        <CardContent :class="viewType === 'list' ? 'flex flex-wrap gap-6 p-0' : 'space-y-4'">
                             <div class="flex items-center gap-2 text-sm">
                                 <Mail class="h-4 w-4 text-blue-400" />
                                 <span>{{ client.email }}</span>
@@ -133,7 +155,7 @@ const visit = (url: string | null) => {
                                 <Phone class="h-4 w-4 text-green-400" />
                                 <span>{{ client.phone }}</span>
                             </div>
-                            <div class="flex items-center gap-2 text-sm">
+                            <div v-if="viewType === 'grid'" class="flex items-center gap-2 text-sm">
                                 <Building class="h-4 w-4 text-yellow-400" />
                                 <span>{{ client.company }}</span>
                             </div>
@@ -141,7 +163,7 @@ const visit = (url: string | null) => {
                                 <Hash class="h-4 w-4 text-red-400" />
                                 <span>TVA: {{ client.tva_number }}</span>
                             </div>
-                            <div class="flex items-start gap-2 text-sm">
+                            <div v-if="viewType === 'grid'" class="flex items-start gap-2 text-sm">
                                 <MapPin class="h-4 w-4 shrink-0 text-orange-400" />
                                 <div>
                                     <p>{{ client.address }}</p>

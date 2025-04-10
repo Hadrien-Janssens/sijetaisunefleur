@@ -54,12 +54,20 @@ const props = defineProps<{
     };
 }>();
 
-const searchQuery = ref(props.filters.search || '');
-const withInvoice = ref(props.filters.withInvoice || false);
-const selectedDate = ref(props.filters.start_date || new Date().toISOString().split('T')[0]);
-const selectedEndDate = ref(props.filters.end_date || new Date().toISOString().split('T')[0]);
-const activeTab = ref(props.filters.actif || 'active');
-const timeSlot = ref(props.filters.time_slot || 'day');
+const searchQuery = ref(localStorage.getItem('vente_search') || props.filters.search || '');
+const withInvoice = ref(localStorage.getItem('vente_withInvoice') === 'true' || props.filters.withInvoice || false);
+const selectedDate = ref(localStorage.getItem('vente_selectedDate') || props.filters.start_date || new Date().toISOString().split('T')[0]);
+const selectedEndDate = ref(localStorage.getItem('vente_selectedEndDate') || props.filters.end_date || new Date().toISOString().split('T')[0]);
+const activeTab = ref(localStorage.getItem('vente_activeTab') || props.filters.actif || 'active');
+const timeSlot = ref(localStorage.getItem('vente_timeSlot') || props.filters.time_slot || 'day');
+
+// Ajout des watchers pour sauvegarder dans le localStorage
+watch(searchQuery, (newVal) => localStorage.setItem('vente_search', newVal));
+watch(withInvoice, (newVal) => localStorage.setItem('vente_withInvoice', newVal));
+watch(selectedDate, (newVal) => localStorage.setItem('vente_selectedDate', newVal));
+watch(selectedEndDate, (newVal) => localStorage.setItem('vente_selectedEndDate', newVal));
+watch(activeTab, (newVal) => localStorage.setItem('vente_activeTab', newVal));
+watch(timeSlot, (newVal) => localStorage.setItem('vente_timeSlot', newVal));
 
 const performSearch = () => {
     router.get(

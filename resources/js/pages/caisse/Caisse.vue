@@ -52,7 +52,7 @@ const isInPaiyment = ref(false);
 const selectedClient = ref<null | Client>(JSON.parse(localStorage.getItem('selectedClient') || 'null'));
 const selectedEmail = ref(localStorage.getItem('selectedEmail') || '');
 const selectedTva = ref(localStorage.getItem('selectedTva') === 'true');
-const TVANumber = ref(localStorage.getItem('TVANumber') || '');
+const TVANumber = ref(localStorage.getItem('TVANumber') || 6);
 const isTicketReductionModalOpen = ref(false);
 const isArticleReductionModalOpen = ref(false);
 const isCommentModalOpen = ref(false);
@@ -330,7 +330,7 @@ watch(
         localStorage.setItem('selectedClient', JSON.stringify(newSelectedClient));
         localStorage.setItem('selectedEmail', newSelectedEmail);
         localStorage.setItem('selectedTva', String(newSelectedTva));
-        localStorage.setItem('TVANumber', newTVANumber);
+        localStorage.setItem('TVANumber', String(newTVANumber));
         localStorage.setItem('totalReduction', String(newTotalReduction));
         localStorage.setItem('AmountReduction', String(newAmountReduction));
         localStorage.setItem('comment', newComment);
@@ -338,6 +338,34 @@ watch(
     },
     { deep: true },
 );
+
+const annulationTicket = () => {
+    selectedClient.value = null;
+    selectedEmail.value = '';
+    selectedTva.value = false;
+    ticket.value = [];
+    TVANumber.value = '';
+    totalReduction.value = 0;
+    comment.value = '';
+    priceRow.value = null;
+    quantityRow.value = null;
+    setMultiplicatator.value = false;
+    decimal.value = false;
+    centimal.value = false;
+    isInPaiyment.value = false;
+    echeance.value = '';
+    AmountReduction.value = 0;
+
+    localStorage.removeItem('ticket');
+    localStorage.removeItem('selectedClient');
+    localStorage.removeItem('selectedEmail');
+    localStorage.removeItem('selectedTva');
+    localStorage.removeItem('TVANumber');
+    localStorage.removeItem('totalReduction');
+    localStorage.removeItem('AmountReduction');
+    localStorage.removeItem('comment');
+    localStorage.removeItem('echeance');
+};
 </script>
 
 <template>
@@ -514,7 +542,7 @@ watch(
                             <Switch id="r2" @click="toggleTva(21)" :model-value="tva == 21" />
                             <Label for="r2">21%</Label> -->
                                 <Label for="r1">6%</Label>
-                                <Switch id="r1" @click="toggleTva" :value="tva" class="data-[state=unchecked]:bg-primary-color" />
+                                <Switch id="r1" @click="toggleTva" :value="TVANumber" class="data-[state=unchecked]:bg-primary-color" />
                                 <Label for="r1">21%</Label>
                             </div>
                         </div>
@@ -630,19 +658,25 @@ watch(
                             ,
                         </div>
                         <div
-                            class="flex h-full basis-1/3 items-center justify-center rounded-lg bg-red-400 text-4xl font-extrabold text-red-100"
+                            class="flex h-full basis-1/3 items-center justify-center rounded-lg bg-sidebar text-4xl font-extrabold hover:bg-slate-100"
                             @click="deleteCurrentRow"
                         >
                             C
                         </div>
                     </div>
                 </div>
-                <footer class="flex h-20 items-center justify-between border-t p-1">
+                <footer class="grid h-20 grid-cols-4 items-center justify-between gap-1 border-t p-1">
                     <div
-                        class="bg-primary-color flex h-full w-full items-center justify-center gap-2 rounded-lg text-center font-extrabold text-green-100"
+                        class="bg-primary-color col-span-3 flex h-full items-center justify-center gap-2 rounded-lg text-center font-extrabold text-green-100"
                         @click="paid"
                     >
                         Payer <span v-if="echeance"> plus tard</span>
+                    </div>
+                    <div
+                        class="flex h-full items-center justify-center gap-2 rounded-lg bg-red-400 text-center font-extrabold text-red-50"
+                        @click="annulationTicket"
+                    >
+                        Annuation ticket
                     </div>
                 </footer>
             </div>
