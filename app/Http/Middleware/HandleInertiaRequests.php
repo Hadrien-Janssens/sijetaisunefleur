@@ -49,13 +49,13 @@ class HandleInertiaRequests extends Middleware
             foreach ($ticket->ticketRows as $key => $row) {
                 if ($ticket->remise > 0) {
                     if ($row->reduction > 0) {
-                        $dailyAmount += $row->price - ($row->price * $row->reduction) / 100 * $row->quantity;
+                        $dailyAmount += ($row->price - ($row->price * $row->reduction) / 100) * $row->quantity;
                     } else {
-                        $dailyAmount += $row->price - ($row->price * $ticket->remise) / 100 * $row->quantity;
+                        $dailyAmount += ($row->price - ($row->price * $ticket->remise) / 100) * $row->quantity;
                     }
                 } else {
                     if ($row->reduction > 0) {
-                        $dailyAmount += $row->price - ($row->price * $row->reduction) / 100 * $row->quantity;
+                        $dailyAmount += ($row->price - ($row->price * $row->reduction) / 100) * $row->quantity;
                     } else {
                         $dailyAmount += $row->price * $row->quantity;
                     }

@@ -403,15 +403,15 @@ const downloadFilNumber = () => {
                                             </Link>
                                             <p v-else class="font-medium">Client non défini</p>
                                         </div>
-                                        <div class="flex items-center justify-end gap-2">
+                                        <!-- <div class="flex items-center justify-end gap-2">
                                             <Link :href="route('ticket.edit', ticket.id)" class="flex items-center gap-2">
                                                 <Button
                                                     variant="outline"
-                                                    class="bg-cyan-500 text-cyan-100 duration-300 hover:bg-cyan-600 hover:text-cyan-100"
+                                                    class="duration-300 bg-cyan-500 text-cyan-100 hover:bg-cyan-600 hover:text-cyan-100"
                                                     ><Pencil />Modifier</Button
                                                 ></Link
                                             >
-                                        </div>
+                                        </div> -->
                                     </div>
 
                                     <div class="mb-2 border-b border-gray-200 pb-2">
@@ -498,9 +498,19 @@ const downloadFilNumber = () => {
                                     </div>
 
                                     <div class="mt-4 flex items-center gap-2">
+                                        <div class="flex items-center justify-end gap-2">
+                                            <Link :href="route('ticket.edit', ticket.id)" class="flex items-center gap-2">
+                                                <Button variant="outline"><Pencil class="text-blue-500" />Modifier</Button></Link
+                                            >
+                                        </div>
                                         <DeleteConfirmationModal v-model:open="showConfirmDeleteModal" @delete="forceDelete" :hiddenbutton="true" />
-                                        <Button v-if="ticket.deleted_at" @click="openForceDeleteModal(ticket.id)" variant="outline">
-                                            Supprimer définitivement
+                                        <Button
+                                            v-if="ticket.deleted_at"
+                                            @click="openForceDeleteModal(ticket.id)"
+                                            variant="outline"
+                                            class="bg-red-500 text-red-50 duration-300 hover:bg-red-600 hover:text-red-50"
+                                        >
+                                            <Trash class="text-red-50" /> Supprimer définitivement
                                         </Button>
 
                                         <DeleteConfirmationModal v-model:open="showTicketDeleteModal" @delete="confirmDelete" :hiddenbutton="true" />

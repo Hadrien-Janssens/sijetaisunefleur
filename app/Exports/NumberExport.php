@@ -60,6 +60,19 @@ class NumberExport implements FromCollection, WithHeadings, WithMapping, WithSty
                 $event->sheet->getDelegate()->mergeCells('D2:E2');
                 $event->sheet->getDelegate()->getStyle('D2')->getAlignment()->setHorizontal('center');
                 $event->sheet->getDelegate()->getStyle('D2')->getFont()->setBold(true)->setSize(14);
+
+                // Récupère le nombre de lignes (3 lignes d'en-tête + le nombre de données)
+                $lastRow = $event->sheet->getDelegate()->getHighestRow();
+
+                // Appliquer le gras à la dernière ligne (TOTAL)
+                $event->sheet->getDelegate()->getStyle("A{$lastRow}:E{$lastRow}")
+                    ->getFont()
+                    ->setBold(true);
+
+                // Optionnel : alignement centré pour la ligne TOTAL
+                $event->sheet->getDelegate()->getStyle("A{$lastRow}")
+                    ->getAlignment()
+                    ->setHorizontal('center');
             },
         ];
     }
@@ -76,9 +89,18 @@ class NumberExport implements FromCollection, WithHeadings, WithMapping, WithSty
             ],
 
             // Colonnes spécifiques (ex: la colonne 3 = Montant)
-            // 'C' => [
-            //     'font' => ['bold' => true, 'color' => ['rgb' => 'FF0000']], // Rouge
-            // ],
+            'B' => [
+                'alignment' => ['horizontal' => 'right'],
+            ],
+            'C' => [
+                'alignment' => ['horizontal' => 'right'],
+            ],
+            'D' => [
+                'alignment' => ['horizontal' => 'right'],
+            ],
+            'E' => [
+                'alignment' => ['horizontal' => 'right'],
+            ],
         ];
     }
     // Définition des colonnes
@@ -87,14 +109,14 @@ class NumberExport implements FromCollection, WithHeadings, WithMapping, WithSty
         return [
             ['Rapport des montants journaliers'],
             [
-                'Clients',
-                'Sans n° TVA',
                 '',
-                'Avec n° TVA',
+                'Non-assujetti',
+                '',
+                'Assujetti',
                 '',
             ],
             [
-                '#',
+                'Date',
                 '6%',
                 '21%',
                 '6%',
@@ -111,10 +133,10 @@ class NumberExport implements FromCollection, WithHeadings, WithMapping, WithSty
         return [
 
             $dayAmount->day, // Format date français
-            $dayAmount->total_6_na,
-            $dayAmount->total_21_na,
-            $dayAmount->total_6_a,
-            $dayAmount->total_21_a,
+            $dayAmount->total_6_na !== '' ? number_format(floatval($dayAmount->total_6_na), 2, ',', ' ') . ' €' : '',
+            $dayAmount->total_21_na !== '' ? number_format(floatval($dayAmount->total_21_na), 2, ',', ' ') . ' €' : '',
+            $dayAmount->total_6_a !== '' ? number_format(floatval($dayAmount->total_6_a), 2, ',', ' ') . ' €' : '',
+            $dayAmount->total_21_a !== '' ? number_format(floatval($dayAmount->total_21_a), 2, ',', ' ') . ' €' : '',
 
         ];
     }
@@ -195,10 +217,10 @@ class NumberExport implements FromCollection, WithHeadings, WithMapping, WithSty
                 $fullData->push($entry);
             } else {
                 $fullData->push((object)[
-                    'total_6_na' => '/',
-                    'total_21_na' => '/',
-                    'total_6_a' => '/',
-                    'total_21_a' => '/',
+                    'total_6_na' => '',
+                    'total_21_na' => '',
+                    'total_6_a' => '',
+                    'total_21_a' => '',
                     'day' => $date->format('d/m/Y')
                 ]);
             }

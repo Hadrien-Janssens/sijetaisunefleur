@@ -418,7 +418,8 @@ const annulationTicket = () => {
                     </div>
                 </div>
                 <div class="h-[calc(100vh-13rem)] overflow-scroll overflow-x-auto overflow-y-auto">
-                    <p v-if="ticket.length === 0" class="mt-20 text-center text-xl font-extrabold text-gray-400">Aucun achat sur ce ticket</p>
+                    <Ticket v-if="ticket.length === 0" class="mx-auto mt-20 h-32 w-32 text-gray-400 opacity-50" />
+                    <p v-if="ticket.length === 0" class="mt-5 text-center text-xl font-extrabold text-gray-400">Aucun achat sur ce ticket</p>
                     <TransitionGroup tag="ul" name="v">
                         <li v-for="article in ticket" :key="article.id" class="flex min-h-20 flex-col border-b p-3">
                             <div class="flex items-center justify-between">
