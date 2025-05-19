@@ -23,6 +23,7 @@ class TicketFactory extends Factory
             'reference' => fake()->randomNumber(),
             'with_tva' => true,
             'remise' => fake()->randomElement([0, 10, 20, 30, 50]),
+            'remiseAmount' => fake()->randomFloat(2, 0, 100),
             'created_at' => $this->faker->dateTimeBetween('-2 days', 'now'),
         ];
     }

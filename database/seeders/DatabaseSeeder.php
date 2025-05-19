@@ -22,13 +22,12 @@ class DatabaseSeeder extends Seeder
             'email' => env('ADMIN_EMAIL'),
         ]);
 
-        // User::factory(10)->create();
-
-        // User::factory()->create([
-        //     'name' => 'Virginie Wautié',
-        //     'email' => 'contact@sijetaisunefleur.com',
+        // $this->call([
+        //     CategorySeeder::class
         // ]);
-
+        // $this->call([
+        //     ClientSeeder::class,
+        // ]);
 
 
         // Category::factory()->create([
@@ -60,19 +59,6 @@ class DatabaseSeeder extends Seeder
         //     'tva' => 6,
         // ]);
 
-        // Client::factory(10)->create();
-
-        // Client::factory()->create([
-        //     'firstname' => 'Hadrien',
-        //     'lastname' => 'Janssens',
-        //     'email' => 'hadrien.janssens7@gmail.com',
-        //     'company' => '',
-        //     'city' => 'Morlanwelz',
-        //     'country' => 'Belgique',
-        //     'address' => 'Rue joseph Wauters 81',
-        //     'phone' => '0496/816993',
-        //     'tva_number' => '',
-        // ]);
 
         // Ticket::factory(30)->create();
     }

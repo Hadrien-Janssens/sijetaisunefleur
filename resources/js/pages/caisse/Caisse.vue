@@ -274,7 +274,7 @@ const filterCategories = computed(() => {
     return props.categories.filter((category) => category.tva === tva.value);
 });
 
-const selectedCategoryId = ref(filterCategories.value[0].id);
+const selectedCategoryId = ref(filterCategories.value[0]?.id);
 
 const toggleTva = () => {
     if (tva.value === 6) {

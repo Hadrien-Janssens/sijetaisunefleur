@@ -54,6 +54,8 @@ const props = defineProps<{
     };
 }>();
 
+console.log('props', props.tickets);
+
 const searchQuery = ref(localStorage.getItem('vente_search') || props.filters.search || '');
 const withInvoice = ref(localStorage.getItem('vente_withInvoice') === 'true' || props.filters.withInvoice || false);
 const selectedDate = ref(localStorage.getItem('vente_selectedDate') || props.filters.start_date || new Date().toISOString().split('T')[0]);

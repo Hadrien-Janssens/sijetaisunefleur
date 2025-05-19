@@ -1,19 +1,21 @@
-# 📝 Si j'étais une fleur
+# 📝 Si j’étais une fleur
 
-IfoFix is a web application developed as part of a school project. It allows school administrators to assign and manage student interventions in the school's cybercafé.
+“Si j’étais une fleur” is a web application developed during my 5-week internship. It is a point-of-sale (POS) software with a dashboard to manage sales, export Excel files, and automatically send invoices to clients.
 
 ## 🎯 Purpose
 
-The main goal of this application is to track the interventions carried out by students and to allow teachers to assign students to specific tickets.
+The main goal of this application is to simplify accounting tasks, improve productivity through automation, and centralize key business data in an intuitive interface.
 
 ## 🛠️ Main Features
 
-- Create tickets and interventions.
-- Manage tickets, students, and hardware.
+- Create tickets, invoices, clients, and items.
+- Export Excel files (clients list, sales over a specific period, etc.).
+- Export all invoices for accounting purposes.
+- Automatically send invoices to clients.
 
 ## 🧰 Technologies Used
 
-- **Frontend**: Vue.js, Tailwind CSS, Schadcn-vue, Lucide Vue Next
+- **Frontend**: Vue.js, Tailwind CSS, Schadcn-vue, Lucide
 - **Backend**: Laravel 12, Sqlite
 
 ## ⚙️ Installation
@@ -83,6 +85,6 @@ This project is licensed under the MIT License - see the [LICENSE](./LICENSE) fi
 
 - [Hadrien Janssens](https://github.com/Hadrien-Janssens)
 
-## Previews
+## Demo
 
-Comming soon
+[![Regarder la démo](https://github.com/Hadrien-Janssens/sijetaisunefleur/raw/main/public/preview.png)](https://github.com/Hadrien-Janssens/sijetaisunefleur/blob/main/public/demo.mov?raw=true)
